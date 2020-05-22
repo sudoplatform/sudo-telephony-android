@@ -1,0 +1,236 @@
+
+mutation availablePhoneNumbersForCountryCode($country: String!, $limit: Int = 10) {
+  searchPhoneNumbers(input: {
+    country: $country, 
+    limit: $limit
+  }) {
+    ...availablePhoneNumberResult
+  }
+}
+
+mutation availablePhoneNumbersForPrefix($country: String!, $prefix: String!, $limit: Int = 10) {
+  searchPhoneNumbers(input: {
+    country: $country, 
+    prefix: $prefix,
+    limit: $limit
+  }) {
+    ...availablePhoneNumberResult
+  }
+}
+
+mutation availablePhoneNumbersForGPS($country: String!, $latitude: String!, $longitude: String!, $limit: Int = 10) {
+  searchPhoneNumbers(input: {
+    country: $country,
+    gps: {
+      latitude: $latitude,
+      longitude: $longitude
+    },
+    limit: $limit
+  }) {
+    ...availablePhoneNumberResult
+  }
+}
+
+query supportedCountries {
+  getPhoneNumberCountries {
+    countries
+  }
+}
+
+query availablePhoneNumberResult($id: ID!) {
+  getPhoneNumberSearch(id: $id) {
+    ...availablePhoneNumberResult
+  }
+}
+
+subscription availablePhoneNumbersFinished($owner: String!, $clientRefId: String!) {
+  OnSearch(owner: $owner, clientRefId: $clientRefId) {
+    ...availablePhoneNumberResult
+  }
+}
+
+mutation provisionPhoneNumber($input: ProvisionPhoneNumberInput!) {
+  provisionPhoneNumber(input: $input) {
+    ...phoneNumber
+  }
+}
+
+subscription provisionPhoneNumberChanged($owner: String!, $clientRefId: String!) {
+  OnProvision(owner: $owner, clientRefId: $clientRefId) {
+    ...phoneNumber
+  }
+}
+
+mutation deprovisionPhoneNumber($input: DeprovisionPhoneNumberInput!) {
+  deprovisionPhoneNumber(input: $input) {
+    ...phoneNumber
+  }
+}
+
+query phoneNumbers($filter: PhoneNumberFilterInput, $limit: Int, $nextToken: String) {
+  listPhoneNumbers(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      ...phoneNumber
+    }
+    nextToken
+  }
+}
+
+query phoneNumber($id: ID!) {
+  getPhoneNumber(id: $id) {
+    ...phoneNumber
+  }
+}
+
+fragment phoneNumber on PhoneNumber {
+    id
+    phoneNumber
+    country
+    keyRingId
+    state
+    version
+    clientRefId
+    createdAtEpochMs
+    updatedAtEpochMs
+}
+
+fragment availablePhoneNumberResult on PhoneNumberSearch {
+    id
+    country
+    gps {
+      latitude
+      longitude
+    }
+    prefix
+    state
+    results
+    clientRefId
+    createdAtEpochMs
+    updatedAtEpochMs
+}
+
+mutation createPublicKey($input: CreatePublicKeyInput!) {
+    createPublicKeyForTelephony(input: $input) {
+        ...publicKey
+    }
+}
+
+mutation deletePublicKey($input: DeletePublicKeyInput!) {
+    deletePublicKeyForTelephony(input: $input) {
+        ...publicKey
+    }
+}
+
+query getPublicKey($keyId: String!) {
+    getPublicKeyForTelephony(keyId: $keyId) {
+        ...publicKey
+    }
+}
+
+query getPublicKeys($limit: Int, $nextToken: String) {
+    getPublicKeysForTelephony(limit: $limit, nextToken: $nextToken) {
+        items {
+            ...publicKey
+        }
+        nextToken
+    }
+}
+
+query getKeyRing($keyRingId: String!, $limit: Int, $nextToken: String) {
+    getKeyRingForTelephony(keyRingId: $keyRingId, limit: $limit, nextToken: $nextToken) {
+        items {
+            ...publicKey
+        }
+        nextToken
+    }
+}
+
+mutation sendMessage($input: SendMessageInput!) {
+  sendMessage(input: $input)
+}
+
+query getMessage($id: ID!, $keyId: String!) {
+   getMessage(id: $id, keyId: $keyId) {
+      ...sealedMessage
+   }
+}
+
+mutation deleteMessage($id: ID!) {
+    deleteMessage(id: $id)
+}
+
+query listMessages($filter: MessageFilterInput!, $limit: Int, $nextToken: String) {
+   listMessages(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+         ...sealedMessage
+      }
+      nextToken
+   }
+}
+
+subscription onMessageReceived($owner: String!) {
+    OnMessage(owner: $owner) {
+        ...sealedMessage
+    }
+}
+
+query getConversation($id: ID!) {
+    getConversation(id: $id) {
+        ...conversation
+    }
+}
+
+query listConversations($filter: ConversationFilterInput!, $limit: Int, $nextToken: String) {
+    listConversations(filter: $filter, limit: $limit, nextToken: $nextToken) {
+        items {
+            ...conversation
+        }
+        nextToken
+    }
+}
+
+fragment publicKey on PublicKey {
+    keyId
+    keyRingId
+    algorithm
+    publicKey
+    owner
+    version
+    createdAtEpochMs
+    updatedAtEpochMs
+}
+
+fragment sealedMessage on SealedMessage {
+    id
+    conversation
+    remotePhoneNumber
+    localPhoneNumber
+    body
+    media {
+        ...s3MediaObject
+    }
+    direction
+    seen
+    state
+    owner
+    algorithm
+    keyId
+    clientRefId
+    createdAtEpochMs
+    updatedAtEpochMs
+}
+
+fragment conversation on Conversation {
+    id
+    owner
+    type
+    lastMessage
+    createdAtEpochMs
+    updatedAtEpochMs
+}
+
+fragment s3MediaObject on S3MediaObject {
+    key
+    bucket
+    region
+}

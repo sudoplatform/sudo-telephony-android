@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
+  <suppress>
+   <notes><![CDATA[
+   file name: okhttp-3.8.1.jar
+   ]]></notes>
+   <gav regex="true">^com\.squareup\.okhttp3:okhttp:.*$</gav>
+   <cve>CVE-2018-20200</cve>
+ </suppress>
+ <suppress>
+   <notes><![CDATA[
+   file name: bcprov-jdk15on-1.56.jar
+   ]]></notes>
+   <gav regex="true">^org\.bouncycastle:bcprov-jdk15on:.*$</gav>
+   <cve>CVE-2017-13098</cve>
+ </suppress>
+ <suppress>
+   <notes><![CDATA[
+   file name: builder-3.4.1.jar: desugar_deploy.jar
+   ]]></notes>
+   <gav regex="true">^com\.google\.guava:guava:.*$</gav>
+   <cve>CVE-2018-10237</cve>
+ </suppress>
+ <suppress>
+   <notes><![CDATA[
+   file name: intellij-core-26.4.1.jar (shaded: com.google.protobuf:protobuf-java:2.6.1)
+   ]]></notes>
+   <gav regex="true">^com\.google\.protobuf:protobuf-java:.*$</gav>
+   <cve>CVE-2015-5237</cve>
+ </suppress>
+ <suppress>
+   <notes><![CDATA[
+   file name: classes.jar
+   ]]></notes>
+   <gav regex="true">^androidx\.fragment:fragment:.*$</gav>
+   <cve>CVE-2018-13661</cve>
+ </suppress>
+ <suppress>
+   <notes><![CDATA[
+   file name: classes.jar
+   ]]></notes>
+   <gav regex="true">^androidx\.legacy:legacy-support-core-ui:.*$</gav>
+   <cve>CVE-2018-13661</cve>
+ </suppress>
+ <suppress>
+   <notes><![CDATA[
+   file name: classes.jar
+   ]]></notes>
+   <gav regex="true">^androidx\.legacy:legacy-support-core-utils:.*$</gav>
+   <cve>CVE-2017-16111</cve>
+ </suppress>
+ <suppress>
+   <notes><![CDATA[
+   file name: classes.jar
+   ]]></notes>
+   <gav regex="true">^androidx\.loader:loader:.*$</gav>
+   <cve>CVE-2017-16111</cve>
+ </suppress>
+ <suppress>
+   <notes><![CDATA[
+   file name: classes.jar
+   ]]></notes>
+   <gav regex="true">^androidx\.localbroadcastmanager:localbroadcastmanager:.*$</gav>
+   <cve>CVE-2017-16111</cve>
+ </suppress>
+ <suppress>
+   <notes><![CDATA[
+   file name: bcprov-jdk15on-1.56.jar
+   ]]></notes>
+   <gav regex="true">^org\.bouncycastle:bcprov-jdk15on:.*$</gav>
+   <cve>CVE-2018-1000180</cve>
+ </suppress>
+ <suppress>
+   <notes><![CDATA[
+   file name: bcprov-jdk15on-1.56.jar
+   ]]></notes>
+   <gav regex="true">^org\.bouncycastle:bcprov-jdk15on:.*$</gav>
+   <cve>CVE-2018-1000613</cve>
+ </suppress>
+ <suppress>
+   <notes><![CDATA[
+   file name: kotlin-stdlib-jdk7-1.3.21.jar
+   ]]></notes>
+   <cve>CVE-2019-10101</cve>
+ </suppress>
+<suppress>
+   <notes><![CDATA[
+   file name: gradle-api-3.4.2.jar
+   ]]></notes>
+   <cpe>cpe:/a:gradle:gradle</cpe>
+</suppress>
+<suppress>
+   <notes><![CDATA[
+   file name: commons-compress-1.12.jar
+   ]]></notes>
+   <cve>CVE-2018-11771</cve>
+</suppress>
+<suppress>
+   <notes><![CDATA[
+   file name: commons-compress-1.12.jar
+   ]]></notes>
+   <cve>CVE-2018-1324</cve>
+</suppress>
+<suppress>
+   <notes><![CDATA[
+   file name: kotlin-stdlib-jdk7-1.3.21.jar
+   ]]></notes>
+   <cve>CVE-2019-10102</cve>
+</suppress>
+<suppress>
+   <notes><![CDATA[
+   file name: kotlin-stdlib-jdk7-1.3.21.jar
+   ]]></notes>
+   <cve>CVE-2019-10103</cve>
+</suppress>
+
+
+
+
+</suppressions>

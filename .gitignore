@@ -1,0 +1,66 @@
+#built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# generated files
+bin/
+gen/
+__pycache__/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Application secrets
+secret.properties
+
+# Windows thumbnail db
+Thumbs.db
+
+# OSX files
+.DS_Store
+
+# Eclipse project files
+.classpath
+.project
+
+# Intellij project files
+*.iws
+.idea/*
+build/
+*.iml
+
+# gradle
+.gradle
+
+# debug file for credentials. This will be different on each machine
+config.properties
+sudoplatformconfig.json
+awsconfiguration.json
+
+# misc
+.todo
+.statusupdates
+captures/
+.env
+telephony_ssm_parameter_graphql*
+
+# registration keys
+**/src/test/resources/register_key*
+register_key*
+anonyome_ssm_parameter_register*
+
+projectFilesBackup/.idea/workspace.xml
+
+kits.gradle
+telephony-system-test-config/
+
+**compatibility_archive.txt
+
+# keystores
+*.keystore

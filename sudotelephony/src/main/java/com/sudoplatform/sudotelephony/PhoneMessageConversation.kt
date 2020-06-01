@@ -1,6 +1,8 @@
 package com.sudoplatform.sudotelephony
 
+import android.os.Parcelable
 import com.sudoplatform.sudotelephony.type.ConversationType
+import kotlinx.android.parcel.Parcelize
 import java.util.*
 
 enum class MessageConversationType {
@@ -19,7 +21,7 @@ enum class MessageConversationType {
     }
 }
 
-
+@Parcelize
 data class PhoneMessageConversation (
     /// Unique ID of the conversation. Calculated by calculating the v5 UUID of `localPhoneNumber + remotePhoneNumber` with `owner` as the namespace
     val id: String,
@@ -35,4 +37,4 @@ data class PhoneMessageConversation (
     val created: Date,
     /// The date of the last modification to the conversation
     val updated: Date
-)
+) : Parcelable

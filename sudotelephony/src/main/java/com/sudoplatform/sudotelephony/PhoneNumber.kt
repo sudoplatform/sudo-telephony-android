@@ -1,12 +1,15 @@
 package com.sudoplatform.sudotelephony
 
+import android.os.Parcelable
 import com.sudoplatform.sudotelephony.type.PhoneNumberState
+import kotlinx.android.parcel.Parcelize
 import java.util.*
 
 
 /**
  * Object that represents a phone number either provisioned, in the process of getting provisioned or that has been deleted.
  */
+@Parcelize
 data class PhoneNumber(
     // ID to uniquely identify the phone number
     val id: String,
@@ -20,5 +23,4 @@ data class PhoneNumber(
     val created: Date,
     // Updated timestamp
     val updated: Date
-
-)
+) : Parcelable

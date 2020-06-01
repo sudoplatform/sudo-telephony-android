@@ -1333,14 +1333,14 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
                     override fun onCompleted() {
                         // Subscription was terminated. Notify the subscribers.
                         this@DefaultSudoTelephonyClient.onMessageSubscriptionManager.connectionStatusChanged(
-                            PhoneMessageSubscriber.ConnectionState.DISCONNECTED
+                            TelephonySubscriber.ConnectionState.DISCONNECTED
                         )
                     }
 
                     override fun onFailure(e: ApolloException) {
                         // Failed create a subscription. Notify the subscribers.
                         this@DefaultSudoTelephonyClient.onMessageSubscriptionManager.connectionStatusChanged(
-                            PhoneMessageSubscriber.ConnectionState.DISCONNECTED
+                            TelephonySubscriber.ConnectionState.DISCONNECTED
                         )
                     }
 
@@ -1398,7 +1398,7 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
                 })
 
                 this@DefaultSudoTelephonyClient.onMessageSubscriptionManager.connectionStatusChanged(
-                    PhoneMessageSubscriber.ConnectionState.CONNECTED
+                    TelephonySubscriber.ConnectionState.CONNECTED
                 )
             }
         }

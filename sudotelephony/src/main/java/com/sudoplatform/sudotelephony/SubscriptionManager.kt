@@ -10,7 +10,7 @@ internal class SubscriptionManager<T> {
     /**
      * Subscribers.
      */
-    internal val subscribers: MutableMap<String, PhoneMessageSubscriber> = mutableMapOf()
+    internal val subscribers: MutableMap<String, TelephonySubscriber> = mutableMapOf()
 
     /**
      * AppSync subscription watcher.
@@ -23,7 +23,7 @@ internal class SubscriptionManager<T> {
      * @param id subscriber ID.
      * @param subscriber subscriber to subscribe.
      */
-    internal fun replaceSubscriber(id: String, subscriber: PhoneMessageSubscriber) {
+    internal fun replaceSubscriber(id: String, subscriber: TelephonySubscriber) {
         synchronized(this) {
             this.subscribers[id] = subscriber
         }
@@ -59,14 +59,15 @@ internal class SubscriptionManager<T> {
     /**
      * Notifies subscribers of a new `PhoneMessage` objects.
      *
-     * @param phoneMessage new PhoneMessage.
+     * @param phoneMessage the newly received `PhoneMessage`
      */
     internal fun phoneMessageReceived(phoneMessage: PhoneMessage) {
         var subscribersToNotify: ArrayList<PhoneMessageSubscriber>
         synchronized(this) {
             // Take a copy of the subscribers to notify in synchronized block
             // but notify outside the block to avoid deadlock.
-            subscribersToNotify = ArrayList(this.subscribers.values)
+            val allSubscribers = ArrayList(this.subscribers.values)
+            subscribersToNotify = ArrayList(allSubscribers.filterIsInstance<PhoneMessageSubscriber>())
         }
 
         // Notify subscribers.
@@ -80,15 +81,15 @@ internal class SubscriptionManager<T> {
      *
      * @param state connection state.
      */
-    internal fun connectionStatusChanged(state: PhoneMessageSubscriber.ConnectionState) {
-        var subscribersToNotify: ArrayList<PhoneMessageSubscriber>
+    internal fun connectionStatusChanged(state: TelephonySubscriber.ConnectionState) {
+        var subscribersToNotify: ArrayList<TelephonySubscriber>
         synchronized(this) {
             // Take a copy of the subscribers to notify in synchronized block
             // but notify outside the block to avoid deadlock.
             subscribersToNotify = ArrayList(this.subscribers.values)
 
             // If the subscription was disconnected then remove all subscribers.
-            if (state == PhoneMessageSubscriber.ConnectionState.DISCONNECTED) {
+            if (state == TelephonySubscriber.ConnectionState.DISCONNECTED) {
                 this.subscribers.clear()
                 this.watcher?.cancel()
                 this.watcher = null

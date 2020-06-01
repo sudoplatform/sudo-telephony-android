@@ -235,18 +235,12 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
 
     companion object {
         private const val CONFIG_NAMESPACE_IDENTITY_SERVICE = "identityService"
-        private const val CONFIG_NAMESPACE_TELEPHONY_SERVICE = "telephonyService"
         private const val CONFIG_NAMESPACE_API_SERVICE = "apiService"
 
         private const val TELEPHONY_SERVICE_REGION = "region"
-        private const val TELEPHONY_SERVICE_API_URL = "apiURL"
-        private const val TELEPHONY_SERVICE_API_KEY = "apiKey"
         private const val TELEPHONY_SERVICE_BUCKET = "bucket"
         private const val TELEPHONY_SERVICE_TRANSIENT_BUCKET = "transientBucket"
-        private const val TELEPHONY_SERVICE_POOL_ID = "poolId"
-        private const val TELEPHONY_SERVICE_IDENTITY_POOL_ID = "identityPoolId"
 
-        private const val KEY_MANAGER_DEFAULT_SERVICE_NAME = "com.sudoplatform.appservicename"
         private const val KEY_MANAGER_DEFAULT_KEY_TAG = "com.sudoplatform"
         private const val KEY_MANAGER_KEY_ID_NAME = "com.sudoplatform.keyId"
         private const val KEY_MANAGER_KEYRING_ID_NAME = "com.sudoplatform.keyRingId"

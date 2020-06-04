@@ -1,7 +1,7 @@
 package com.sudoplatform.sudotelephony
 
 import android.content.Context
-import android.provider.Settings
+import android.util.Log
 import android.webkit.MimeTypeMap
 import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient
 import com.amazonaws.mobileconnectors.appsync.AppSyncSubscriptionCall
@@ -13,23 +13,28 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
 import com.amazonaws.regions.Region
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.ObjectMetadata
+import com.apollographql.apollo.GraphQLCall
+import com.apollographql.apollo.api.Mutation
+import com.apollographql.apollo.api.Operation
+import com.apollographql.apollo.api.Response
+import com.apollographql.apollo.exception.ApolloException
+import com.sudoplatform.sudoapiclient.ApiClientManager
+import com.sudoplatform.sudoconfigmanager.DefaultSudoConfigManager
 import com.sudoplatform.sudokeymanager.KeyManagerException
 import com.sudoplatform.sudokeymanager.KeyManagerFactory
 import com.sudoplatform.sudokeymanager.KeyManagerInterface
-import com.sudoplatform.sudoapiclient.ApiClientManager
-import com.sudoplatform.sudoconfigmanager.DefaultSudoConfigManager
-import com.apollographql.apollo.GraphQLCall
-import com.apollographql.apollo.api.*
-import com.apollographql.apollo.exception.ApolloException
 import com.sudoplatform.sudoprofiles.GetOwnershipProofResult
 import com.sudoplatform.sudoprofiles.Sudo
 import com.sudoplatform.sudoprofiles.SudoProfilesClient
-import com.sudoplatform.sudouser.SudoUserClient
 import com.sudoplatform.sudotelephony.type.*
+import com.sudoplatform.sudouser.SudoUserClient
+import com.twilio.voice.Call
+import com.twilio.voice.CallException
+import com.twilio.voice.ConnectOptions
+import com.twilio.voice.Voice
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -222,6 +227,14 @@ interface SudoTelephonyClient {
      * @param callback Completion callback providing a list of conversations or an error if there was a failure.
      */
     fun getConversations(localNumber: PhoneNumber, limit: Int?, nextToken: String?, callback: (Result<TelephonyListToken<PhoneMessageConversation>>) -> Unit)
+
+    /**
+    * Creates a call from a provisioned phone number to another number.
+    * @param localNumber: PhoneNumber instance to call from.
+    * @param remoteNumber: The E164 formatted phone number of the recipient. For example: "+14155552671".
+    * @param: callback: Completion callback providing an interface to control the resulting voice call or an error if there was a failure.
+    */
+    fun createVoiceCall(localNumber: PhoneNumber, remoteNumber: String, callback: (Result<ActiveVoiceCall>) -> Unit)
 }
 
 interface SudoAuthenticationProvider {
@@ -268,6 +281,7 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
     private val s3Client: AmazonS3Client
     private val transferUtility: TransferUtility
     private val onMessageSubscriptionManager: SubscriptionManager<OnMessageReceivedSubscription.Data>
+    private val calling: SudoTelephonyCalling
 
     constructor(
         context: Context,
@@ -306,6 +320,7 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
         this.applicationContext = context
 
         this.onMessageSubscriptionManager = SubscriptionManager()
+        this.calling = SudoTelephonyCalling(applicationContext, graphQLClient)
     }
 
     override fun isRegistered() = sudoUserClient.isRegistered()
@@ -318,13 +333,20 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
         this.keyManager.removeAllKeys()
     }
 
-    private fun getIdentityId(): String {
-        return this.sudoUserClient.getCredentialsProvider().identityId
+    private fun getIdentityId(): String? {
+        return this@DefaultSudoTelephonyClient.sudoUserClient.getUserClaim("custom:identityId") as? String
     }
 
     //region Keys
     private fun generateKeyPair(callback: (Result<com.sudoplatform.sudotelephony.fragment.PublicKey>) -> Unit) {
-        val identityId = this@DefaultSudoTelephonyClient.getIdentityId()
+        val identityId = this.getIdentityId()
+
+        if (identityId == null) {
+            val error = TelephonyCreatePublicKeyException()
+            timber.e(error, "Unable to retrieve identity id")
+            callback.runOnUiThread()(Result.Error(error))
+            return
+        }
 
         val keyRingId = UUID.randomUUID().toString()
         val keyId = UUID.randomUUID().toString()
@@ -386,7 +408,7 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
     }
 
     private fun getKeyPair(): KeyPair? {
-        val identityId = this.getIdentityId()
+        val identityId = this.getIdentityId() ?: return null
         val privateKey = this.keyManager.getPrivateKey(identityId) ?: return null
         val publicKey = this.keyManager.getPublicKey(identityId) ?: return null
 
@@ -394,21 +416,22 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
     }
 
     private fun getKeyId(): String? {
-        val identityId = this.getIdentityId()
+        val identityId = this.getIdentityId() ?: return null
         return this.keyManager.getPassword(KEY_MANAGER_KEY_ID_NAME + identityId)
             .toString(Charset.forName("UTF-8"))
     }
 
     private fun getKeyRingId(): String? {
-        val identityId = this.getIdentityId()
+        val identityId = this.getIdentityId() ?: return null
         return this.keyManager.getPassword(KEY_MANAGER_KEYRING_ID_NAME + identityId)
             .toString(Charset.forName("UTF-8"))
     }
 
     private fun deleteKeyPair() {
         try {
-            val identityId = this.getIdentityId()
-            this.keyManager.deleteKeyPair(identityId)
+            this.getIdentityId().let {
+                this.keyManager.deleteKeyPair(it)
+            }
         } catch (error: Exception) {
             timber.e(error, "Failed to delete key pair")
         }
@@ -1003,8 +1026,7 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
     }
 
     private fun s3KeyPath(s3Key: String): String? {
-        val identityId = this.sudoUserClient.getCredentialsProvider().identityId
-        return identityId + "/telephony/media/" + s3Key
+        return this.getIdentityId().let { it + "/telephony/media/" + s3Key }
     }
 
     // returns the s3 key for the uploaded file
@@ -1553,5 +1575,9 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
                     }
                 })
         }
+    }
+
+    override fun createVoiceCall(localNumber: PhoneNumber, remoteNumber: String, callback: (Result<ActiveVoiceCall>) -> Unit) {
+        calling.createVoiceCall(localNumber, remoteNumber, callback)
     }
 }

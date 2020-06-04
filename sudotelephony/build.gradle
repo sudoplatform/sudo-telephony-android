@@ -78,6 +78,9 @@ dependencies {
     api "com.sudoplatform:sudokeymanager:[3.4.1,)"
     api "com.sudoplatform:sudoprofiles:[2.1.2,)"
 
+    // Voice
+    api 'com.twilio:voice-android:3.1.2'
+
     testImplementation "junit:junit:4.12"
     testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.3.0'
     testImplementation "org.mockito:mockito-core:2.16.0"

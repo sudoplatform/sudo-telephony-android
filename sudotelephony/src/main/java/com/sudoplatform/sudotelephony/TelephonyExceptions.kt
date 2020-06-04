@@ -40,6 +40,14 @@ class TelephonyGetConversationsException(throwable: Throwable? = null) : Excepti
 
 class TelephonyInsufficientEntitlementException(throwable: Throwable? = null) : Exception(throwable)
 
+class TelephonyCallingFailedToAuthorizeOutgoingCallException(throwable: Throwable? = null) : Exception(throwable)
+
+class TelephonyCallingFailedToStartOutgoingCallException(throwable: Throwable? = null) : Exception(throwable)
+
+class TelephonyCallingFailedToConnectException(throwable: Throwable? = null) : Exception(throwable)
+
+class TelephonyCallingDisconnectedException(throwable: Throwable? = null) : Exception(throwable)
+
 
 enum class TelephonyException(val exception: Exception) {
     InsufficientEntitlement(TelephonyInsufficientEntitlementException()),

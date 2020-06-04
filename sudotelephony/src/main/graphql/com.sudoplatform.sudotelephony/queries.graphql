@@ -189,6 +189,12 @@ query listConversations($filter: ConversationFilterInput!, $limit: Int, $nextTok
     }
 }
 
+mutation createVoiceCall($input: CreateVoiceCallInput!) {
+    createVoiceCall(input: $input) {
+        token
+    }
+}
+
 fragment publicKey on PublicKey {
     keyId
     keyRingId

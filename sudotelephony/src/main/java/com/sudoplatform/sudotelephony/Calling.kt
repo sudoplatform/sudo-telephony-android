@@ -136,7 +136,11 @@ data class CallRecord(val accessToken: String, val localPhoneNumber: String, val
 /**
  * An object representing an active voice call. It is used to monitor call events as well as accept input for muting, disconnecting and placing the call on speaker.
  */
-class ActiveVoiceCall(val context: Context, val callRecord: CallRecord, val callId: UUID, val vendorCall: CallingVendorCall) {
+class ActiveVoiceCall(val context: Context,
+                      val callRecord: CallRecord,
+                      val callId: UUID,
+                      private val vendorCall: CallingVendorCall,
+                      private val listener: ActiveCallListener) {
     /**
      * The E164-formatted local phone number participating in this voice call.
      */
@@ -147,19 +151,17 @@ class ActiveVoiceCall(val context: Context, val callRecord: CallRecord, val call
      */
     val remotePhoneNumber = callRecord.remotePhoneNumber
 
-    internal val subscribers: MutableList<ActiveCallSubscriber> = mutableListOf()
-
     /**
      * Whether outgoing call audio is muted
      */
     var isMuted: Boolean = false
-        internal set(value) { subscribers.forEach { it.activeVoiceCallDidChangeMuteState(this, value) } }
+        internal set(value) { listener.activeVoiceCallDidChangeMuteState(this, value) }
 
     /**
      * Whether call audio is being routed through the speakers
      */
     var isOnSpeaker: Boolean = false
-        internal set(value) { subscribers.forEach { it.activeVoiceCallDidChangeSpeakerState(this, value) } }
+        internal set(value) { listener.activeVoiceCallDidChangeSpeakerState(this, value) }
 
     /**
      * Disconnects the active call.
@@ -184,14 +186,6 @@ class ActiveVoiceCall(val context: Context, val callRecord: CallRecord, val call
     fun setAudioOutputToSpeaker(speaker: Boolean) {
         // TODO implement
     }
-
-    /**
-     * Subscribe to active call events
-     * @param subscriber An `ActiveCallSubscriber` object that will receive call events
-     */
-    fun subscribe(subscriber: ActiveCallSubscriber) {
-        subscribers.add(subscriber)
-    }
 }
 
 /**
@@ -200,15 +194,15 @@ class ActiveVoiceCall(val context: Context, val callRecord: CallRecord, val call
  * @param graphQLClient GraphQL client for communicating with the Sudo service.
  */
 class SudoTelephonyCalling(val context: Context, val graphQLClient: AWSAppSyncClient) {
-    private val calls: MutableMap<UUID, ActiveVoiceCall> = mutableMapOf()
+    private lateinit var activeVoiceCall: ActiveVoiceCall
 
     /**
      * Creates a call from a provisioned phone number to another number.
      * @param localNumber: PhoneNumber instance to call from.
      * @param remoteNumber: The E164 formatted phone number of the recipient. For example: "+14155552671".
-     * @param: callback: Completion callback providing an interface to control the resulting voice call or an error if there was a failure.
+     * @param listener: ActiveCallListener for monitoring voice call events.
      */
-    fun createVoiceCall(localNumber: PhoneNumber, remoteNumber: String, callback: (Result<ActiveVoiceCall>) -> Unit) {
+    fun createVoiceCall(localNumber: PhoneNumber, remoteNumber: String, listener: ActiveCallListener) {
         val input = CreateVoiceCallInput.builder()
             .from(localNumber.phoneNumber)
             .to(remoteNumber)
@@ -224,37 +218,32 @@ class SudoTelephonyCalling(val context: Context, val graphQLClient: AWSAppSyncCl
                         val callId = UUID.randomUUID()
                         val callRecord = CallRecord(accessToken, localNumber.phoneNumber, remoteNumber)
                         val connected = { vendorCall: TwilioVendorCall ->
-                            val activeCall = ActiveVoiceCall(context, callRecord, callId, vendorCall)
-                            calls[callId] = activeCall
-                            callback.runOnUiThread()(Result.Success(activeCall))
+                            activeVoiceCall = ActiveVoiceCall(context, callRecord, callId, vendorCall, listener)
+                            listener.activeVoiceCallDidConnect(activeVoiceCall)
                         }
 
                         val connectionFailed: ((Exception) -> Unit) = { e: Exception ->
-                            callback.runOnUiThread()(Result.Error(TelephonyCallingFailedToConnectException(e)))
+                            listener.activeVoiceCallDidFailToConnect(TelephonyCallingFailedToConnectException(e))
                         }
 
                         val disconnected: ((Exception?) -> Unit) = { e: Exception? ->
-                            calls.remove(callId)?.let { call ->
-                                call.subscribers.forEach { subscriber ->
-                                    subscriber.activeVoiceCallDidDisconnect(call, e?.let { TelephonyCallingDisconnectedException(it) })
-                                    subscriber.connectionStatusChanged(TelephonySubscriber.ConnectionState.DISCONNECTED)
-                                }
-                            }
+                            listener.activeVoiceCallDidDisconnect(activeVoiceCall, e?.let { TelephonyCallingDisconnectedException(it) })
+                            listener.connectionStatusChanged(TelephonySubscriber.ConnectionState.DISCONNECTED)
                         }
                         // instantiate the vendor call
                         // Twilio might throw an exception if the RECORD_AUDIO permission is not approved
                         try {
                             TwilioVendorCall(context, callRecord, connected, connectionFailed, disconnected)
                         } catch (e: Exception) {
-                            callback.runOnUiThread()(Result.Error(TelephonyCallingFailedToStartOutgoingCallException(e)))
+                            listener.activeVoiceCallDidFailToConnect(TelephonyCallingFailedToStartOutgoingCallException(e))
                         }
                     } ?: run {
-                        callback.runOnUiThread()(Result.Error(TelephonyCallingFailedToAuthorizeOutgoingCallException()))
+                        listener.activeVoiceCallDidFailToConnect(TelephonyCallingFailedToAuthorizeOutgoingCallException())
                     }
                 }
 
                 override fun onFailure(e: ApolloException) {
-                    callback.runOnUiThread()(Result.Error(TelephonyCallingFailedToAuthorizeOutgoingCallException(e)))
+                    listener.activeVoiceCallDidFailToConnect(TelephonyCallingFailedToAuthorizeOutgoingCallException(e))
                 }
             })
     }

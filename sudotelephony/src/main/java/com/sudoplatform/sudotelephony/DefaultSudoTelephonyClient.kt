@@ -194,7 +194,7 @@ interface SudoTelephonyClient {
      * @param subscriber The subscriber to notify.
      * @param id The unique ID for the subscriber.
      */
-    fun subscribeToPhoneMessages(subscriber: PhoneMessageSubscriber, id: String?)
+    fun subscribeToMessages(subscriber: PhoneMessageSubscriber, id: String?)
 
     /**
      * Unsubscribes the specified subscriber so that it no longer receives notifications about
@@ -232,9 +232,9 @@ interface SudoTelephonyClient {
     * Creates a call from a provisioned phone number to another number.
     * @param localNumber: PhoneNumber instance to call from.
     * @param remoteNumber: The E164 formatted phone number of the recipient. For example: "+14155552671".
-    * @param: callback: Completion callback providing an interface to control the resulting voice call or an error if there was a failure.
+    * @param listener: ActiveCallListener for monitoring voice call events.
     */
-    fun createVoiceCall(localNumber: PhoneNumber, remoteNumber: String, callback: (Result<ActiveVoiceCall>) -> Unit)
+    fun createVoiceCall(localNumber: PhoneNumber, remoteNumber: String, listener: ActiveCallListener)
 }
 
 interface SudoAuthenticationProvider {
@@ -1331,7 +1331,7 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
         }
     }
 
-    override fun subscribeToPhoneMessages(subscriber: PhoneMessageSubscriber, id: String?) {
+    override fun subscribeToMessages(subscriber: PhoneMessageSubscriber, id: String?) {
         Timber.d("Subscribing to new PhoneMessage notifications.")
 
         val subscriberId = id ?: DEFAULT_MESSAGE_SUBSCRIBER_ID
@@ -1577,7 +1577,7 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
         }
     }
 
-    override fun createVoiceCall(localNumber: PhoneNumber, remoteNumber: String, callback: (Result<ActiveVoiceCall>) -> Unit) {
-        calling.createVoiceCall(localNumber, remoteNumber, callback)
+    override fun createVoiceCall(localNumber: PhoneNumber, remoteNumber: String, listener: ActiveCallListener) {
+        calling.createVoiceCall(localNumber, remoteNumber, listener)
     }
 }

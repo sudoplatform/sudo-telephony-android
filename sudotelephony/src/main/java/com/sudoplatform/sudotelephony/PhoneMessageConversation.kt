@@ -5,6 +5,9 @@ import com.sudoplatform.sudotelephony.type.ConversationType
 import kotlinx.android.parcel.Parcelize
 import java.util.*
 
+/**
+ * Enum that represents the type of the message.
+ */
 enum class MessageConversationType {
     INDIVIDUAL,
     GROUP,
@@ -21,6 +24,9 @@ enum class MessageConversationType {
     }
 }
 
+/**
+ * An object representing a conversation between a sudo phone number and one or more participants. The id of this object will be set as the conversation id on message objects
+ */
 @Parcelize
 data class PhoneMessageConversation (
     /// Unique ID of the conversation. Calculated by calculating the v5 UUID of `localPhoneNumber + remotePhoneNumber` with `owner` as the namespace

@@ -16,4 +16,7 @@ data class PhoneNumberSearchResult (val id: String,
     constructor(data: AvailablePhoneNumberResult): this(data.id(), data.results() ?: emptyList(), data.country(), data.gps(), data.prefix(), data.state())
 }
 
+/**
+ * A list of countries that are supported
+ */
 data class SupportedCountriesResult (val countries: List<String>)

@@ -195,6 +195,23 @@ mutation createVoiceCall($input: CreateVoiceCallInput!) {
     }
 }
 
+mutation registerDeviceForIncomingCalls($input: DeviceRegistrationInput!) {
+    registerDeviceForIncomingCalls(input: $input) {
+        vendorAuthorizations {
+            vendor
+            accessToken
+        }
+    }
+}
+mutation unregisterDeviceForIncomingCalls($input: DeviceRegistrationInput!) {
+    unregisterDeviceForIncomingCalls(input: $input) {
+        vendorAuthorizations {
+            vendor
+            accessToken
+        }
+    }
+}
+
 fragment publicKey on PublicKey {
     keyId
     keyRingId

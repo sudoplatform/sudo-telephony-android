@@ -3,6 +3,7 @@ package com.sudoplatform.sudotelephony
 import android.content.Context
 import android.util.Log
 import android.webkit.MimeTypeMap
+import com.amazonaws.mobile.config.AWSConfiguration
 import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient
 import com.amazonaws.mobileconnectors.appsync.AppSyncSubscriptionCall
 import com.amazonaws.mobileconnectors.appsync.fetcher.AppSyncResponseFetchers
@@ -27,19 +28,19 @@ import com.sudoplatform.sudoprofiles.GetOwnershipProofResult
 import com.sudoplatform.sudoprofiles.Sudo
 import com.sudoplatform.sudoprofiles.SudoProfilesClient
 import com.sudoplatform.sudotelephony.type.*
+import com.sudoplatform.sudouser.GraphQLAuthProvider
 import com.sudoplatform.sudouser.SudoUserClient
-import com.twilio.voice.Call
-import com.twilio.voice.CallException
-import com.twilio.voice.ConnectOptions
-import com.twilio.voice.Voice
+import com.twilio.voice.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
 import java.nio.charset.Charset
+import java.security.AllPermission
 import java.security.KeyPair
 import java.time.Instant
 import java.util.*
@@ -229,16 +230,9 @@ interface SudoTelephonyClient {
     fun getConversations(localNumber: PhoneNumber, limit: Int?, nextToken: String?, callback: (Result<TelephonyListToken<PhoneMessageConversation>>) -> Unit)
 
     /**
-    * Creates a call from a provisioned phone number to another number.
-    * @param localNumber: PhoneNumber instance to call from.
-    * @param remoteNumber: The E164 formatted phone number of the recipient. For example: "+14155552671".
-    * @param listener: ActiveCallListener for monitoring voice call events.
-    */
-    fun createVoiceCall(localNumber: PhoneNumber, remoteNumber: String, listener: ActiveCallListener)
-}
-
-interface SudoAuthenticationProvider {
-    fun getLatestAuthToken(): String?
+     * Interface for calling related actions
+     */
+    val calling: SudoTelephonyCalling
 }
 
 /**
@@ -281,7 +275,7 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
     private val s3Client: AmazonS3Client
     private val transferUtility: TransferUtility
     private val onMessageSubscriptionManager: SubscriptionManager<OnMessageReceivedSubscription.Data>
-    private val calling: SudoTelephonyCalling
+    override val calling: SudoTelephonyCalling
 
     constructor(
         context: Context,
@@ -313,14 +307,13 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
             .s3Client(this.s3Client)
             .defaultBucket(this.transientS3Bucket)
             .build()
-
         this.graphQLClient = ApiClientManager.getClient(context, this.sudoUserClient)
 
         this.keyManager = KeyManagerFactory(context).createAndroidKeyManager()
         this.applicationContext = context
 
         this.onMessageSubscriptionManager = SubscriptionManager()
-        this.calling = SudoTelephonyCalling(applicationContext, graphQLClient)
+        this.calling = DefaultSudoTelephonyCalling(applicationContext, graphQLClient)
     }
 
     override fun isRegistered() = sudoUserClient.isRegistered()
@@ -1575,9 +1568,5 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
                     }
                 })
         }
-    }
-
-    override fun createVoiceCall(localNumber: PhoneNumber, remoteNumber: String, listener: ActiveCallListener) {
-        calling.createVoiceCall(localNumber, remoteNumber, listener)
     }
 }

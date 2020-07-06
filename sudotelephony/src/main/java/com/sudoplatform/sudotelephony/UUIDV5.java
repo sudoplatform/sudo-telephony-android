@@ -6,7 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.UUID;
 
-public class UUIDV5 {
+class UUIDV5 {
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     public static UUID UUIDFromNamespaceAndName(String namespace, String name) {
@@ -14,7 +14,7 @@ public class UUIDV5 {
         return nameUUIDFromNamespaceAndBytes(namespaceUUID, Objects.requireNonNull(name, "name == null").getBytes(UTF8));
     }
 
-    public static UUID nameUUIDFromNamespaceAndBytes(UUID namespace, byte[] name) {
+    private static UUID nameUUIDFromNamespaceAndBytes(UUID namespace, byte[] name) {
         MessageDigest md;
         try {
             md = MessageDigest.getInstance("SHA-1");

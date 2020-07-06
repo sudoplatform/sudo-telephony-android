@@ -1,0 +1,30 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>SudoTelephonyClient.getConversation - sudotelephony</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sudotelephony</a>&nbsp;/&nbsp;<a href="../index.html">com.sudoplatform.sudotelephony</a>&nbsp;/&nbsp;<a href="index.html">SudoTelephonyClient</a>&nbsp;/&nbsp;<a href="./get-conversation.html">getConversation</a><br/>
+<br/>
+<h1>getConversation</h1>
+<a name="com.sudoplatform.sudotelephony.SudoTelephonyClient$getConversation(kotlin.String, kotlin.Function1((com.sudoplatform.sudotelephony.Result((com.sudoplatform.sudotelephony.PhoneMessageConversation)), kotlin.Unit)))"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">getConversation</span><span class="symbol">(</span><span class="identifier" id="com.sudoplatform.sudotelephony.SudoTelephonyClient$getConversation(kotlin.String, kotlin.Function1((com.sudoplatform.sudotelephony.Result((com.sudoplatform.sudotelephony.PhoneMessageConversation)), kotlin.Unit)))/conversationId">conversationId</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.SudoTelephonyClient$getConversation(kotlin.String, kotlin.Function1((com.sudoplatform.sudotelephony.Result((com.sudoplatform.sudotelephony.PhoneMessageConversation)), kotlin.Unit)))/callback">callback</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><a href="../-result/index.html"><span class="identifier">Result</span></a><span class="symbol">&lt;</span><a href="../-phone-message-conversation/index.html"><span class="identifier">PhoneMessageConversation</span></a><span class="symbol">&gt;</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Retrieves the conversation matching the specified criteria</p>
+<h3>Parameters</h3>
+<p><a name="conversationId"></a>
+<code>conversationId</code> - The ID of the conversation to be retrieved</p>
+<p><a name="callback"></a>
+<code>callback</code> - Completion callback providing the conversation or an error if it could not be retrieved.</p>
+<a name="com.sudoplatform.sudotelephony.SudoTelephonyClient$getConversation(com.sudoplatform.sudotelephony.PhoneNumber, kotlin.String, kotlin.Function1((com.sudoplatform.sudotelephony.Result((com.sudoplatform.sudotelephony.PhoneMessageConversation)), kotlin.Unit)))"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">getConversation</span><span class="symbol">(</span><span class="identifier" id="com.sudoplatform.sudotelephony.SudoTelephonyClient$getConversation(com.sudoplatform.sudotelephony.PhoneNumber, kotlin.String, kotlin.Function1((com.sudoplatform.sudotelephony.Result((com.sudoplatform.sudotelephony.PhoneMessageConversation)), kotlin.Unit)))/localNumber">localNumber</span><span class="symbol">:</span>&nbsp;<a href="../-phone-number/index.html"><span class="identifier">PhoneNumber</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.SudoTelephonyClient$getConversation(com.sudoplatform.sudotelephony.PhoneNumber, kotlin.String, kotlin.Function1((com.sudoplatform.sudotelephony.Result((com.sudoplatform.sudotelephony.PhoneMessageConversation)), kotlin.Unit)))/remoteNumber">remoteNumber</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.SudoTelephonyClient$getConversation(com.sudoplatform.sudotelephony.PhoneNumber, kotlin.String, kotlin.Function1((com.sudoplatform.sudotelephony.Result((com.sudoplatform.sudotelephony.PhoneMessageConversation)), kotlin.Unit)))/callback">callback</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><a href="../-result/index.html"><span class="identifier">Result</span></a><span class="symbol">&lt;</span><a href="../-phone-message-conversation/index.html"><span class="identifier">PhoneMessageConversation</span></a><span class="symbol">&gt;</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Retrieves the conversation matching the specified criteria</p>
+<h3>Parameters</h3>
+<p><a name="localNumber"></a>
+<code>localNumber</code> - The phone number of the participating sudo</p>
+<p><a name="remoteNumber"></a>
+<code>remoteNumber</code> - The phone number of the other participant in the phone conversation in e164 format</p>
+<p><a name="callback"></a>
+<code>callback</code> - Completion callback providing the conversation or an error if it could not be retrieved.</p>
+</BODY>
+</HTML>

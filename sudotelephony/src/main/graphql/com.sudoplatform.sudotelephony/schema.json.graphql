@@ -1,10 +1,11 @@
 # This directive allows results to be deferred during execution
 directive @defer on FIELD
 
-# Tells the service which mutation triggers this subscription.
-directive @aws_subscribe(
-  # List of mutations which will trigger this subscription when they are called.
-  mutations: [String]
+# Tells the service which subscriptions will be published to when this mutation is
+# called. This directive is deprecated use @aws_susbscribe directive instead.
+directive @aws_publish(
+  # List of subscriptions which will be published to when this mutation is called.
+  subscriptions: [String]
 ) on FIELD_DEFINITION
 
 # Directs the schema to enforce authorization on a field
@@ -13,11 +14,17 @@ directive @aws_auth(
   cognito_groups: [String]
 ) on FIELD_DEFINITION
 
-# Tells the service this field/object has access authorized by an API key.
-directive @aws_api_key on OBJECT | FIELD_DEFINITION
-
 # Tells the service this field/object has access authorized by an OIDC token.
 directive @aws_oidc on OBJECT | FIELD_DEFINITION
+
+# Tells the service which mutation triggers this subscription.
+directive @aws_subscribe(
+  # List of mutations which will trigger this subscription when they are called.
+  mutations: [String]
+) on FIELD_DEFINITION
+
+# Tells the service this field/object has access authorized by sigv4 signing.
+directive @aws_iam on OBJECT | FIELD_DEFINITION
 
 # Tells the service this field/object has access authorized by a Cognito User Pools token.
 directive @aws_cognito_user_pools(
@@ -25,19 +32,8 @@ directive @aws_cognito_user_pools(
   cognito_groups: [String]
 ) on OBJECT | FIELD_DEFINITION
 
-# Tells the service which subscriptions will be published to when this mutation is
-# called. This directive is deprecated use @aws_susbscribe directive instead.
-directive @aws_publish(
-  # List of subscriptions which will be published to when this mutation is called.
-  subscriptions: [String]
-) on FIELD_DEFINITION
-
-# Tells the service this field/object has access authorized by sigv4 signing.
-directive @aws_iam on OBJECT | FIELD_DEFINITION
-
-type AccessToken {
-  token: String!
-}
+# Tells the service this field/object has access authorized by an API key.
+directive @aws_api_key on OBJECT | FIELD_DEFINITION
 
 type Attribute {
   name: String!
@@ -52,6 +48,47 @@ input AttributeInput {
 input BooleanFilterInput {
   ne: Boolean
   eq: Boolean
+}
+
+#   Definition of a call record.
+type CallRecord {
+  #   v4 UUID assigned to call record.
+  id: ID!
+
+  #   State of call record.
+  state: CallState!
+
+  #   Direction of call.
+  direction: Direction!
+
+  #   Sudo phone number in E164 format.
+  localPhoneNumber: String!
+
+  #   Remote participant. Must be one of the following:
+  #  - A phone number in E164 format.
+  remotePhoneNumber: String!
+}
+
+#   Possible states for a call.
+#  AUTHORIZED  - Outbound call authorized but not yet initiated at telephony vendor.
+#  QUEUED      - Call is queued before ringing.
+#  RINGING     - Call is ringing.
+#  IN_PROGRESS - Call has been answered and is ongoing.
+#  CANCELED    - Call was hung up before being answered.
+#  COMPLETED   - Call was completed / hung up after being answered.
+#  BUSY        - Callee was busy.
+#  NO_ANSWER   - Callee did not answer.
+#  FAILED      - Call failed to initiate.
+enum CallState {
+  AUTHORIZED
+  QUEUED
+  RINGING
+  IN_PROGRESS
+  CANCELED
+  COMPLETED
+  BUSY
+  NO_ANSWER
+  FAILED
 }
 
 interface CommonObject {
@@ -139,6 +176,7 @@ input CreateSudoInput {
   objects: [SecureS3ObjectInput!]!
 }
 
+#   Input definition to create an outgoing voice call.
 input CreateVoiceCallInput {
   #   Source phone number in E164 format.
   from: String!
@@ -180,6 +218,28 @@ input DeprovisionPhoneNumberInput {
 
   #   Expected version of the phone number.
   expectedVersion: Int!
+}
+
+#   Input definition to register a device for push notifications.
+input DeviceRegistrationInput {
+  #   The push notification service to use to send pushes to this device.
+  pushNotificationService: PushNotificationService!
+}
+
+#   The data required to complete device push notification registration.
+type DeviceRegistrationOutput {
+  #   Credentials to register for push notifications via vendors.
+  vendorAuthorizations: [VendorAuthorization]!
+}
+
+#   Possible directions for a SMS/MMS message or call.
+enum Direction {
+  INBOUND
+  OUTBOUND
+}
+
+input DirectionFilterInput {
+  eq: Direction
 }
 
 type Entitlement {
@@ -253,16 +313,6 @@ input IntFilterInput {
 type MessageConnection {
   items: [SealedMessage!]
   nextToken: String
-}
-
-#   Possible directions for a SMS/MMS message.
-enum MessageDirection {
-  INBOUND
-  OUTBOUND
-}
-
-input MessageDirectionFilterInput {
-  eq: MessageDirection
 }
 
 input MessageFilterInput {
@@ -341,9 +391,27 @@ type Mutation {
   deleteConversation(id: ID!): ID
 
   #   Retrieve an access token for initiating an outgoing voice call.
-  createVoiceCall(input: CreateVoiceCallInput!): AccessToken!
+  createVoiceCall(input: CreateVoiceCallInput!): OutgoingVoiceCall!
+
+  #   Register a device to receive incoming call push notifications.
+  registerDeviceForIncomingCalls(input: DeviceRegistrationInput!): DeviceRegistrationOutput!
+
+  #   Unregister a device from receiving incoming call push notifications.
+  unregisterDeviceForIncomingCalls(input: DeviceRegistrationInput!): DeviceRegistrationOutput!
   createPublicKeyForTelephony(input: CreatePublicKeyInput!): PublicKey!
   deletePublicKeyForTelephony(input: DeletePublicKeyInput): PublicKey
+}
+
+#   The result of an outgoing voice call.
+type OutgoingVoiceCall {
+  #   The record of the call that was authorized.
+  call: CallRecord!
+
+  #   Credentials required to initiate the call via a vendor.
+  vendorAuthorization: VendorAuthorization!
+
+  #   DEPRECATED: Prefer vendorAuthorization.accessToken
+  token: String!
 }
 
 type OwnershipProof {
@@ -536,6 +604,13 @@ type PublicKey implements SealedObject {
   updatedAtEpochMs: Float!
 }
 
+#   An intermediary service used to send push notifications to devices.
+enum PushNotificationService {
+  APNS
+  APNS_SANDBOX
+  FCM
+}
+
 #   Query phone number and message resources.
 type Query {
   ping: String
@@ -629,7 +704,7 @@ type SealedMessage implements SealedObject, CommonObject {
   remotePhoneNumber: String!
 
   #   UNSEALED: Direction of message.
-  direction: MessageDirection!
+  direction: Direction!
 
   #   SEALED: Message body, null if MMS only.
   body: String
@@ -838,4 +913,13 @@ input UpdateSudoInput {
   claims: [SecureClaimInput!]
   objects: [SecureS3ObjectInput!]
   expectedVersion: Int!
+}
+
+#   Credentials required to access a vendor.
+type VendorAuthorization {
+  #   The vendor.
+  vendor: String!
+
+  #   The credentials for the vendor.
+  accessToken: String!
 }

@@ -1,0 +1,79 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>TelephonySubscriber - sudotelephony</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sudotelephony</a>&nbsp;/&nbsp;<a href="../index.html">com.sudoplatform.sudotelephony</a>&nbsp;/&nbsp;<a href="./index.html">TelephonySubscriber</a><br/>
+<br/>
+<h1>TelephonySubscriber</h1>
+<code><span class="keyword">interface </span><span class="identifier">TelephonySubscriber</span></code>
+<p>Interface to implement in order to subscribe to Telephony events</p>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-connection-state/index.html">ConnectionState</a></h4>
+</td>
+<td>
+<p>Connection state of the subscription.</p>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">ConnectionState</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="connection-status-changed.html">connectionStatusChanged</a></h4>
+</td>
+<td>
+<p>Notifies the subscriber that the subscription connection state has changed. The subscriber won't be
+notified until the connection status changes to <a href="-connection-state/-c-o-n-n-e-c-t-e-d.html">ConnectionState.CONNECTED</a>. The subscriber will
+stop receiving notifications when the connection state changes to <a href="-connection-state/-d-i-s-c-o-n-n-e-c-t-e-d.html">ConnectionState.DISCONNECTED</a>.</p>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">connectionStatusChanged</span><span class="symbol">(</span><span class="identifier" id="com.sudoplatform.sudotelephony.TelephonySubscriber$connectionStatusChanged(com.sudoplatform.sudotelephony.TelephonySubscriber.ConnectionState)/state">state</span><span class="symbol">:</span>&nbsp;<span class="identifier">ConnectionState</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Inheritors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="../-active-call-listener/index.html">ActiveCallListener</a></h4>
+</td>
+<td>
+<p>Subscriber for receiving notifications about new <code>ActiveVoiceCall</code> events.</p>
+<code><span class="keyword">interface </span><span class="identifier">ActiveCallListener</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../-active-call-subscriber/index.html">ActiveCallSubscriber</a></h4>
+</td>
+<td>
+<p>Subscriber for receiving notifications about new <code>ActiveVoiceCall</code> events.</p>
+<code><span class="keyword">interface </span><span class="identifier">ActiveCallSubscriber</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../-incoming-call-notification-listener/index.html">IncomingCallNotificationListener</a></h4>
+</td>
+<td>
+<p>Listener for receiving notifications about new <code>IncomingCall</code> events.</p>
+<code><span class="keyword">interface </span><span class="identifier">IncomingCallNotificationListener</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../-phone-message-subscriber/index.html">PhoneMessageSubscriber</a></h4>
+</td>
+<td>
+<p>Subscriber for receiving notifications about new <code>PhoneMessage</code> objects.</p>
+<code><span class="keyword">interface </span><span class="identifier">PhoneMessageSubscriber</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

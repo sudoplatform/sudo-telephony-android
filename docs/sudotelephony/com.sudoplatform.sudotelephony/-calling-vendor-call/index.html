@@ -1,0 +1,95 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>CallingVendorCall - sudotelephony</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sudotelephony</a>&nbsp;/&nbsp;<a href="../index.html">com.sudoplatform.sudotelephony</a>&nbsp;/&nbsp;<a href="./index.html">CallingVendorCall</a><br/>
+<br/>
+<h1>CallingVendorCall</h1>
+<code><span class="keyword">interface </span><span class="identifier">CallingVendorCall</span></code>
+<p>Manages the vendor context for a call.</p>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="is-muted.html">isMuted</a></h4>
+</td>
+<td>
+<p>Indicates if this call's outgoing audio should be muted.</p>
+<code><span class="keyword">abstract</span> <span class="keyword">var </span><span class="identifier">isMuted</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="is-on-hold.html">isOnHold</a></h4>
+</td>
+<td>
+<p>Indicates if this call should be placed on hold.</p>
+<code><span class="keyword">abstract</span> <span class="keyword">var </span><span class="identifier">isOnHold</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="disconnect.html">disconnect</a></h4>
+</td>
+<td>
+<p>Disconnects this call.</p>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">disconnect</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="play-d-t-m-f.html">playDTMF</a></h4>
+</td>
+<td>
+<p>Plays a string of DTMF tones over this call.</p>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">playDTMF</span><span class="symbol">(</span><span class="identifier" id="com.sudoplatform.sudotelephony.CallingVendorCall$playDTMF(kotlin.String)/digits">digits</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="supports-d-t-m-f.html">supportsDTMF</a></h4>
+</td>
+<td>
+<p>A Boolean value that indicates whether this vendor's calls can send DTMF (dual tone multifrequency) tones via hard pause digits or in-call keypad entries.
+If false, <code>playDTMF</code> will never be called.</p>
+<code><span class="keyword">var </span><span class="identifier">supportsDTMF</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="supports-grouping.html">supportsGrouping</a></h4>
+</td>
+<td>
+<p>A Boolean value that indicates whether this vendor's calls can be grouped with other calls.</p>
+<code><span class="keyword">var </span><span class="identifier">supportsGrouping</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="supports-holding.html">supportsHolding</a></h4>
+</td>
+<td>
+<p>A Boolean value that indicates whether this vendor's calls can be placed on hold or removed from hold.
+If false, <code>isOnHold</code> will never be accessed.</p>
+<code><span class="keyword">var </span><span class="identifier">supportsHolding</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="supports-ungrouping.html">supportsUngrouping</a></h4>
+</td>
+<td>
+<p>A Boolean value that indicates whether this vendor's calls can be ungrouped from other calls.</p>
+<code><span class="keyword">var </span><span class="identifier">supportsUngrouping</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

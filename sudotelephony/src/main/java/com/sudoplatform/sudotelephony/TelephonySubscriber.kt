@@ -1,5 +1,8 @@
 package com.sudoplatform.sudotelephony
 
+/**
+ * Interface to implement in order to subscribe to Telephony events
+ */
 interface TelephonySubscriber {
     /**
      * Connection state of the subscription.

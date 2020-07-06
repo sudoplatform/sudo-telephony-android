@@ -2,7 +2,7 @@ package com.sudoplatform.sudotelephony
 
 import android.os.Parcelable
 import com.sudoplatform.sudotelephony.fragment.S3MediaObject
-import com.sudoplatform.sudotelephony.type.MessageDirection
+import com.sudoplatform.sudotelephony.type.Direction
 import com.sudoplatform.sudotelephony.type.MessageState
 import kotlinx.android.parcel.Parcelize
 import java.time.Instant
@@ -20,7 +20,7 @@ data class PhoneMessage(
     val local: String,
     val remote: String,
     val body: String,
-    val direction: MessageDirection,
+    val direction: Direction,
     val state: MessageState,
     val media: List<MediaObject> = emptyList()
 ) : Parcelable

@@ -1,0 +1,4 @@
+$dokka.format:html
+$dokka.linkExtension:html
+$dokka.location:com.sudoplatform.sudotelephony$runOnUiThread(kotlin.Function1((com.sudoplatform.sudotelephony.runOnUiThread.T, kotlin.Unit)))com.sudoplatform.sudotelephony/kotlin.-function1/run-on-ui-thread.html
+com.sudoplatform.sudotelephony

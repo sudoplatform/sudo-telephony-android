@@ -7,7 +7,9 @@ import java.util.*
 
 
 /**
- * Object that represents a phone number either provisioned, in the process of getting provisioned or that has been deleted.
+ * An object that represents a phone number.
+ *
+ * The state of the number can be provisioned, in the process of getting provisioned or deleted.
  */
 @Parcelize
 data class PhoneNumber(

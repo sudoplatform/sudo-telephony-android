@@ -57,7 +57,7 @@ dependencyCheck {
 }
 
 ext {
-    awsAndroidSdkVersion = "2.16.3"
+    awsAndroidSdkVersion = "2.16.12"
 }
 
 dependencies {
@@ -81,6 +81,7 @@ dependencies {
     // Voice
     api 'com.twilio:voice-android:3.1.2'
 
+    implementation 'com.google.firebase:firebase-messaging:20.1.4'
     testImplementation "junit:junit:4.12"
     testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.3.0'
     testImplementation "org.mockito:mockito-core:2.16.0"
@@ -108,8 +109,6 @@ dokka {
     outputFormat = 'html'
     outputDirectory = "$buildDir/javadoc"
 }
-
-apply plugin: 'maven'
 
 ext {
     PUBLISH_GROUP_ID = 'com.sudoplatform'

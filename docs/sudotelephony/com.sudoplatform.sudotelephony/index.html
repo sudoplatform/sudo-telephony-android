@@ -1,0 +1,399 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>com.sudoplatform.sudotelephony - sudotelephony</title>
+<link rel="stylesheet" href="../../style.css">
+</HEAD>
+<BODY>
+<a href="../index.html">sudotelephony</a>&nbsp;/&nbsp;<a href="./index.html">com.sudoplatform.sudotelephony</a><br/>
+<br/>
+<h2>Package com.sudoplatform.sudotelephony</h2>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-active-call-listener/index.html">ActiveCallListener</a></h4>
+</td>
+<td>
+<p>Subscriber for receiving notifications about new <code>ActiveVoiceCall</code> events.</p>
+<code><span class="keyword">interface </span><span class="identifier">ActiveCallListener</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-telephony-subscriber/index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-active-call-subscriber/index.html">ActiveCallSubscriber</a></h4>
+</td>
+<td>
+<p>Subscriber for receiving notifications about new <code>ActiveVoiceCall</code> events.</p>
+<code><span class="keyword">interface </span><span class="identifier">ActiveCallSubscriber</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-telephony-subscriber/index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-active-voice-call/index.html">ActiveVoiceCall</a></h4>
+</td>
+<td>
+<p>An object representing an active voice call. It is used to monitor call events as well as accept input for muting, disconnecting and placing the call on speaker.</p>
+<code><span class="keyword">class </span><span class="identifier">ActiveVoiceCall</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-calling-vendor-call/index.html">CallingVendorCall</a></h4>
+</td>
+<td>
+<p>Manages the vendor context for a call.</p>
+<code><span class="keyword">interface </span><span class="identifier">CallingVendorCall</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-call-record/index.html">CallRecord</a></h4>
+</td>
+<td>
+<p>An object representing a call record</p>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">CallRecord</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-default-sudo-telephony-calling/index.html">DefaultSudoTelephonyCalling</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">DefaultSudoTelephonyCalling</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-sudo-telephony-calling/index.html"><span class="identifier">SudoTelephonyCalling</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-default-sudo-telephony-client/index.html">DefaultSudoTelephonyClient</a></h4>
+</td>
+<td>
+<p>Main implementation of <a href="-sudo-telephony-client/index.html">SudoTelephonyClient</a> interface</p>
+<code><span class="keyword">class </span><span class="identifier">DefaultSudoTelephonyClient</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-sudo-telephony-client/index.html"><span class="identifier">SudoTelephonyClient</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-incoming-call/index.html">IncomingCall</a></h4>
+</td>
+<td>
+<p>An incoming call that can be accepted or declined</p>
+<code><span class="keyword">class </span><span class="identifier">IncomingCall</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-incoming-call-notification-listener/index.html">IncomingCallNotificationListener</a></h4>
+</td>
+<td>
+<p>Listener for receiving notifications about new <code>IncomingCall</code> events.</p>
+<code><span class="keyword">interface </span><span class="identifier">IncomingCallNotificationListener</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-telephony-subscriber/index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-media-object/index.html">MediaObject</a></h4>
+</td>
+<td>
+<p>A remote media object</p>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">MediaObject</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/os/Parcelable.html"><span class="identifier">Parcelable</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-message-conversation-type/index.html">MessageConversationType</a></h4>
+</td>
+<td>
+<p>Enum that represents the type of the message.</p>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">MessageConversationType</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-phone-message/index.html">PhoneMessage</a></h4>
+</td>
+<td>
+<p>A message that has been either received or sent by the user.</p>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">PhoneMessage</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/os/Parcelable.html"><span class="identifier">Parcelable</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-phone-message-conversation/index.html">PhoneMessageConversation</a></h4>
+</td>
+<td>
+<p>An object representing a conversation between a sudo phone number and one or more participants. The id of this object will be set as the conversation id on message objects</p>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">PhoneMessageConversation</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/os/Parcelable.html"><span class="identifier">Parcelable</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-phone-message-subscriber/index.html">PhoneMessageSubscriber</a></h4>
+</td>
+<td>
+<p>Subscriber for receiving notifications about new <code>PhoneMessage</code> objects.</p>
+<code><span class="keyword">interface </span><span class="identifier">PhoneMessageSubscriber</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-telephony-subscriber/index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-phone-number/index.html">PhoneNumber</a></h4>
+</td>
+<td>
+<p>An object that represents a phone number.</p>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">PhoneNumber</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/os/Parcelable.html"><span class="identifier">Parcelable</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-phone-number-search-result/index.html">PhoneNumberSearchResult</a></h4>
+</td>
+<td>
+<p>A data class wrapper around an E164 phone number search result</p>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">PhoneNumberSearchResult</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-result/index.html">Result</a></h4>
+</td>
+<td>
+<p>Models the result of an operation</p>
+<code><span class="keyword">sealed</span> <span class="keyword">class </span><span class="identifier">Result</span><span class="symbol">&lt;</span><span class="keyword">out</span>&nbsp;<span class="identifier">T</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-sudo-telephony-calling/index.html">SudoTelephonyCalling</a></h4>
+</td>
+<td>
+<p>Interface for calling features</p>
+<code><span class="keyword">interface </span><span class="identifier">SudoTelephonyCalling</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-sudo-telephony-client/index.html">SudoTelephonyClient</a></h4>
+</td>
+<td>
+<p>Main interface for Telephony operations. Implemented by <a href="-default-sudo-telephony-client/index.html">DefaultSudoTelephonyClient</a></p>
+<code><span class="keyword">interface </span><span class="identifier">SudoTelephonyClient</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-supported-countries-result/index.html">SupportedCountriesResult</a></h4>
+</td>
+<td>
+<p>A list of countries that are supported</p>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">SupportedCountriesResult</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-exception/index.html">TelephonyException</a></h4>
+</td>
+<td>
+<p>A type representing an exception in Telephony</p>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">TelephonyException</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-list-token/index.html">TelephonyListToken</a></h4>
+</td>
+<td>
+<p>A token representing a page of items and a reference to the next page</p>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">TelephonyListToken</span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-subscriber/index.html">TelephonySubscriber</a></h4>
+</td>
+<td>
+<p>Interface to implement in order to subscribe to Telephony events</p>
+<code><span class="keyword">interface </span><span class="identifier">TelephonySubscriber</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Exceptions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-invalid-country-code-exception/index.html">InvalidCountryCodeException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">InvalidCountryCodeException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-calling-call-cancelled-exception/index.html">TelephonyCallingCallCancelledException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyCallingCallCancelledException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-calling-disconnected-exception/index.html">TelephonyCallingDisconnectedException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyCallingDisconnectedException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-calling-failed-to-accept-incoming-call-exception/index.html">TelephonyCallingFailedToAcceptIncomingCallException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyCallingFailedToAcceptIncomingCallException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-calling-failed-to-authorize-outgoing-call-exception/index.html">TelephonyCallingFailedToAuthorizeOutgoingCallException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyCallingFailedToAuthorizeOutgoingCallException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-calling-failed-to-connect-exception/index.html">TelephonyCallingFailedToConnectException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyCallingFailedToConnectException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-calling-failed-to-start-outgoing-call-exception/index.html">TelephonyCallingFailedToStartOutgoingCallException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyCallingFailedToStartOutgoingCallException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-create-public-key-exception/index.html">TelephonyCreatePublicKeyException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyCreatePublicKeyException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-decrypt-sealed-data-exception/index.html">TelephonyDecryptSealedDataException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyDecryptSealedDataException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-delete-message-exception/index.html">TelephonyDeleteMessageException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyDeleteMessageException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-file-download-exception/index.html">TelephonyFileDownloadException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyFileDownloadException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-file-upload-exception/index.html">TelephonyFileUploadException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyFileUploadException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-get-all-phone-numbers-exception/index.html">TelephonyGetAllPhoneNumbersException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyGetAllPhoneNumbersException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-get-conversation-exception/index.html">TelephonyGetConversationException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyGetConversationException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-get-conversations-exception/index.html">TelephonyGetConversationsException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyGetConversationsException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-get-message-exception/index.html">TelephonyGetMessageException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyGetMessageException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-get-messages-exception/index.html">TelephonyGetMessagesException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyGetMessagesException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-get-phone-number-exception/index.html">TelephonyGetPhoneNumberException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyGetPhoneNumberException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-insufficient-entitlement-exception/index.html">TelephonyInsufficientEntitlementException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyInsufficientEntitlementException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-invalid-config-exception/index.html">TelephonyInvalidConfigException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyInvalidConfigException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-number-deletion-exception/index.html">TelephonyNumberDeletionException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyNumberDeletionException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-number-provision-exception/index.html">TelephonyNumberProvisionException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyNumberProvisionException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-search-exception/index.html">TelephonySearchException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonySearchException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-send-message-exception/index.html">TelephonySendMessageException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonySendMessageException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-sign-in-failed-exception/index.html">TelephonySignInFailedException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonySignInFailedException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-unsupported-country-code-exception/index.html">UnsupportedCountryCodeException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">UnsupportedCountryCodeException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Extensions for External Classes</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="kotlin.-function1/index.html">kotlin.Function1</a></h4>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

@@ -44,11 +44,17 @@ class TelephonyCallingFailedToAuthorizeOutgoingCallException(throwable: Throwabl
 
 class TelephonyCallingFailedToStartOutgoingCallException(throwable: Throwable? = null) : Exception(throwable)
 
+class TelephonyCallingFailedToAcceptIncomingCallException(throwable: Throwable? = null) : Exception(throwable)
+
 class TelephonyCallingFailedToConnectException(throwable: Throwable? = null) : Exception(throwable)
 
 class TelephonyCallingDisconnectedException(throwable: Throwable? = null) : Exception(throwable)
 
+class TelephonyCallingCallCancelledException(throwable: Throwable? = null) : Exception(throwable)
 
+/**
+ * A type representing an exception in Telephony
+ */
 enum class TelephonyException(val exception: Exception) {
     InsufficientEntitlement(TelephonyInsufficientEntitlementException()),
     Unknown(Exception());

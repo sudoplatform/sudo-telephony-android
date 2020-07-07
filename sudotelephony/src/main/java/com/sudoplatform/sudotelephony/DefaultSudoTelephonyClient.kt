@@ -617,9 +617,8 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
                     timber.e(error, "Failed provisioning phoneNumber $phoneNumber")
                     callback.runOnUiThread()(Result.Error(error))
                 } else {
-                    val sudo = Sudo(sudoId)
                     this@DefaultSudoTelephonyClient.sudoProfilesClient.getOwnershipProof(
-                        sudo,
+                        Sudo(sudoId),
                         SUDO_PROFILES_TELEPHONY_AUDIENCE
                     ) { result ->
                         when (result) {

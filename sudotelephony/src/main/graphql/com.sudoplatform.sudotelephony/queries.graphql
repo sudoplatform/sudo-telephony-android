@@ -1,7 +1,7 @@
 
 mutation availablePhoneNumbersForCountryCode($country: String!, $limit: Int = 10) {
   searchPhoneNumbers(input: {
-    country: $country, 
+    country: $country,
     limit: $limit
   }) {
     ...availablePhoneNumberResult
@@ -10,7 +10,7 @@ mutation availablePhoneNumbersForCountryCode($country: String!, $limit: Int = 10
 
 mutation availablePhoneNumbersForPrefix($country: String!, $prefix: String!, $limit: Int = 10) {
   searchPhoneNumbers(input: {
-    country: $country, 
+    country: $country,
     prefix: $prefix,
     limit: $limit
   }) {
@@ -191,7 +191,38 @@ query listConversations($filter: ConversationFilterInput!, $limit: Int, $nextTok
 
 mutation createVoiceCall($input: CreateVoiceCallInput!) {
     createVoiceCall(input: $input) {
-        token
+        callRecord {
+            ...sealedCallRecord
+        }
+        vendorAuthorization {
+            vendor
+            accessToken
+        }
+    }
+}
+
+query getCallRecord($id: ID!) {
+    getCallRecord(id: $id) {
+        ...sealedCallRecord
+    }
+}
+
+mutation deleteCallRecord($id: ID!) {
+    deleteCallRecord(id: $id)
+}
+
+query listCallRecords($key: CallRecordKeyInput, $filter: CallRecordFilterInput, $limit: Int, $nextToken: String) {
+    listCallRecords(key: $key, filter: $filter, limit: $limit, nextToken: $nextToken) {
+        items {
+            ...sealedCallRecord
+        }
+        nextToken
+    }
+}
+
+subscription onCallRecord($owner: String!) {
+    OnCallRecord(owner: $owner) {
+        ...sealedCallRecord
     }
 }
 
@@ -211,6 +242,34 @@ mutation unregisterDeviceForIncomingCalls($input: DeviceRegistrationInput!) {
         }
     }
 }
+
+fragment sealedCallRecord on SealedCallRecord {
+    id
+    owner
+    sudoOwner
+    phoneNumberId
+    voicemailId
+    direction
+    seen
+    state
+    createdAtEpochMs
+    updatedAtEpochMs
+    version
+    sealed {
+        algorithm
+        keyId
+        localPhoneNumber
+        remotePhoneNumber
+        durationSeconds
+        voicemail {
+            durationSeconds
+            media {
+                ...s3MediaObject
+            }
+        }
+    }
+}
+
 
 fragment publicKey on PublicKey {
     keyId
@@ -257,3 +316,53 @@ fragment s3MediaObject on S3MediaObject {
     bucket
     region
 }
+
+# Voicemail
+
+fragment sealedVoicemail on SealedVoicemail {
+    id
+    owner
+    sudoOwner
+    phoneNumberId
+    callRecordId
+    seen
+    sealed {
+        algorithm
+        keyId
+        localPhoneNumber
+        remotePhoneNumber
+        durationSeconds
+        media {
+            ...s3MediaObject
+        }
+    }
+    createdAtEpochMs
+    updatedAtEpochMs
+    version
+}
+
+query getVoicemail($id: ID!) {
+    getVoicemail(id: $id) {
+        ...sealedVoicemail
+    }
+}
+
+query listVoicemails($key: VoicemailKeyInput, $limit: Int, $nextToken: String) {
+    listVoicemails(key: $key, limit: $limit, nextToken: $nextToken) {
+        items {
+            ...sealedVoicemail
+        }
+        nextToken
+    }
+}
+
+mutation deleteVoicemail($id: ID!) {
+    deleteVoicemail(id: $id)
+}
+
+subscription OnVoicemail($owner: String!) {
+    OnVoicemail(owner: $owner) {
+        ...sealedVoicemail
+    }
+}
+

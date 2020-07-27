@@ -16,16 +16,8 @@
 <h4><a href="-active-call-listener/index.html">ActiveCallListener</a></h4>
 </td>
 <td>
-<p>Subscriber for receiving notifications about new <code>ActiveVoiceCall</code> events.</p>
+<p>Listener for receiving notifications about new <code>ActiveVoiceCall</code> events.</p>
 <code><span class="keyword">interface </span><span class="identifier">ActiveCallListener</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-telephony-subscriber/index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-active-call-subscriber/index.html">ActiveCallSubscriber</a></h4>
-</td>
-<td>
-<p>Subscriber for receiving notifications about new <code>ActiveVoiceCall</code> events.</p>
-<code><span class="keyword">interface </span><span class="identifier">ActiveCallSubscriber</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-telephony-subscriber/index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
 </tr>
 <tr>
 <td>
@@ -48,8 +40,22 @@
 <h4><a href="-call-record/index.html">CallRecord</a></h4>
 </td>
 <td>
-<p>An object representing a call record</p>
-<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">CallRecord</span></code></td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">CallRecord</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/os/Parcelable.html"><span class="identifier">Parcelable</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-call-record-state/index.html">CallRecordState</a></h4>
+</td>
+<td>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">CallRecordState</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-call-record-subscriber/index.html">CallRecordSubscriber</a></h4>
+</td>
+<td>
+<p>Subscriber for receiving notifications about new <code>CallRecord</code> objects.</p>
+<code><span class="keyword">interface </span><span class="identifier">CallRecordSubscriber</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-telephony-subscriber/index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
 </tr>
 <tr>
 <td>
@@ -65,6 +71,13 @@
 <td>
 <p>Main implementation of <a href="-sudo-telephony-client/index.html">SudoTelephonyClient</a> interface</p>
 <code><span class="keyword">class </span><span class="identifier">DefaultSudoTelephonyClient</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-sudo-telephony-client/index.html"><span class="identifier">SudoTelephonyClient</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-default-telephony-key-manager/index.html">DefaultTelephonyKeyManager</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">DefaultTelephonyKeyManager</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-telephony-key-manager/index.html"><span class="identifier">TelephonyKeyManager</span></a></code></td>
 </tr>
 <tr>
 <td>
@@ -180,6 +193,13 @@
 </tr>
 <tr>
 <td>
+<h4><a href="-telephony-key-manager/index.html">TelephonyKeyManager</a></h4>
+</td>
+<td>
+<code><span class="keyword">interface </span><span class="identifier">TelephonyKeyManager</span></code></td>
+</tr>
+<tr>
+<td>
 <h4><a href="-telephony-list-token/index.html">TelephonyListToken</a></h4>
 </td>
 <td>
@@ -193,6 +213,38 @@
 <td>
 <p>Interface to implement in order to subscribe to Telephony events</p>
 <code><span class="keyword">interface </span><span class="identifier">TelephonySubscriber</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-voice-call-audio-device/index.html">VoiceCallAudioDevice</a></h4>
+</td>
+<td>
+<p>Device that the audio can be routed to</p>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">VoiceCallAudioDevice</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-voicemail/index.html">Voicemail</a></h4>
+</td>
+<td>
+<p>A voicemail record.</p>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">Voicemail</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/os/Parcelable.html"><span class="identifier">Parcelable</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-voicemail-data/index.html">VoicemailData</a></h4>
+</td>
+<td>
+<p>Voicemail data belonging to a call record</p>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">VoicemailData</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/os/Parcelable.html"><span class="identifier">Parcelable</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-voicemail-subscriber/index.html">VoicemailSubscriber</a></h4>
+</td>
+<td>
+<p>Subscriber for receiving notifications about new <code>Voicemail</code> updates.</p>
+<code><span class="keyword">interface </span><span class="identifier">VoicemailSubscriber</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-telephony-subscriber/index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
 </tr>
 </tbody>
 </table>
@@ -264,10 +316,24 @@
 </tr>
 <tr>
 <td>
+<h4><a href="-telephony-delete-call-record-exception/index.html">TelephonyDeleteCallRecordException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyDeleteCallRecordException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
 <h4><a href="-telephony-delete-message-exception/index.html">TelephonyDeleteMessageException</a></h4>
 </td>
 <td>
 <code><span class="keyword">class </span><span class="identifier">TelephonyDeleteMessageException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-delete-voicemail-exception/index.html">TelephonyDeleteVoicemailException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyDeleteVoicemailException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
 </tr>
 <tr>
 <td>
@@ -289,6 +355,13 @@
 </td>
 <td>
 <code><span class="keyword">class </span><span class="identifier">TelephonyGetAllPhoneNumbersException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-get-call-record-exception/index.html">TelephonyGetCallRecordException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyGetCallRecordException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
 </tr>
 <tr>
 <td>
@@ -324,6 +397,13 @@
 </td>
 <td>
 <code><span class="keyword">class </span><span class="identifier">TelephonyGetPhoneNumberException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-telephony-get-voicemail-exception/index.html">TelephonyGetVoicemailException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TelephonyGetVoicemailException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
 </tr>
 <tr>
 <td>

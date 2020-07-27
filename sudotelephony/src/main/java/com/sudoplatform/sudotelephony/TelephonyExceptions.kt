@@ -52,6 +52,14 @@ class TelephonyCallingDisconnectedException(throwable: Throwable? = null) : Exce
 
 class TelephonyCallingCallCancelledException(throwable: Throwable? = null) : Exception(throwable)
 
+class TelephonyGetCallRecordException(throwable: Throwable? = null) : Exception(throwable)
+
+class TelephonyDeleteCallRecordException(throwable: Throwable? = null) : Exception(throwable)
+
+class TelephonyGetVoicemailException(throwable: Throwable? = null) : Exception(throwable)
+
+class TelephonyDeleteVoicemailException(throwable: Throwable? = null) : Exception(throwable)
+
 /**
  * A type representing an exception in Telephony
  */

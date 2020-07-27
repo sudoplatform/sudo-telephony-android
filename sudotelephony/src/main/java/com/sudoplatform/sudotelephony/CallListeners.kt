@@ -1,5 +1,7 @@
 package com.sudoplatform.sudotelephony
 
+import com.twilio.audioswitch.selection.AudioDevice
+
 /**
  * Listener for receiving notifications about new `ActiveVoiceCall` events.
  */
@@ -31,11 +33,30 @@ interface ActiveCallListener : TelephonySubscriber {
     fun activeVoiceCallDidChangeMuteState(call: ActiveVoiceCall, isMuted: Boolean)
 
     /**
-     * Notifies the listener that the call audio routing through the speakers has changed
+     * Notifies the listener that the call audio routing has changed
      * @param call The `ActiveVoiceCall`
-     * @param isMuted Whether call audio is being routed through the speakers
+     * @param audioDevice The `AudioDevice` that the audio has been routed to
      */
-    fun activeVoiceCallDidChangeSpeakerState(call: ActiveVoiceCall, isOnSpeaker: Boolean)
+    fun activeVoiceCallDidChangeAudioDevice(call: ActiveVoiceCall, audioDevice: VoiceCallAudioDevice)
+}
+
+/**
+ * Device that the audio can be routed to
+ */
+enum class VoiceCallAudioDevice {
+    BLUETOOTHHEADSET, WIREDHEADSET, EARPIECE, SPEAKERPHONE, UNKNOWN;
+
+    companion object {
+        fun fromInternalType(internalType: AudioDevice): VoiceCallAudioDevice {
+            return when (internalType) {
+                is AudioDevice.BluetoothHeadset -> BLUETOOTHHEADSET
+                is AudioDevice.WiredHeadset -> WIREDHEADSET
+                is AudioDevice.Earpiece -> EARPIECE
+                is AudioDevice.Speakerphone -> SPEAKERPHONE
+                else -> UNKNOWN
+            }
+        }
+    }
 }
 
 /**

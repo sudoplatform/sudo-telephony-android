@@ -1,6 +1,21 @@
 # This directive allows results to be deferred during execution
 directive @defer on FIELD
 
+# Tells the service this field/object has access authorized by sigv4 signing.
+directive @aws_iam on OBJECT | FIELD_DEFINITION
+
+# Tells the service which mutation triggers this subscription.
+directive @aws_subscribe(
+  # List of mutations which will trigger this subscription when they are called.
+  mutations: [String]
+) on FIELD_DEFINITION
+
+# Tells the service this field/object has access authorized by a Cognito User Pools token.
+directive @aws_cognito_user_pools(
+  # List of cognito user pool groups which have access on this field
+  cognito_groups: [String]
+) on OBJECT | FIELD_DEFINITION
+
 # Tells the service which subscriptions will be published to when this mutation is
 # called. This directive is deprecated use @aws_susbscribe directive instead.
 directive @aws_publish(
@@ -14,26 +29,11 @@ directive @aws_auth(
   cognito_groups: [String]
 ) on FIELD_DEFINITION
 
-# Tells the service this field/object has access authorized by an OIDC token.
-directive @aws_oidc on OBJECT | FIELD_DEFINITION
-
-# Tells the service which mutation triggers this subscription.
-directive @aws_subscribe(
-  # List of mutations which will trigger this subscription when they are called.
-  mutations: [String]
-) on FIELD_DEFINITION
-
-# Tells the service this field/object has access authorized by sigv4 signing.
-directive @aws_iam on OBJECT | FIELD_DEFINITION
-
-# Tells the service this field/object has access authorized by a Cognito User Pools token.
-directive @aws_cognito_user_pools(
-  # List of cognito user pool groups which have access on this field
-  cognito_groups: [String]
-) on OBJECT | FIELD_DEFINITION
-
 # Tells the service this field/object has access authorized by an API key.
 directive @aws_api_key on OBJECT | FIELD_DEFINITION
+
+# Tells the service this field/object has access authorized by an OIDC token.
+directive @aws_oidc on OBJECT | FIELD_DEFINITION
 
 type Attribute {
   name: String!
@@ -50,45 +50,41 @@ input BooleanFilterInput {
   eq: Boolean
 }
 
-#   Definition of a call record.
-type CallRecord {
-  #   v4 UUID assigned to call record.
-  id: ID!
+#   List call record results iterator.
+type CallRecordConnection {
+  items: [SealedCallRecord!]
+  nextToken: String
+}
 
-  #   State of call record.
-  state: CallState!
+input CallRecordFilterInput {
+  state: CallStateFilterInput
+  direction: DirectionFilterInput
+}
 
-  #   Direction of call.
-  direction: Direction!
-
-  #   Sudo phone number in E164 format.
-  localPhoneNumber: String!
-
-  #   Remote participant. Must be one of the following:
-  #  - A phone number in E164 format.
-  remotePhoneNumber: String!
+input CallRecordKeyInput {
+  sudoOwner: ID
+  phoneNumberId: ID
+  createdAtEpochMs: FloatFilterInput
 }
 
 #   Possible states for a call.
 #  AUTHORIZED  - Outbound call authorized but not yet initiated at telephony vendor.
 #  QUEUED      - Call is queued before ringing.
 #  RINGING     - Call is ringing.
-#  IN_PROGRESS - Call has been answered and is ongoing.
-#  CANCELED    - Call was hung up before being answered.
-#  COMPLETED   - Call was completed / hung up after being answered.
-#  BUSY        - Callee was busy.
-#  NO_ANSWER   - Callee did not answer.
-#  FAILED      - Call failed to initiate.
+#  ANSWERED    - Call has been answered and is ongoing.
+#  COMPLETED   - Call ended after being answered.
+#  UNANSWERED  - Call failed or was not answered.
 enum CallState {
   AUTHORIZED
   QUEUED
   RINGING
-  IN_PROGRESS
-  CANCELED
+  ANSWERED
   COMPLETED
-  BUSY
-  NO_ANSWER
-  FAILED
+  UNANSWERED
+}
+
+input CallStateFilterInput {
+  in: [CallState]
 }
 
 interface CommonObject {
@@ -176,7 +172,7 @@ input CreateSudoInput {
   objects: [SecureS3ObjectInput!]!
 }
 
-#   Input definition to create an outgoing voice call.
+#   Input definition to create an outbound voice call.
 input CreateVoiceCallInput {
   #   Source phone number in E164 format.
   from: String!
@@ -209,6 +205,14 @@ input DeletePublicKeyInput {
 input DeleteSudoInput {
   id: ID!
   expectedVersion: Int!
+}
+
+type DeprecatedOutboundVoiceCallRecord {
+  id: ID! @deprecated(reason: "Use SealedCallRecord")
+  state: CallState! @deprecated(reason: "Use SealedCallRecord")
+  direction: Direction! @deprecated(reason: "Use SealedCallRecord")
+  localPhoneNumber: String! @deprecated(reason: "Use SealedCallRecord")
+  remotePhoneNumber: String! @deprecated(reason: "Use SealedCallRecord")
 }
 
 #   Input definition to delete a phone number.
@@ -285,6 +289,29 @@ input IDFilterInput {
   beginsWith: ID
 }
 
+#   INTERNAL: SealedCallRecord input type, to be passed through in the triggered subscription.
+input InternalCallRecordSubscriptionTriggerInput {
+  id: ID!
+  owner: ID!
+  sudoOwner: ID!
+  phoneNumberId: ID!
+  direction: Direction!
+  seen: Boolean!
+  state: CallState!
+  createdAtEpochMs: Float!
+  updatedAtEpochMs: Float!
+  version: Int!
+  sealed: [InternalCallRecordSubscriptionTriggerSealedInput!]!
+}
+
+input InternalCallRecordSubscriptionTriggerSealedInput {
+  algorithm: String!
+  keyId: String!
+  localPhoneNumber: String!
+  remotePhoneNumber: String!
+  durationSeconds: String
+}
+
 #   Input definition to update a message.
 input InternalMessageChangeInput {
   #   The composite key of the message entity
@@ -295,6 +322,29 @@ input InternalMessageChangeInput {
 
   #   ID used for the client to subscribe to specific events.
   clientRefId: String
+}
+
+#   INTERNAL: SealedVoicemail input type, to be passed through in the triggered subscription.
+input InternalVoicemailSubscriptionTriggerInput {
+  id: ID!
+  owner: ID!
+  sudoOwner: ID!
+  phoneNumberId: ID!
+  callRecordId: ID
+  seen: Boolean!
+  createdAtEpochMs: Float!
+  updatedAtEpochMs: Float!
+  version: Int!
+  sealed: [InternalVoicemailSubscriptionTriggerSealedInput!]!
+}
+
+input InternalVoicemailSubscriptionTriggerSealedInput {
+  algorithm: String!
+  keyId: String!
+  localPhoneNumber: String!
+  remotePhoneNumber: String!
+  durationSeconds: String!
+  media: S3MediaObjectInput!
 }
 
 input IntFilterInput {
@@ -390,28 +440,43 @@ type Mutation {
   #   Delete a conversation.
   deleteConversation(id: ID!): ID
 
-  #   Retrieve an access token for initiating an outgoing voice call.
-  createVoiceCall(input: CreateVoiceCallInput!): OutgoingVoiceCall!
+  #   Retrieve an access token for initiating an outbound voice call.
+  createVoiceCall(input: CreateVoiceCallInput!): OutboundVoiceCall!
+
+  #   INTERNAL: Trigger OnCallRecord subscription.
+  internalCallRecordSubscriptionTrigger(input: InternalCallRecordSubscriptionTriggerInput!): SealedCallRecord!
+
+  #   Delete a call record.
+  deleteCallRecord(id: ID!): ID!
 
   #   Register a device to receive incoming call push notifications.
   registerDeviceForIncomingCalls(input: DeviceRegistrationInput!): DeviceRegistrationOutput!
 
   #   Unregister a device from receiving incoming call push notifications.
   unregisterDeviceForIncomingCalls(input: DeviceRegistrationInput!): DeviceRegistrationOutput!
+
+  #   INTERNAL: Trigger OnVoicemail subscription.
+  internalVoicemailSubscriptionTrigger(input: InternalVoicemailSubscriptionTriggerInput!): SealedVoicemail!
+
+  #   Delete a voicemail.
+  deleteVoicemail(id: ID!): ID!
   createPublicKeyForTelephony(input: CreatePublicKeyInput!): PublicKey!
   deletePublicKeyForTelephony(input: DeletePublicKeyInput): PublicKey
 }
 
-#   The result of an outgoing voice call.
-type OutgoingVoiceCall {
+#   The result of an outbound voice call.
+type OutboundVoiceCall {
   #   The record of the call that was authorized.
-  call: CallRecord!
+  callRecord: SealedCallRecord!
 
   #   Credentials required to initiate the call via a vendor.
   vendorAuthorization: VendorAuthorization!
 
-  #   DEPRECATED: Prefer vendorAuthorization.accessToken
-  token: String!
+  #   DEPRECATED: The plaintext record of the call that was authorized.
+  call: DeprecatedOutboundVoiceCallRecord! @deprecated(reason: "Use callRecord")
+
+  #   DEPRECATED: Access token required to initiate the call via a vendor.
+  token: String! @deprecated(reason: "Use vendorAuthorization.accessToken")
 }
 
 type OwnershipProof {
@@ -643,6 +708,18 @@ type Query {
 
   #   Returns a list of message conversations.
   listConversations(filter: ConversationFilterInput, limit: Int, nextToken: String): ConversationConnection
+
+  #   Get a call record by ID.
+  getCallRecord(id: ID!): SealedCallRecord
+
+  #   Retrieve a list of call records.
+  listCallRecords(key: CallRecordKeyInput, filter: CallRecordFilterInput, limit: Int, nextToken: String): CallRecordConnection
+
+  #   Get a voicemail by ID.
+  getVoicemail(id: ID!): SealedVoicemail
+
+  #   Retrieve a list of voicemails.
+  listVoicemails(key: VoicemailKeyInput, limit: Int, nextToken: String): VoicemailConnection
   getPublicKeyForTelephony(keyId: String!): PublicKey
   getPublicKeysForTelephony(limit: Int, nextToken: String): PaginatedPublicKey!
   getKeyRingForTelephony(keyRingId: String!, limit: Int, nextToken: String): PaginatedPublicKey!
@@ -675,6 +752,75 @@ input S3MediaObjectInput {
 
   #   Region S3 bucket is located in.
   region: String!
+}
+
+#   A call record.
+type SealedCallRecord implements CommonObject {
+  #   v4 UUID assigned to call record.
+  id: ID!
+
+  #   v4 UUID of user that owns the call resource.
+  owner: ID!
+
+  #   v4 UUID of sudo that owns the call resource.
+  sudoOwner: ID!
+
+  #   The phone number id related to the call resource.
+  phoneNumberId: ID!
+
+  #   The ID of the voicemail belonging to the call resource if one exists.
+  voicemailId: ID
+
+  #   Direction of call.
+  direction: Direction!
+
+  #   Has this call been marked as seen on client.
+  seen: Boolean!
+
+  #   State of call record.
+  state: CallState!
+
+  #   Time in milliseconds since 1970-01-01T00:00:00Z when object was created.
+  createdAtEpochMs: Float!
+
+  #   Time in milliseconds since 1970-01-01T00:00:00Z when object was last updated.
+  updatedAtEpochMs: Float!
+
+  #   Version of this object, increments on update.
+  version: Int!
+
+  #   Sealed data.
+  sealed: [SealedCallRecordData!]!
+}
+
+#   Encrypted data belonging to a call record.
+type SealedCallRecordData {
+  #   UNSEALED: Algorithm descriptor describing public and symmetric key encryption, e.g RSAEncryptionOAEPSHA256AESGCM.
+  algorithm: String!
+
+  #   UNSEALED: Client generated key ID for the public key.
+  keyId: String!
+
+  #   SEALED: Sudo phone number in E164 format.
+  localPhoneNumber: String!
+
+  #   SEALED: Remote phone number in E164 format.
+  remotePhoneNumber: String!
+
+  #   SEALED: The duration of the call when the call is in the COMPLETED state.
+  durationSeconds: String
+
+  #   The voicemail belonging to the call record if one exists.
+  voicemail: SealedCallRecordVoicemailData
+}
+
+#   Voicemail data belonging to a call record.
+type SealedCallRecordVoicemailData {
+  #   SEALED: The duration of the voicemail recording.
+  durationSeconds: String!
+
+  #   UNSEALED: Media object for voicemail recording.
+  media: S3MediaObject!
 }
 
 #   Definition of a message record containing sealed sensitive data
@@ -744,6 +890,60 @@ interface SealedObject {
   version: Int!
   createdAtEpochMs: Float!
   updatedAtEpochMs: Float!
+}
+
+#   A voicemail.
+type SealedVoicemail implements CommonObject {
+  #   v4 UUID assigned to voicemail.
+  id: ID!
+
+  #   v4 UUID of user that owns the voicemail resource.
+  owner: ID!
+
+  #   v4 UUID of sudo that owns the voicemail resource.
+  sudoOwner: ID!
+
+  #   The phone number id related to the voicemail resource.
+  phoneNumberId: ID!
+
+  #   Has this voicemail been marked as seen on client.
+  seen: Boolean!
+
+  #   The ID of the call record this voicemail is related to.
+  callRecordId: ID
+
+  #   Time in milliseconds since 1970-01-01T00:00:00Z when object was created.
+  createdAtEpochMs: Float!
+
+  #   Time in milliseconds since 1970-01-01T00:00:00Z when object was last updated.
+  updatedAtEpochMs: Float!
+
+  #   Version of this object, increments on update.
+  version: Int!
+
+  #   Sealed data.
+  sealed: [SealedVoicemailData!]!
+}
+
+#   Encrypted data belonging to a voicemail.
+type SealedVoicemailData {
+  #   UNSEALED: Algorithm descriptor describing public and symmetric key encryption, e.g RSAEncryptionOAEPSHA256AESGCM.
+  algorithm: String!
+
+  #   UNSEALED: Client generated key ID for the public key.
+  keyId: String!
+
+  #   SEALED: Sudo phone number in E164 format.
+  localPhoneNumber: String!
+
+  #   SEALED: Remote phone number in E164 format.
+  remotePhoneNumber: String!
+
+  #   SEALED: The duration of the voicemail recording.
+  durationSeconds: String!
+
+  #   UNSEALED: Media object for voicemail recording.
+  media: S3MediaObject!
 }
 
 #   Input definition to search for available phone numbers by search.
@@ -848,6 +1048,12 @@ type Subscription {
   #   Owner id for the current logged in user.
   #  ID used for the client to subscribe to specific message events.
   OnMessage(owner: String!, clientRefId: String): SealedMessage
+
+  #   Owner id for the current logged in user.
+  OnCallRecord(owner: String!): SealedCallRecord
+
+  #   Owner id for the current logged in user.
+  OnVoicemail(owner: String!): SealedVoicemail
 }
 
 type Sudo {
@@ -922,4 +1128,15 @@ type VendorAuthorization {
 
   #   The credentials for the vendor.
   accessToken: String!
+}
+
+type VoicemailConnection {
+  items: [SealedVoicemail!]
+  nextToken: String
+}
+
+input VoicemailKeyInput {
+  sudoOwner: ID
+  phoneNumberId: ID
+  createdAtEpochMs: FloatFilterInput
 }

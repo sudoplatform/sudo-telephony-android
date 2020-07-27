@@ -19,6 +19,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArguments clearPackageData: 'true'
+        consumerProguardFiles 'proguard-rules.pro'
     }
 
     buildTypes {
@@ -56,10 +57,6 @@ dependencyCheck {
     failBuildOnCVSS 0
 }
 
-ext {
-    awsAndroidSdkVersion = "2.16.12"
-}
-
 dependencies {
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -67,19 +64,21 @@ dependencies {
     // Logging
     implementation "com.jakewharton.timber:timber:4.7.1"
 
-    // AWS stuff
+    // AWS SDKs
     implementation "com.amazonaws:aws-android-sdk-core:$awsAndroidSdkVersion"
     implementation("com.amazonaws:aws-android-sdk-appsync:$appSyncVersion")
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.2'
     implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
 
-    // Sudo libs
-    api "com.sudoplatform:sudoconfigmanager:[1.2.2,)"
-    api "com.sudoplatform:sudokeymanager:[3.4.1,)"
-    api "com.sudoplatform:sudoprofiles:[2.1.2,)"
+    // Sudo Platform SDKs
+    implementation "com.sudoplatform:sudoconfigmanager:[1.2.2,)"
+    implementation 'com.sudoplatform:sudoapiclient:[1.4.0,)'
+    implementation "com.sudoplatform:sudokeymanager:[3.4.1,)"
+    implementation "com.sudoplatform:sudoprofiles:[2.2.0,)"
 
     // Voice
     api 'com.twilio:voice-android:3.1.2'
+    api 'com.twilio:audioswitch:0.1.5'
 
     implementation 'com.google.firebase:firebase-messaging:20.1.4'
     testImplementation "junit:junit:4.12"
@@ -101,9 +100,6 @@ dependencies {
     androidTestImplementation "org.mockito:mockito-android:2.16.0"
 
 }
-repositories {
-    mavenCentral()
-}
 
 dokka {
     outputFormat = 'html'
@@ -121,6 +117,7 @@ ext {
     } else {
         PUBLISH_VERSION = "0.0.0"
     }
+    PUBLISH_STAGING_PROFILE_ID = "14314878e2a1b"
 }
 
 apply from: "${rootProject.projectDir}/publish-mavencentral.gradle"

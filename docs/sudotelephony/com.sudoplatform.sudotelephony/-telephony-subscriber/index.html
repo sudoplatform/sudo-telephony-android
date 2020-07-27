@@ -46,16 +46,16 @@ stop receiving notifications when the connection state changes to <a href="-conn
 <h4><a href="../-active-call-listener/index.html">ActiveCallListener</a></h4>
 </td>
 <td>
-<p>Subscriber for receiving notifications about new <code>ActiveVoiceCall</code> events.</p>
+<p>Listener for receiving notifications about new <code>ActiveVoiceCall</code> events.</p>
 <code><span class="keyword">interface </span><span class="identifier">ActiveCallListener</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
 </tr>
 <tr>
 <td>
-<h4><a href="../-active-call-subscriber/index.html">ActiveCallSubscriber</a></h4>
+<h4><a href="../-call-record-subscriber/index.html">CallRecordSubscriber</a></h4>
 </td>
 <td>
-<p>Subscriber for receiving notifications about new <code>ActiveVoiceCall</code> events.</p>
-<code><span class="keyword">interface </span><span class="identifier">ActiveCallSubscriber</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
+<p>Subscriber for receiving notifications about new <code>CallRecord</code> objects.</p>
+<code><span class="keyword">interface </span><span class="identifier">CallRecordSubscriber</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
 </tr>
 <tr>
 <td>
@@ -72,6 +72,14 @@ stop receiving notifications when the connection state changes to <a href="-conn
 <td>
 <p>Subscriber for receiving notifications about new <code>PhoneMessage</code> objects.</p>
 <code><span class="keyword">interface </span><span class="identifier">PhoneMessageSubscriber</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../-voicemail-subscriber/index.html">VoicemailSubscriber</a></h4>
+</td>
+<td>
+<p>Subscriber for receiving notifications about new <code>Voicemail</code> updates.</p>
+<code><span class="keyword">interface </span><span class="identifier">VoicemailSubscriber</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">TelephonySubscriber</span></a></code></td>
 </tr>
 </tbody>
 </table>

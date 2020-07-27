@@ -1,9 +1,7 @@
 package com.sudoplatform.sudotelephony
 
 import android.content.Context
-import android.util.Log
 import android.webkit.MimeTypeMap
-import com.amazonaws.mobile.config.AWSConfiguration
 import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient
 import com.amazonaws.mobileconnectors.appsync.AppSyncSubscriptionCall
 import com.amazonaws.mobileconnectors.appsync.fetcher.AppSyncResponseFetchers
@@ -24,23 +22,22 @@ import com.sudoplatform.sudoconfigmanager.DefaultSudoConfigManager
 import com.sudoplatform.sudokeymanager.KeyManagerException
 import com.sudoplatform.sudokeymanager.KeyManagerFactory
 import com.sudoplatform.sudokeymanager.KeyManagerInterface
+import com.sudoplatform.sudologging.AndroidUtilsLogDriver
+import com.sudoplatform.sudologging.LogLevel
+import com.sudoplatform.sudologging.Logger
 import com.sudoplatform.sudoprofiles.GetOwnershipProofResult
 import com.sudoplatform.sudoprofiles.Sudo
 import com.sudoplatform.sudoprofiles.SudoProfilesClient
 import com.sudoplatform.sudotelephony.type.*
-import com.sudoplatform.sudouser.GraphQLAuthProvider
 import com.sudoplatform.sudouser.SudoUserClient
-import com.twilio.voice.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
 import java.nio.charset.Charset
-import java.security.AllPermission
 import java.security.KeyPair
 import java.time.Instant
 import java.util.*
@@ -275,6 +272,7 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
     private val s3Client: AmazonS3Client
     private val transferUtility: TransferUtility
     private val onMessageSubscriptionManager: SubscriptionManager<OnMessageReceivedSubscription.Data>
+    private val logger: Logger
     override val calling: SudoTelephonyCalling
 
     constructor(
@@ -310,10 +308,17 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
         this.graphQLClient = ApiClientManager.getClient(context, this.sudoUserClient)
 
         this.keyManager = KeyManagerFactory(context).createAndroidKeyManager()
+
         this.applicationContext = context
 
+        logger = Logger("telephony", AndroidUtilsLogDriver(LogLevel.DEBUG))
+        val telephonyKeyManager = DefaultTelephonyKeyManager(this.sudoUserClient,
+            this.graphQLClient,
+            context,
+            logger)
+
         this.onMessageSubscriptionManager = SubscriptionManager()
-        this.calling = DefaultSudoTelephonyCalling(applicationContext, graphQLClient)
+        this.calling = DefaultSudoTelephonyCalling(applicationContext, graphQLClient, telephonyKeyManager, logger)
     }
 
     override fun isRegistered() = sudoUserClient.isRegistered()
@@ -371,7 +376,7 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
             KEY_MANAGER_KEYRING_ID_NAME + identityId
         )
         val publicKeyInput = CreatePublicKeyInput.builder()
-            .publicKey(publicKey!!)
+            .publicKey(publicKey)
             .keyId(keyId)
             .keyRingId(keyRingId)
             .algorithm(RSA_ENCRYPTION_OAEP_AES_CBC)
@@ -418,16 +423,6 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
         val identityId = this.getIdentityId() ?: return null
         return this.keyManager.getPassword(KEY_MANAGER_KEYRING_ID_NAME + identityId)
             .toString(Charset.forName("UTF-8"))
-    }
-
-    private fun deleteKeyPair() {
-        try {
-            this.getIdentityId().let {
-                this.keyManager.deleteKeyPair(it)
-            }
-        } catch (error: Exception) {
-            timber.e(error, "Failed to delete key pair")
-        }
     }
 
     private fun decryptSealedData(data: ByteArray): ByteArray {
@@ -1303,15 +1298,13 @@ class DefaultSudoTelephonyClient : SudoTelephonyClient {
             graphQLClient.mutate(mutation)
                 .enqueue(object : GraphQLCall.Callback<DeleteMessageMutation.Data>() {
                     override fun onResponse(response: Response<DeleteMessageMutation.Data>) {
-                        val messageId = response.data()?.deleteMessage
-                        if (messageId == null) {
-                            val error = TelephonyDeleteMessageException()
-                            timber.e(error, "Failed to delete message $id")
-                            callback.runOnUiThread()(Result.Error(error))
-                            return
+                        val error = response.errors().firstOrNull()
+                        if (error != null) {
+                            logger.error("Delete message response contained error: $error")
+                            callback.runOnUiThread()(Result.Error(TelephonyDeleteMessageException()))
+                        } else {
+                            callback.runOnUiThread()(Result.Success(response.data()?.deleteMessage ?: ""))
                         }
-
-                        callback.runOnUiThread()(Result.Success(messageId))
                     }
 
                     override fun onFailure(e: ApolloException) {

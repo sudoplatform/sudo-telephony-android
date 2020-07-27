@@ -1,0 +1,24 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>SudoTelephonyCalling.getCallRecords - sudotelephony</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sudotelephony</a>&nbsp;/&nbsp;<a href="../index.html">com.sudoplatform.sudotelephony</a>&nbsp;/&nbsp;<a href="index.html">SudoTelephonyCalling</a>&nbsp;/&nbsp;<a href="./get-call-records.html">getCallRecords</a><br/>
+<br/>
+<h1>getCallRecords</h1>
+<a name="com.sudoplatform.sudotelephony.SudoTelephonyCalling$getCallRecords(com.sudoplatform.sudotelephony.PhoneNumber, kotlin.Int, kotlin.String, kotlin.Function1((com.sudoplatform.sudotelephony.Result((com.sudoplatform.sudotelephony.TelephonyListToken((com.sudoplatform.sudotelephony.CallRecord)))), kotlin.Unit)))"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">getCallRecords</span><span class="symbol">(</span><span class="identifier" id="com.sudoplatform.sudotelephony.SudoTelephonyCalling$getCallRecords(com.sudoplatform.sudotelephony.PhoneNumber, kotlin.Int, kotlin.String, kotlin.Function1((com.sudoplatform.sudotelephony.Result((com.sudoplatform.sudotelephony.TelephonyListToken((com.sudoplatform.sudotelephony.CallRecord)))), kotlin.Unit)))/localNumber">localNumber</span><span class="symbol">:</span>&nbsp;<a href="../-phone-number/index.html"><span class="identifier">PhoneNumber</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.SudoTelephonyCalling$getCallRecords(com.sudoplatform.sudotelephony.PhoneNumber, kotlin.Int, kotlin.String, kotlin.Function1((com.sudoplatform.sudotelephony.Result((com.sudoplatform.sudotelephony.TelephonyListToken((com.sudoplatform.sudotelephony.CallRecord)))), kotlin.Unit)))/limit">limit</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">?</span><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.SudoTelephonyCalling$getCallRecords(com.sudoplatform.sudotelephony.PhoneNumber, kotlin.Int, kotlin.String, kotlin.Function1((com.sudoplatform.sudotelephony.Result((com.sudoplatform.sudotelephony.TelephonyListToken((com.sudoplatform.sudotelephony.CallRecord)))), kotlin.Unit)))/nextToken">nextToken</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">?</span><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.SudoTelephonyCalling$getCallRecords(com.sudoplatform.sudotelephony.PhoneNumber, kotlin.Int, kotlin.String, kotlin.Function1((com.sudoplatform.sudotelephony.Result((com.sudoplatform.sudotelephony.TelephonyListToken((com.sudoplatform.sudotelephony.CallRecord)))), kotlin.Unit)))/callback">callback</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><a href="../-result/index.html"><span class="identifier">Result</span></a><span class="symbol">&lt;</span><a href="../-telephony-list-token/index.html"><span class="identifier">TelephonyListToken</span></a><span class="symbol">&lt;</span><a href="../-call-record/index.html"><span class="identifier">CallRecord</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Retrieves call records for a given phone number</p>
+<h3>Parameters</h3>
+<p><a name="localNumber"></a>
+<code>localNumber</code> - The phone number to fetch phone records for</p>
+<p><a name="limit"></a>
+<code>limit</code> - The limit of the batch to fetch. If none specified, all call records will be returned.</p>
+<p><a name="nextToken"></a>
+<code>nextToken</code> - The token to use for pagination.</p>
+<p><a name="callback"></a>
+<code>callback</code> - Completion callback providing a list of call records or an error if there was a failure.</p>
+</BODY>
+</HTML>

@@ -2,13 +2,23 @@ package com.sudoplatform.sudotelephony
 
 import android.content.Context
 import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient
+import com.amazonaws.mobileconnectors.appsync.AppSyncSubscriptionCall
+import com.amazonaws.mobileconnectors.appsync.fetcher.AppSyncResponseFetchers
 import com.apollographql.apollo.GraphQLCall
 import com.apollographql.apollo.api.Response
 import com.apollographql.apollo.exception.ApolloException
+import com.sudoplatform.sudologging.Logger
+import com.sudoplatform.sudotelephony.type.*
+import com.twilio.audioswitch.selection.AudioDevice
+import com.twilio.audioswitch.selection.AudioDeviceSelector
 import com.sudoplatform.sudotelephony.type.CreateVoiceCallInput
 import com.sudoplatform.sudotelephony.type.DeviceRegistrationInput
 import com.sudoplatform.sudotelephony.type.PushNotificationService
+import com.sudoplatform.sudotelephony.type.VoicemailKeyInput
 import com.twilio.voice.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 
 /**
@@ -64,7 +74,9 @@ interface CallingVendorCall {
 internal class TwilioVendorCall(): CallingVendorCall {
     private lateinit var call: Call
     lateinit var context: Context
-    lateinit var callRecord: CallRecord
+    lateinit var accessToken: String
+    lateinit var localPhoneNumber: String
+    lateinit var remotePhoneNumber: String
     lateinit var connected: (TwilioVendorCall) -> Unit
     lateinit var connectionFailed: (Exception) -> Unit
     lateinit var disconnected: (Exception?) -> Unit
@@ -122,17 +134,18 @@ internal class TwilioVendorCall(): CallingVendorCall {
 
     // Start an outgoing call
     constructor(context: Context,
-                callRecord: CallRecord,
+                accessToken: String,
+                localPhoneNumber: String,
+                remotePhoneNumber: String,
                 connected: (TwilioVendorCall) -> Unit,
                 connectionFailed: (Exception) -> Unit,
                 disconnected: (Exception?) -> Unit) : this() {
         this.context = context
-        this.callRecord = callRecord
         this.connected = connected
         this.connectionFailed = connectionFailed
         this.disconnected = disconnected
-        val params: Map<String, String> = mapOf("To" to callRecord.remotePhoneNumber, "From" to callRecord.localPhoneNumber)
-        val connectOptions = ConnectOptions.Builder(callRecord.accessToken).params(params).build()
+        val params: Map<String, String> = mapOf("To" to remotePhoneNumber, "From" to localPhoneNumber)
+        val connectOptions = ConnectOptions.Builder(accessToken).params(params).build()
         call = Voice.connect(context, connectOptions, callListener(this))
     }
 
@@ -150,29 +163,36 @@ internal class TwilioVendorCall(): CallingVendorCall {
     }
 }
 
-// TODO: This will eventually be the GraphQL response type from `createVoiceCall`.
-/**
- * An object representing a call record
- */
-data class CallRecord(val accessToken: String, val localPhoneNumber: String, val remotePhoneNumber: String)
-
 /**
  * An object representing an active voice call. It is used to monitor call events as well as accept input for muting, disconnecting and placing the call on speaker.
  */
 class ActiveVoiceCall(val context: Context,
-                      val callRecord: CallRecord,
+                      internal val accessToken: String,
+                      /**
+                       * The E164-formatted local phone number participating in this voice call.
+                       */
+                      val localPhoneNumber: String,
+                      /**
+                       * The E164-formatted remote phone number participating in this voice call.
+                       */
+                      val remotePhoneNumber: String,
                       val callId: UUID,
                       private val vendorCall: CallingVendorCall,
                       private val listener: ActiveCallListener) {
-    /**
-     * The E164-formatted local phone number participating in this voice call.
-     */
-    val localPhoneNumber = callRecord.localPhoneNumber
 
-    /**
-     * The E164-formatted remote phone number participating in this voice call.
-     */
-    val remotePhoneNumber = callRecord.remotePhoneNumber
+    private val audioDeviceSelector: AudioDeviceSelector = AudioDeviceSelector(context)
+
+    init {
+        audioDeviceSelector.start { _, selectedAudioDevice ->
+            selectedAudioDevice?.let { selectedDevice ->
+                listener.activeVoiceCallDidChangeAudioDevice(this, VoiceCallAudioDevice.fromInternalType(selectedDevice))
+            }
+        }
+    }
+
+    internal fun stopAudioDeviceListener() {
+        audioDeviceSelector.stop()
+    }
 
     /**
      * Whether outgoing call audio is muted
@@ -183,8 +203,10 @@ class ActiveVoiceCall(val context: Context,
     /**
      * Whether call audio is being routed through the speakers
      */
-    var isOnSpeaker: Boolean = false
-        internal set(value) { listener.activeVoiceCallDidChangeSpeakerState(this, value) }
+    val isOnSpeaker: Boolean
+        get() {
+            return audioDeviceSelector.selectedAudioDevice is AudioDevice.Speakerphone
+        }
 
     /**
      * Disconnects the active call.
@@ -207,7 +229,16 @@ class ActiveVoiceCall(val context: Context,
      * @param speaker If true, audio should be routed through the speakers.
      */
     fun setAudioOutputToSpeaker(speaker: Boolean) {
-        // TODO implement
+        val devices: List<AudioDevice> = audioDeviceSelector.availableAudioDevices
+        if (speaker) {
+            devices.find { it is AudioDevice.Speakerphone }?.let {
+                audioDeviceSelector.selectDevice(it)
+                audioDeviceSelector.activate()
+            }
+        } else {
+            // go back to prvious device
+            audioDeviceSelector.deactivate()
+        }
     }
 }
 
@@ -277,6 +308,46 @@ interface SudoTelephonyCalling {
                         listener: ActiveCallListener)
 
     /**
+     * Retrieves a call record.
+     * @param callRecordId The id of the call record to be retrieved
+     * @param callback Completion callback providing the call record or an error if there was a failure.
+     */
+    fun getCallRecord(callRecordId: String, callback: (Result<CallRecord>) -> Unit)
+
+    /**
+     * Retrieves call records for a given phone number
+     * @param localNumber The phone number to fetch phone records for
+     * @param limit The limit of the batch to fetch. If none specified, all call records will be returned.
+     * @param nextToken The token to use for pagination.
+     * @param callback Completion callback providing a list of call records or an error if there was a failure.
+     */
+    fun getCallRecords(localNumber: PhoneNumber, limit: Int?, nextToken: String?, callback: (Result<TelephonyListToken<CallRecord>>) -> Unit)
+
+    /**
+     * Subscribes to be notified of new `CallRecord` objects. If no id is provided,
+     * a default id will be used.
+     *
+     * @param subscriber The subscriber to notify.
+     * @param id The unique ID for the subscriber.
+     */
+    fun subscribeToCallRecords(subscriber: CallRecordSubscriber, id: String)
+
+    /**
+     * Unsubscribes the specified subscriber so that it no longer receives notifications about
+     * new 'CallRecord' objects. If no id is provided, all subscribers will be unsubscribed.
+     *
+     * @param id unique ID for the subscriber.
+     */
+    fun unsubscribeFromCallRecords(id: String?)
+
+    /**
+     * Deletes a call record matching the associated id.
+     * @param id The id of the call record to delete.
+     * @param callback Completion callback providing the id of the deleted call record or an error if the call record could not be deleted.
+     */
+    fun deleteCallRecord(id: String, callback: (Result<String>) -> Unit)
+
+    /**
      * Registers for incoming call push notifications with the given token
      * @param token FCM token obtained from FirebaseInstanceId
      * @param callback Completion callback providing an empty successful result or an error if there was a failure.
@@ -297,12 +368,55 @@ interface SudoTelephonyCalling {
      * @return Boolean indicating whether or not the notification was handled successfully
      */
     fun handleIncomingPushNotification(payload: Map<String, String>, notificationListener: IncomingCallNotificationListener): Boolean
+
+    /**
+     * Retrieves a list of `Voicemail`s for the given `PhoneNumber`.
+     * @param localNumber The `PhoneNumber` to fetch `Voicemail`s for.
+     * @param limit The maximum number of `Voicemail`s to retrieve per page.
+     * @param nextToken The token to use for pagination.
+     * @param callback Completion callback providing a list of `Voicemail`s or an error if it could not be retrieved.
+     */
+    fun getVoicemails(localNumber: PhoneNumber, limit: Int?, nextToken: String?, callback: (Result<TelephonyListToken<Voicemail>>) -> Unit)
+
+    /** Retrieves the voicemail with the specified `id`.
+     * @param id The `id` of the `Voicemail` to retrieve.
+     * @param callback Completion callback providing the `Voicemail` or an error if it could not be retrieved.
+     */
+    fun getVoicemail(id: String, callback: (Result<Voicemail>) -> Unit)
+
+    /**
+     * Deletes a voicemail matching the given `id`.
+     * @param id The `id` of the `Voicemail` to delete.
+     * @param callback Completion callback providing success or an error if the `Voicemail` could not be deleted.
+     */
+    fun deleteVoicemail(id: String, callback: (Result<String>) -> Unit)
+
+    /**
+     * Subscribe to new, updated, and deleted `Voicemail` records.
+     * @param subscriber The subscriber to notify.
+     * @param id The unique ID for the subscriber.
+    */
+    fun subscribeToVoicemails(subscriber: VoicemailSubscriber, id: String)
+
+    /**
+     * Unsubscribes the specified subscriber so that it no longer receives notifications about
+     * new 'Voicemail' objects. If no id is provided, all subscribers will be unsubscribed.
+     *
+     * @param id unique ID for the subscriber.
+     */
+    fun unsubscribeFromVoicemails(id: String?)
 }
 
-class DefaultSudoTelephonyCalling(val context: Context, val graphQLClient: AWSAppSyncClient): SudoTelephonyCalling {
+class DefaultSudoTelephonyCalling(val context: Context,
+                                  val graphQLClient: AWSAppSyncClient,
+                                  val keyManager: TelephonyKeyManager,
+                                  val logger: Logger): SudoTelephonyCalling {
+
     private lateinit var activeVoiceCall: ActiveVoiceCall
     // TODO: find out if there can be multiple incoming calls and if we need to keep track of this access token differently
     private var incomingCallAccessToken = ""
+    private var callRecordSubscriptionManager: SubscriptionManager<OnCallRecordSubscription.Data>? = null
+    private var voicemailSubscriptionManager: SubscriptionManager<OnVoicemailSubscription.Data>? = null
 
     override fun createVoiceCall(localNumber: PhoneNumber, remoteNumber: String, listener: ActiveCallListener) {
         val input = CreateVoiceCallInput.builder()
@@ -315,12 +429,11 @@ class DefaultSudoTelephonyCalling(val context: Context, val graphQLClient: AWSAp
         graphQLClient.mutate(mutation)
             .enqueue(object : GraphQLCall.Callback<CreateVoiceCallMutation.Data>() {
                 override fun onResponse(response: Response<CreateVoiceCallMutation.Data>) {
-                    val token = response.data()?.createVoiceCall()?.token()
+                    val token = response.data()?.createVoiceCall()?.vendorAuthorization?.accessToken
                     token?.let { accessToken ->
                         val callId = UUID.randomUUID()
-                        val callRecord = CallRecord(accessToken, localNumber.phoneNumber, remoteNumber)
                         val connected = { vendorCall: TwilioVendorCall ->
-                            activeVoiceCall = ActiveVoiceCall(context, callRecord, callId, vendorCall, listener)
+                            activeVoiceCall = ActiveVoiceCall(context, accessToken, localNumber.phoneNumber, remoteNumber, callId, vendorCall, listener)
                             listener.activeVoiceCallDidConnect(activeVoiceCall)
                         }
 
@@ -329,13 +442,14 @@ class DefaultSudoTelephonyCalling(val context: Context, val graphQLClient: AWSAp
                         }
 
                         val disconnected: ((Exception?) -> Unit) = { e: Exception? ->
+                            activeVoiceCall.stopAudioDeviceListener()
                             listener.activeVoiceCallDidDisconnect(activeVoiceCall, e?.let { TelephonyCallingDisconnectedException(it) })
                             listener.connectionStatusChanged(TelephonySubscriber.ConnectionState.DISCONNECTED)
                         }
                         // instantiate the vendor call
                         // Twilio might throw an exception if the RECORD_AUDIO permission is not approved
                         try {
-                            TwilioVendorCall(context, callRecord, connected, connectionFailed, disconnected)
+                            TwilioVendorCall(context, accessToken, localNumber.phoneNumber, remoteNumber, connected, connectionFailed, disconnected)
                         } catch (e: Exception) {
                             listener.activeVoiceCallDidFailToConnect(TelephonyCallingFailedToStartOutgoingCallException(e))
                         }
@@ -348,6 +462,201 @@ class DefaultSudoTelephonyCalling(val context: Context, val graphQLClient: AWSAp
                     listener.activeVoiceCallDidFailToConnect(TelephonyCallingFailedToAuthorizeOutgoingCallException(e))
                 }
             })
+    }
+
+    override fun getCallRecord(callRecordId: String, callback: (Result<CallRecord>) -> Unit) {
+        val getCallRecordQuery = GetCallRecordQuery.builder()
+            .id(callRecordId)
+            .build()
+
+        GlobalScope.launch(Dispatchers.IO) {
+            graphQLClient.query(getCallRecordQuery)
+                .responseFetcher(AppSyncResponseFetchers.NETWORK_ONLY)
+                .enqueue(object : GraphQLCall.Callback<GetCallRecordQuery.Data>() {
+                    override fun onResponse(response: Response<GetCallRecordQuery.Data>) {
+                        val sealedCallRecord = response.data()?.getCallRecord?.fragments()?.sealedCallRecord
+                        if (sealedCallRecord == null) {
+                            val error = TelephonyGetCallRecordException()
+                            logger.error("Failed to retrieve call record for id $callRecordId")
+                            callback.runOnUiThread()(Result.Error(error))
+                            return
+                        }
+
+                        val callRecord = CallRecord.createFrom(sealedCallRecord, keyManager)
+
+                        callback.runOnUiThread()(Result.Success(callRecord))
+                    }
+
+                    override fun onFailure(e: ApolloException) {
+                        val error = TelephonyGetCallRecordException(e)
+                        logger.error("Failed to retrieve call record for id $callRecordId")
+                        callback.runOnUiThread()(Result.Error(error))
+                    }
+                })
+        }
+    }
+
+
+    override fun getCallRecords(localNumber: PhoneNumber,
+                                limit: Int?,
+                                nextToken: String?,
+                                callback: (Result<TelephonyListToken<CallRecord>>) -> Unit) {
+        val callStateFilter = CallStateFilterInput.builder().
+            `in`(listOf(CallState.COMPLETED, CallState.UNANSWERED))
+            .build()
+        val callRecordInput = CallRecordFilterInput.builder()
+            .state(callStateFilter)
+            .build()
+        val keyInput = CallRecordKeyInput.builder()
+            .phoneNumberId(localNumber.id)
+            .build()
+
+        val query = ListCallRecordsQuery.builder()
+            .key(keyInput)
+            .filter(callRecordInput)
+            .limit(limit)
+            .nextToken(nextToken)
+            .build()
+
+        GlobalScope.launch(Dispatchers.IO) {
+            graphQLClient.query(query)
+                .responseFetcher(AppSyncResponseFetchers.NETWORK_ONLY)
+                .enqueue(object : GraphQLCall.Callback<ListCallRecordsQuery.Data>() {
+                    override fun onResponse(response: Response<ListCallRecordsQuery.Data>) {
+                        val sealedCallRecords = response.data()?.listCallRecords?.items
+                        val newNextToken = response.data()?.listCallRecords?.nextToken
+
+                        if (sealedCallRecords == null) {
+                            val error = TelephonyGetCallRecordException()
+                            logger.error("Failed to retrieve call records for phone number ${localNumber.phoneNumber}")
+                            callback.runOnUiThread()(Result.Error(error))
+                            return
+                        }
+
+                        if (sealedCallRecords.size < 1) {
+                            callback.runOnUiThread()(Result.Absent)
+                            return
+                        }
+
+                        val allRecords = sealedCallRecords.map {
+                            val record = it.fragments().sealedCallRecord
+                            CallRecord.createFrom(record, keyManager)
+                        }.sortedByDescending { it.created }
+
+                        callback.runOnUiThread()(
+                            Result.Success(
+                                TelephonyListToken(
+                                    allRecords, newNextToken
+                                )
+                            )
+                        )
+                    }
+
+                    override fun onFailure(e: ApolloException) {
+                        val error = TelephonyGetCallRecordException(e)
+                        logger.error("Failed to retrieve call records for phone number ${localNumber.phoneNumber}")
+                        callback.runOnUiThread()(Result.Error(error))
+                    }
+                })
+        }
+    }
+
+    override fun subscribeToCallRecords(subscriber: CallRecordSubscriber, id: String) {
+        logger.debug("Subscribing to CallRecord notifications.")
+
+        val owner = keyManager.getOwner()
+        require(owner != null) {"Owner was null. The client may not be signed in."}
+
+        if (this.callRecordSubscriptionManager == null) {
+            this.callRecordSubscriptionManager = SubscriptionManager()
+        }
+        val subscriptionManager = this.callRecordSubscriptionManager
+        subscriptionManager?.replaceSubscriber(id, subscriber)
+        if (subscriptionManager?.watcher == null) {
+            GlobalScope.launch(Dispatchers.IO) {
+                val subscription = OnCallRecordSubscription.builder().owner(owner).build()
+                val watcher = graphQLClient.subscribe(subscription)
+                subscriptionManager?.watcher = watcher
+                watcher.execute(object :
+                    AppSyncSubscriptionCall.Callback<OnCallRecordSubscription.Data> {
+                    override fun onCompleted() {
+                        // Subscription was terminated. Notify the subscribers.
+                        subscriptionManager?.connectionStatusChanged(
+                            TelephonySubscriber.ConnectionState.DISCONNECTED
+                        )
+                    }
+
+                    override fun onFailure(e: ApolloException) {
+                        // Failed create a subscription. Notify the subscribers.
+                        subscriptionManager?.connectionStatusChanged(
+                            TelephonySubscriber.ConnectionState.DISCONNECTED
+                        )
+                    }
+
+                    override fun onResponse(response: Response<OnCallRecordSubscription.Data>) {
+                        GlobalScope.launch(Dispatchers.IO) {
+                            try {
+                                val error = response.errors().firstOrNull()
+                                if (error != null) {
+                                    logger.error("Subscription response contained error: $error")
+                                } else {
+                                    val item = response.data()?.OnCallRecord()
+                                    if (item != null) {
+                                        val sealedCallRecord = item.fragments().sealedCallRecord()
+                                        val callRecord = CallRecord.createFrom(sealedCallRecord, keyManager)
+
+                                        // Notify subscribers
+                                        subscriptionManager?.callRecordReceived(callRecord)
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                logger.error("Failed to process the subscription response: $e")
+                            }
+                        }
+                    }
+                })
+
+                subscriptionManager?.connectionStatusChanged(
+                    TelephonySubscriber.ConnectionState.CONNECTED
+                )
+            }
+        }
+    }
+
+    override fun unsubscribeFromCallRecords(id: String?) {
+        val subscriptionManager = this.callRecordSubscriptionManager
+        logger.debug("Unsubscribing from new call record notifications.")
+        if (id == null) {
+            subscriptionManager?.removeAllSubscribers()
+        } else {
+            subscriptionManager?.removeSubscriber(id)
+        }
+    }
+
+    override fun deleteCallRecord(id: String, callback: (Result<String>) -> Unit) {
+        val mutation = DeleteCallRecordMutation.builder()
+            .id(id)
+            .build()
+        GlobalScope.launch(Dispatchers.IO) {
+            graphQLClient.mutate(mutation)
+                .enqueue(object : GraphQLCall.Callback<DeleteCallRecordMutation.Data>() {
+                    override fun onResponse(response: Response<DeleteCallRecordMutation.Data>) {
+                        val error = response.errors().firstOrNull()
+                        if (error != null) {
+                            logger.error("Delete call record response contained error: $error")
+                            callback.runOnUiThread()(Result.Error(TelephonyDeleteCallRecordException()))
+                        } else {
+                            callback.runOnUiThread()(Result.Success(response.data()?.deleteCallRecord ?: ""))
+                        }
+                    }
+
+                    override fun onFailure(e: ApolloException) {
+                        val error = TelephonyDeleteCallRecordException(e)
+                        logger.error("Failed to delete call record for id $id")
+                        callback.runOnUiThread()(Result.Error(error))
+                    }
+                })
+        }
     }
 
     private fun registrationListener(callback: (Result<Unit>) -> Unit) : RegistrationListener {
@@ -449,7 +758,9 @@ class DefaultSudoTelephonyCalling(val context: Context, val graphQLClient: AWSAp
                 val callId = UUID.randomUUID()
                 val connected = { vendorCall: TwilioVendorCall ->
                     activeVoiceCall = ActiveVoiceCall(context,
-                        CallRecord(incomingCallAccessToken, incomingCall.localNumber, incomingCall.remoteNumber),
+                        incomingCallAccessToken,
+                        incomingCall.localNumber,
+                        incomingCall.remoteNumber,
                         callId,
                         vendorCall, listener)
                     listener.activeVoiceCallDidConnect(activeVoiceCall)
@@ -460,6 +771,7 @@ class DefaultSudoTelephonyCalling(val context: Context, val graphQLClient: AWSAp
                 }
 
                 val disconnected: ((Exception?) -> Unit) = { e: Exception? ->
+                    activeVoiceCall.stopAudioDeviceListener()
                     listener.activeVoiceCallDidDisconnect(activeVoiceCall, e?.let { TelephonyCallingDisconnectedException(it) })
                     listener.connectionStatusChanged(TelephonySubscriber.ConnectionState.DISCONNECTED)
                 }
@@ -479,6 +791,199 @@ class DefaultSudoTelephonyCalling(val context: Context, val graphQLClient: AWSAp
             notificationListener.incomingCallCanceled(incomingCall, null)
         })
         return Voice.handleMessage(payload, messageListener)
+    }
+
+    // Voicemail
+
+    override fun getVoicemails(localNumber: PhoneNumber, limit: Int?, nextToken: String?, callback: (Result<TelephonyListToken<Voicemail>>) -> Unit) {
+        val keyInput = VoicemailKeyInput.builder()
+            .phoneNumberId(localNumber.id)
+            .build()
+        val query = ListVoicemailsQuery.builder()
+            .key(keyInput)
+            .limit(limit)
+            .nextToken(nextToken)
+            .build()
+        GlobalScope.launch(Dispatchers.IO) {
+            graphQLClient.query(query)
+                .responseFetcher(AppSyncResponseFetchers.NETWORK_ONLY)
+                .enqueue(object : GraphQLCall.Callback<ListVoicemailsQuery.Data>() {
+                    override fun onResponse(response: Response<ListVoicemailsQuery.Data>) {
+                        val error = response.errors().firstOrNull()
+                        if (error != null) {
+                            logger.error("Get voicemails response contained error: $error")
+                            callback.runOnUiThread()(Result.Error(TelephonyGetVoicemailException()))
+                            return
+                        }
+
+                        val sealedVoicemails = response.data()?.listVoicemails?.items
+                        val newNextToken = response.data()?.listVoicemails?.nextToken
+
+                        if (sealedVoicemails == null) {
+                            logger.error("Failed to retrieve voicemails for phone number ${localNumber.phoneNumber}")
+                            callback.runOnUiThread()(Result.Error(TelephonyGetVoicemailException()))
+                            return
+                        }
+
+                        if (sealedVoicemails.size < 1) {
+                            callback.runOnUiThread()(Result.Absent)
+                            return
+                        }
+
+                        val allVoicemails = sealedVoicemails.map {
+                            val record = it.fragments().sealedVoicemail
+                            Voicemail.createFrom(record, keyManager)
+                        }
+
+                        callback.runOnUiThread()(
+                            Result.Success(
+                                TelephonyListToken(
+                                    allVoicemails, newNextToken
+                                )
+                            )
+                        )
+                    }
+
+                    override fun onFailure(e: ApolloException) {
+                        val error = TelephonyGetVoicemailException()
+                        callback.runOnUiThread()(Result.Error(error))
+                    }
+                })
+        }
+    }
+
+    override fun getVoicemail(id: String, callback: (Result<Voicemail>) -> Unit) {
+        val query = GetVoicemailQuery.builder()
+            .id(id)
+            .build()
+        GlobalScope.launch(Dispatchers.IO) {
+            graphQLClient.query(query)
+                .responseFetcher(AppSyncResponseFetchers.NETWORK_ONLY)
+                .enqueue(object : GraphQLCall.Callback<GetVoicemailQuery.Data>() {
+                    override fun onResponse(response: Response<GetVoicemailQuery.Data>) {
+                        val error = response.errors().firstOrNull()
+                        if (error != null) {
+                            logger.error("Get voicemails response contained error: $error")
+                            callback.runOnUiThread()(Result.Error(TelephonyGetVoicemailException()))
+                            return
+                        }
+
+                        val sealedVoicemail = response.data()?.voicemail?.fragments()?.sealedVoicemail
+                        if (sealedVoicemail == null) {
+                            logger.error("Failed to retrieve voicemail for id $id")
+                            callback.runOnUiThread()(Result.Error(TelephonyGetVoicemailException()))
+                            return
+                        }
+
+                        val voicemail = Voicemail.createFrom(sealedVoicemail, keyManager)
+
+                        callback.runOnUiThread()(Result.Success(voicemail))
+                    }
+
+                    override fun onFailure(e: ApolloException) {
+                        val error = TelephonyGetVoicemailException()
+                        callback.runOnUiThread()(Result.Error(error))
+                    }
+                })
+        }
+    }
+
+    override fun deleteVoicemail(id: String, callback: (Result<String>) -> Unit) {
+        val mutation = DeleteVoicemailMutation.builder()
+            .id(id)
+            .build()
+        GlobalScope.launch(Dispatchers.IO) {
+            graphQLClient.mutate(mutation)
+                .enqueue(object : GraphQLCall.Callback<DeleteVoicemailMutation.Data>() {
+                    override fun onResponse(response: Response<DeleteVoicemailMutation.Data>) {
+                        val error = response.errors().firstOrNull()
+                        if (error != null) {
+                            logger.error("Delete voicemail response contained error: $error")
+                            callback.runOnUiThread()(Result.Error(TelephonyDeleteVoicemailException()))
+                        } else {
+                            callback.runOnUiThread()(Result.Success(response.data()?.deleteVoicemail ?: ""))
+                        }
+                    }
+
+                    override fun onFailure(e: ApolloException) {
+                        val error = TelephonyDeleteVoicemailException(e)
+                        logger.error("Failed to delete voicemail for id $id")
+                        callback.runOnUiThread()(Result.Error(error))
+                    }
+                })
+        }
+    }
+
+    override fun subscribeToVoicemails(subscriber: VoicemailSubscriber, id: String) {
+        logger.debug("Subscribing to Voicemail notifications.")
+
+        val owner = keyManager.getOwner()
+        require(owner != null) {"Owner was null. The client may not be signed in."}
+
+        if (this.voicemailSubscriptionManager == null) {
+            this.voicemailSubscriptionManager = SubscriptionManager()
+        }
+        val subscriptionManager = this.voicemailSubscriptionManager
+        subscriptionManager?.replaceSubscriber(id, subscriber)
+        if (subscriptionManager?.watcher == null) {
+            GlobalScope.launch(Dispatchers.IO) {
+                val subscription = OnVoicemailSubscription.builder().owner(owner).build()
+                val watcher = graphQLClient.subscribe(subscription)
+                subscriptionManager?.watcher = watcher
+                watcher.execute(object :
+                    AppSyncSubscriptionCall.Callback<OnVoicemailSubscription.Data> {
+                    override fun onCompleted() {
+                        // Subscription was terminated. Notify the subscribers.
+                        subscriptionManager?.connectionStatusChanged(
+                            TelephonySubscriber.ConnectionState.DISCONNECTED
+                        )
+                    }
+
+                    override fun onFailure(e: ApolloException) {
+                        // Failed create a subscription. Notify the subscribers.
+                        subscriptionManager?.connectionStatusChanged(
+                            TelephonySubscriber.ConnectionState.DISCONNECTED
+                        )
+                    }
+
+                    override fun onResponse(response: Response<OnVoicemailSubscription.Data>) {
+                        GlobalScope.launch(Dispatchers.IO) {
+                            try {
+                                val error = response.errors().firstOrNull()
+                                if (error != null) {
+                                    logger.error("Subscription response contained error: $error")
+                                } else {
+                                    val item = response.data()?.OnVoicemail()
+                                    if (item != null) {
+                                        val sealedVoicemail = item.fragments().sealedVoicemail()
+                                        val voicemail = Voicemail.createFrom(sealedVoicemail, keyManager)
+
+                                        // Notify subscribers
+                                        subscriptionManager?.voicemailUpdated(voicemail)
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                logger.error("Failed to process the subscription response: $e")
+                            }
+                        }
+                    }
+                })
+
+                subscriptionManager?.connectionStatusChanged(
+                    TelephonySubscriber.ConnectionState.CONNECTED
+                )
+            }
+        }
+    }
+
+    override fun unsubscribeFromVoicemails(id: String?) {
+        val subscriptionManager = this.voicemailSubscriptionManager
+        logger.debug("Unsubscribing from new voicemail notifications.")
+        if (id == null) {
+            subscriptionManager?.removeAllSubscribers()
+        } else {
+            subscriptionManager?.removeSubscriber(id)
+        }
     }
 }
 

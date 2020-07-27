@@ -1,0 +1,132 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Voicemail - sudotelephony</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sudotelephony</a>&nbsp;/&nbsp;<a href="../index.html">com.sudoplatform.sudotelephony</a>&nbsp;/&nbsp;<a href="./index.html">Voicemail</a><br/>
+<br/>
+<h1>Voicemail</h1>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">Voicemail</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/os/Parcelable.html"><span class="identifier">Parcelable</span></a></code>
+<p>A voicemail record.</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-init-.html">&lt;init&gt;</a></h4>
+</td>
+<td>
+<p>A voicemail record.</p>
+<code><span class="identifier">Voicemail</span><span class="symbol">(</span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail$<init>(kotlin.String, kotlin.String, kotlin.String, kotlin.String, kotlin.String, java.time.Instant, java.time.Instant, kotlin.String, kotlin.String, kotlin.Int, com.sudoplatform.sudotelephony.MediaObject)/id">id</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail$<init>(kotlin.String, kotlin.String, kotlin.String, kotlin.String, kotlin.String, java.time.Instant, java.time.Instant, kotlin.String, kotlin.String, kotlin.Int, com.sudoplatform.sudotelephony.MediaObject)/owner">owner</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail$<init>(kotlin.String, kotlin.String, kotlin.String, kotlin.String, kotlin.String, java.time.Instant, java.time.Instant, kotlin.String, kotlin.String, kotlin.Int, com.sudoplatform.sudotelephony.MediaObject)/sudoOwner">sudoOwner</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail$<init>(kotlin.String, kotlin.String, kotlin.String, kotlin.String, kotlin.String, java.time.Instant, java.time.Instant, kotlin.String, kotlin.String, kotlin.Int, com.sudoplatform.sudotelephony.MediaObject)/phoneNumberId">phoneNumberId</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail$<init>(kotlin.String, kotlin.String, kotlin.String, kotlin.String, kotlin.String, java.time.Instant, java.time.Instant, kotlin.String, kotlin.String, kotlin.Int, com.sudoplatform.sudotelephony.MediaObject)/callRecordId">callRecordId</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">?</span><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail$<init>(kotlin.String, kotlin.String, kotlin.String, kotlin.String, kotlin.String, java.time.Instant, java.time.Instant, kotlin.String, kotlin.String, kotlin.Int, com.sudoplatform.sudotelephony.MediaObject)/created">created</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/time/Instant.html"><span class="identifier">Instant</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail$<init>(kotlin.String, kotlin.String, kotlin.String, kotlin.String, kotlin.String, java.time.Instant, java.time.Instant, kotlin.String, kotlin.String, kotlin.Int, com.sudoplatform.sudotelephony.MediaObject)/updated">updated</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/time/Instant.html"><span class="identifier">Instant</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail$<init>(kotlin.String, kotlin.String, kotlin.String, kotlin.String, kotlin.String, java.time.Instant, java.time.Instant, kotlin.String, kotlin.String, kotlin.Int, com.sudoplatform.sudotelephony.MediaObject)/localPhoneNumber">localPhoneNumber</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail$<init>(kotlin.String, kotlin.String, kotlin.String, kotlin.String, kotlin.String, java.time.Instant, java.time.Instant, kotlin.String, kotlin.String, kotlin.Int, com.sudoplatform.sudotelephony.MediaObject)/remotePhoneNumber">remotePhoneNumber</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail$<init>(kotlin.String, kotlin.String, kotlin.String, kotlin.String, kotlin.String, java.time.Instant, java.time.Instant, kotlin.String, kotlin.String, kotlin.Int, com.sudoplatform.sudotelephony.MediaObject)/durationSeconds">durationSeconds</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail$<init>(kotlin.String, kotlin.String, kotlin.String, kotlin.String, kotlin.String, java.time.Instant, java.time.Instant, kotlin.String, kotlin.String, kotlin.Int, com.sudoplatform.sudotelephony.MediaObject)/media">media</span><span class="symbol">:</span>&nbsp;<a href="../-media-object/index.html"><span class="identifier">MediaObject</span></a><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="call-record-id.html">callRecordId</a></h4>
+</td>
+<td>
+<p>The ID of the <code>CallRecord</code> associated with the voicemail.</p>
+<code><span class="keyword">var </span><span class="identifier">callRecordId</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="created.html">created</a></h4>
+</td>
+<td>
+<p>Timestamp that represents the time the voicemail was created.</p>
+<code><span class="keyword">val </span><span class="identifier">created</span><span class="symbol">: </span><a href="https://developer.android.com/reference/java/time/Instant.html"><span class="identifier">Instant</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="duration-seconds.html">durationSeconds</a></h4>
+</td>
+<td>
+<p>The duration of the voicemail recording in seconds.</p>
+<code><span class="keyword">val </span><span class="identifier">durationSeconds</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="id.html">id</a></h4>
+</td>
+<td>
+<p>Unique ID of the voicemail record</p>
+<code><span class="keyword">val </span><span class="identifier">id</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="local-phone-number.html">localPhoneNumber</a></h4>
+</td>
+<td>
+<p>The E.164 formatted phone number that received the voicemail.</p>
+<code><span class="keyword">val </span><span class="identifier">localPhoneNumber</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="media.html">media</a></h4>
+</td>
+<td>
+<p>The media object that can be used to download the voicemail recording.</p>
+<code><span class="keyword">val </span><span class="identifier">media</span><span class="symbol">: </span><a href="../-media-object/index.html"><span class="identifier">MediaObject</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="owner.html">owner</a></h4>
+</td>
+<td>
+<p>The ID of the Sudo Platform user that owns the voicemail.</p>
+<code><span class="keyword">val </span><span class="identifier">owner</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="phone-number-id.html">phoneNumberId</a></h4>
+</td>
+<td>
+<p>The ID of the <code>PhoneNumber</code> associated with the voicemail.</p>
+<code><span class="keyword">var </span><span class="identifier">phoneNumberId</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="remote-phone-number.html">remotePhoneNumber</a></h4>
+</td>
+<td>
+<p>The E.164 formatted phone number of the caller.</p>
+<code><span class="keyword">val </span><span class="identifier">remotePhoneNumber</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="sudo-owner.html">sudoOwner</a></h4>
+</td>
+<td>
+<p>The ID of the Sudo that received the voicemail.</p>
+<code><span class="keyword">val </span><span class="identifier">sudoOwner</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="updated.html">updated</a></h4>
+</td>
+<td>
+<p>Timestamp that represents the last time the voicemail was updated.</p>
+<code><span class="keyword">val </span><span class="identifier">updated</span><span class="symbol">: </span><a href="https://developer.android.com/reference/java/time/Instant.html"><span class="identifier">Instant</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="create-from.html">createFrom</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">createFrom</span><span class="symbol">(</span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail.Companion$createFrom(, com.sudoplatform.sudotelephony.TelephonyKeyManager)/sealedVoicemail">sealedVoicemail</span><span class="symbol">:</span>&nbsp;<span class="identifier">&lt;ERROR CLASS&gt;</span><span class="symbol">, </span><span class="identifier" id="com.sudoplatform.sudotelephony.Voicemail.Companion$createFrom(, com.sudoplatform.sudotelephony.TelephonyKeyManager)/keyManager">keyManager</span><span class="symbol">:</span>&nbsp;<a href="../-telephony-key-manager/index.html"><span class="identifier">TelephonyKeyManager</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Voicemail</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

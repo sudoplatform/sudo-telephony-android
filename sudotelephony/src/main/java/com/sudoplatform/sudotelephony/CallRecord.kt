@@ -150,7 +150,6 @@ enum class CallRecordState() {
                     CallState.ANSWERED -> ANSWERED
                     CallState.COMPLETED -> COMPLETED
                     CallState.UNANSWERED -> UNANSWERED
-                    else -> UNKNOWN
                }
           }
      }

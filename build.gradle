@@ -42,3 +42,6 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+// https://github.com/Codearte/gradle-nexus-staging-plugin/issues/157
+tasks.findByName("closeRepository").mustRunAfter ":sudotelephony:publishToSonatype"

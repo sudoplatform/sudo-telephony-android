@@ -55,7 +55,8 @@ class DefaultTelephonyKeyManager(sudoUserClient: SudoUserClient, graphQLClient: 
     }
 
     private fun getIdentityId() : String? {
-        return this.sudoUserClient.getUserClaim("custom:identityId") as? String
+        val identityId = this.sudoUserClient.getUserClaim("custom:identityId")
+        return identityId as? String
     }
 
     override fun generateKeyPair(callback: (Result<com.sudoplatform.sudotelephony.fragment.PublicKey>) -> Unit) {

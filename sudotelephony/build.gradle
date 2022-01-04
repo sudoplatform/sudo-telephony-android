@@ -5,14 +5,13 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'com.amazonaws.appsync'
 apply plugin: 'org.owasp.dependencycheck'
 apply plugin: 'org.jetbrains.dokka'
-apply plugin: "org.sonarqube"
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
 
     defaultConfig {
-        minSdkVersion 23
-        targetSdkVersion 28
+        minSdkVersion 26
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -27,6 +26,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            testCoverageEnabled true
+        }
     }
 
     compileOptions {
@@ -36,11 +38,14 @@ android {
 
     testOptions {
         animationsDisabled = true
-//         TODO: The Android X Test Orchestrator is broken in Android Studio 3.6.2, will be fixed in 3.6.3
-//        execution 'ANDROIDX_TEST_ORCHESTRATOR'
-
         unitTests.all {
-            useJUnitPlatform()
+            outputs.upToDateWhen { false }
+            jacoco {
+                includeNoLocationClasses = true
+                // Prevent complaints such as below:
+                // java.lang.NoClassDefFoundError: jdk/internal/reflect/GeneratedSerializationConstructorAccessor1
+                excludes = ['jdk.internal.*']
+            }
         }
         unitTests {
             includeAndroidResources = true
@@ -49,6 +54,11 @@ android {
 
     packagingOptions {
         pickFirst("META-INF/atomicfu.kotlin_module")
+        pickFirst("META-INF/sudotelephony_debug.kotlin_module")
+    }
+
+    node {
+        version = "16.2.0"
     }
 }
 
@@ -58,7 +68,7 @@ dependencyCheck {
 }
 
 dependencies {
-    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     // Logging
@@ -71,52 +81,149 @@ dependencies {
     implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
 
     // Sudo Platform SDKs
-    implementation "com.sudoplatform:sudoconfigmanager:[1.2.2,)"
-    implementation 'com.sudoplatform:sudoapiclient:[1.4.0,)'
-    implementation "com.sudoplatform:sudokeymanager:[3.4.1,)"
-    implementation "com.sudoplatform:sudoprofiles:[2.2.0,)"
+    implementation 'com.sudoplatform:sudouser:9.4.2'
+    implementation 'com.sudoplatform:sudokeymanager:3.8.0'
+    implementation 'com.sudoplatform:sudoentitlements:2.3.1'
+    implementation "com.sudoplatform:sudoprofiles:7.0.1"
 
     // Voice
     api 'com.twilio:voice-android:3.1.2'
     api 'com.twilio:audioswitch:0.1.5'
 
     implementation 'com.google.firebase:firebase-messaging:20.1.4'
-    testImplementation "junit:junit:4.12"
-    testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.3.0'
-    testImplementation "org.mockito:mockito-core:2.16.0"
-    testImplementation "org.robolectric:robolectric:4.2"
+    testImplementation "junit:junit:4.13.2"
+    testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.4.2'
+    testImplementation "org.mockito:mockito-core:3.10.0"
+    testImplementation "org.robolectric:robolectric:4.5.1"
     testImplementation "org.awaitility:awaitility-kotlin:3.1.6"
-    testImplementation("com.nhaarman:mockito-kotlin:1.5.0") {
-        exclude group: 'org.jetbrains.kotlin'
-        exclude group: 'org.mockito'
-    }
+    testImplementation "org.mockito.kotlin:mockito-kotlin:3.2.0"
 
     androidTestImplementation "org.awaitility:awaitility-kotlin:3.1.6"
     androidTestImplementation 'com.google.truth:truth:0.32'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test:rules:1.1.1'
     androidTestUtil 'androidx.test:orchestrator:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     androidTestImplementation "org.mockito:mockito-android:2.16.0"
 
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation "androidx.test:core:1.3.0"
+    androidTestImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
 }
 
-dokka {
-    outputFormat = 'html'
-    outputDirectory = "$buildDir/javadoc"
-}
 
-ext {
-    PUBLISH_GROUP_ID = 'com.sudoplatform'
-    PUBLISH_ARTIFACT_ID = 'sudotelephony'
-    PUBLISH_DESCRIPTION = 'Telephony SDK for the Sudo Platform by Anonyome Labs.'
-    PUBLISH_PROJECT_URL = 'https://github.com/sudoplatform/sudo-telephony-android'
-    PUBLISH_PROJECT_SCM = 'scm:git:github.com/sudoplatform/sudo-telephony-android.git'
-    if (project.hasProperty('tag')) {
-        PUBLISH_VERSION = "$tag"
-    } else {
-        PUBLISH_VERSION = "0.0.0"
+// Dokka documentation generation
+apply plugin: 'org.jetbrains.dokka'
+
+dokkaHtml {
+    outputDirectory.set(project.file("$buildDir/javadoc"))
+
+    dokkaSourceSets {
+        configureEach {
+
+            jdkVersion.set(8)
+            skipEmptyPackages.set(true)
+
+            includes.from("packages.md")
+            samples.from("src/test/java/com/sudoplatform/sudotelephony/samples/Samples.kt")
+
+            // Root URL of the generated documentation to link with. The trailing slash is required!
+            externalDocumentationLink {
+                url.set(new URL("https://sudoplatform.github.io/sudo-user-android/sudouser/"))
+                packageListUrl.set(new URL("https://sudoplatform.github.io/sudo-user-android/sudouser/package-list"))
+            }
+        }
     }
 }
 
-apply from: "${rootProject.projectDir}/publish-mavencentral.gradle"
+// Setup common publishing variables
+ext {
+    projectGroup = 'com.sudoplatform'
+    projectArtifact = project.name
+    projectDescription = 'Telephony SDK for the Sudo Platform by Anonyome Labs.'
+    projectUrl = 'https://github.com/sudoplatform/sudo-telephony-android'
+    projectSCM = 'scm:git:github.com/sudoplatform/sudo-telephony-android.git'
+    if (project.hasProperty('tag')) {
+        projectVersion = "$tag"
+    } else {
+        projectVersion = "0.0.0"
+    }
+}
+
+// Apollo Code Generation
+apollo {
+    outputPackageName = "com.sudoplatform.sudotelephony.graphql"
+}
+
+task copyBypassCheckLicense(type: Copy) {
+    from 'bypass_check_licenses.json'
+    into 'src/main/assets'
+}
+
+// Jacoco test coverage
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = "0.8.7"
+}
+
+task jacocoTestReport(type: JacocoReport, dependsOn: "testDebugUnitTest") {
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports"
+    classDirectories.setFrom(
+            fileTree(
+                    dir: "${buildDir}/tmp/kotlin-classes/debug",
+                    excludes: ['**/R.class',
+                               '**/R$*.class',
+                               '**/BuildConfig.*',
+                               '**/Manifest*.*']
+            )
+    )
+    sourceDirectories.setFrom(files("${buildDir.parent}/sudotelephony/src/main/java"))
+    executionData.setFrom(fileTree(["dir": "$buildDir", "includes": ["**/*.exec", "**/*.ec"]]))
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}
+
+// Kotlin Lint
+apply plugin: 'org.jmailen.kotlinter'
+
+kotlinter {
+    ignoreFailures = false
+    reporters = ['checkstyle', 'plain']
+    experimentalRules = false
+}
+
+// Licenses checking
+// https://github.com/cookpad/license-tools-plugin
+apply plugin: "com.cookpad.android.licensetools"
+
+licenseTools {
+    licensesYaml = file("licenses.yml")
+    ignoredGroups = ["com.nhaarman:mockito-kotlin", "com.anonyome", "com.sudoplatform"]
+    ignoredProjects = ["org.mockito"]
+}
+
+apply from: "${rootProject.projectDir}/buildScripts/check-licenses-file.gradle"
+preBuild.finalizedBy(generateLicenseJson, copyBypassCheckLicense)
+
+// Vulnerability scanning
+if (project.file("${rootProject.projectDir}/util/vulnerability-scan.gradle").exists()) {
+    apply from: "${rootProject.projectDir}/util/vulnerability-scan.gradle"
+}
+
+// Internal and External publishing
+if (project.findProperty("tag") && project.file("${rootProject.projectDir}/util/publish-mavencentral.gradle").exists()) {
+    apply from: "${rootProject.projectDir}/util/publish-mavencentral.gradle"
+} else if (project.file("${rootProject.projectDir}/util/publish-internal-android.gradle").exists()) {
+    apply from: "${rootProject.projectDir}/util/publish-internal-android.gradle"
+}
+
+// Sonarqube code analysis
+if (project.file("${rootProject.projectDir}/util/sonarqube.gradle").exists()) {
+    ext.sonarProjectKey = "sudo-telephony-android"
+    ext.sonarProjectName = "sudo-telephony-android"
+    ext.sonarExclusions = ["*.png", "*.jks", "*.json", "*.key"]
+    apply from: "${rootProject.projectDir}/util/sonarqube.gradle"
+}

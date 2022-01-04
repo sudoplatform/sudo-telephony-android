@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) 2020 Anonyome Labs Inc. All rights reserved.
+ */
+import org.yaml.snakeyaml.Yaml
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.yaml:snakeyaml:1.25"
+    }
+}
+
+task checkLicenseHaveRequiredFields {
+    description = "Check every license entry has the mandatory fields"
+    group = "verification"
+
+    doLast {
+        def mandatoryFields = ["artifact", "name", "copyrightHolder", "url"]
+        Yaml parser = new Yaml()
+        def licenses = parser.load((file("licenses.yml") as File).text)
+        def errors = new StringBuilder()
+        licenses.each { artifact ->
+            mandatoryFields.each { field ->
+                if (artifact[field] == null) {
+                    errors.append("License entry '${artifact.artifact}' is missing required element `$field`\n")
+                }
+            }
+            if (artifact["license"] == null && artifact["licenseUrl" == null]) {
+                errors.append("License entry '${artifact.artifact}' must have one of [license,licenseUrl]\n")
+            }
+        }
+        if (errors.length() > 0) {
+            throw new GradleException("Missing license elements:\n$errors")
+        }
+    }
+}
+checkLicenses.finalizedBy checkLicenseHaveRequiredFields

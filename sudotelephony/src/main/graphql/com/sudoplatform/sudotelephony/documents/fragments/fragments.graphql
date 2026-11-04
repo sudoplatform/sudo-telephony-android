@@ -1,0 +1,67 @@
+fragment AvailablePhoneNumber on AvailablePhoneNumber {
+  phoneNumber
+  countryCode
+  numberType
+  locality
+  region
+}
+
+fragment PhoneNumberSearch on PhoneNumberSearch {
+  id
+  countryCode
+  areaCode
+  results {
+    ...AvailablePhoneNumber
+  }
+  expiresAtEpochMs
+  owner
+  version
+  createdAtEpochMs
+  updatedAtEpochMs
+}
+
+fragment PhoneNumber on PhoneNumber {
+  id
+  owner
+  owners {
+    id
+    issuer
+  }
+  identityId
+  keyRingId
+  keyIds
+  phoneNumber
+  countryCode
+  numberType
+  areaCode
+  state
+  failureReason
+  gracePeriodEndsAtEpochMs
+  clientRefId
+  version
+  createdAtEpochMs
+  updatedAtEpochMs
+}
+
+fragment SealedPhoneMessage on SealedPhoneMessage {
+  id
+  owner
+  owners {
+    id
+    issuer
+  }
+  phoneNumberId
+  conversationId
+  type
+  direction
+  localPhoneNumber
+  remotePhoneNumber
+  body
+  segmentCount
+  mediaOmitted
+  seen
+  receivedAtEpochMs
+  version
+  createdAtEpochMs
+  updatedAtEpochMs
+}

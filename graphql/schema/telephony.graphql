@@ -1,0 +1,815 @@
+"""
+The owner of a resource, taken from an ownership proof.
+"""
+type Owner {
+  """
+  ID of the owner, for example a Sudo ID.
+  """
+  id: String!
+  """
+  Issuer of the ownership proof, for example sudoplatform.sudoservice.
+  """
+  issuer: String!
+}
+
+input OwnerInput {
+  id: String!
+  issuer: String!
+}
+
+"""
+The order in which a list is returned.
+"""
+enum SortOrder {
+  """
+  Oldest first.
+  """
+  ASC
+  """
+  Newest first.
+  """
+  DESC
+}
+
+"""
+The lifecycle state of a phone number.
+
+PROVISIONING -> ACTIVE <-> SUSPENDED -> RELEASED, or PROVISIONING -> FAILED.
+"""
+enum PhoneNumberState {
+  """
+  The order for the number is in progress with the telephony provider.
+  """
+  PROVISIONING
+  """
+  The number is active and can send and receive messages.
+  """
+  ACTIVE
+  """
+  The user's entitlements no longer cover the number. The number keeps
+  receiving messages until the grace period ends, then it is released.
+  """
+  SUSPENDED
+  """
+  The number has been returned to the telephony provider.
+  """
+  RELEASED
+  """
+  Provisioning failed. failureReason says why.
+  """
+  FAILED
+}
+
+"""
+The reason provisioning a phone number failed.
+"""
+enum PhoneNumberFailureReason {
+  """
+  The number is no longer available, for example because someone else took it
+  after the search.
+  """
+  NUMBER_UNAVAILABLE
+  """
+  The telephony provider or carrier rejected the order.
+  """
+  CARRIER_ERROR
+}
+
+"""
+The type of phone number.
+"""
+enum PhoneNumberType {
+  """
+  A geographic number tied to an area code.
+  """
+  LOCAL
+}
+
+"""
+A phone number that a search found available to provision.
+"""
+type AvailablePhoneNumber {
+  """
+  The number in E.164 format, for example +14155550123.
+  """
+  phoneNumber: String!
+  """
+  ISO 3166-1 alpha-2 country code of the number, for example US.
+  """
+  countryCode: String!
+  """
+  The kind of number.
+  """
+  numberType: PhoneNumberType!
+  """
+  City or rate centre of the number, if the carrier reports one.
+  """
+  locality: String
+  """
+  State or province code of the number, for example NY or ON.
+  """
+  region: String
+}
+
+"""
+The result of a phone number search. The search is kept for 15 minutes so that
+provisioning can check the requested number came from it.
+"""
+type PhoneNumberSearch {
+  """
+  ID of the search. Pass it as searchId when provisioning.
+  """
+  id: ID!
+  """
+  ISO 3166-1 alpha-2 country code that was searched.
+  """
+  countryCode: String!
+  """
+  Area code that was searched. Null for a country-wide search.
+  """
+  areaCode: String
+  """
+  The available numbers, without duplicates and at most the requested limit.
+  """
+  results: [AvailablePhoneNumber!]!
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z after which provisioning
+  from this search is refused. The carrier doesn't reserve the numbers, so one
+  can be taken by someone else sooner.
+  """
+  expiresAtEpochMs: Float!
+  """
+  ID of the user who made the search.
+  """
+  owner: ID!
+  """
+  Version of this object, incremented on each update.
+  """
+  version: Int!
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z when the object was created.
+  """
+  createdAtEpochMs: Float!
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z when the object was last updated.
+  """
+  updatedAtEpochMs: Float!
+}
+
+"""
+A phone number provisioned for a user.
+"""
+type PhoneNumber {
+  """
+  ID of the phone number.
+  """
+  id: ID!
+  """
+  ID of the user who owns the phone number.
+  """
+  owner: ID!
+  """
+  Owners taken from the ownership proofs, which tie the phone number to a Sudo.
+  """
+  owners: [Owner!]!
+  """
+  Identity ID of the user who owns the phone number.
+  """
+  identityId: ID!
+  """
+  ID of the key ring whose keys seal the phone number's messages.
+  """
+  keyRingId: ID!
+  """
+  IDs of the keys in the key ring.
+  """
+  keyIds: [String!]!
+  """
+  The number in E.164 format, for example +14155550123.
+  """
+  phoneNumber: String!
+  """
+  ISO 3166-1 alpha-2 country code of the number, for example US.
+  """
+  countryCode: String!
+  """
+  The kind of number.
+  """
+  numberType: PhoneNumberType!
+  """
+  Area code of the number. Null where the country has no area codes.
+  """
+  areaCode: String
+  """
+  Lifecycle state of the number.
+  """
+  state: PhoneNumberState!
+  """
+  Why provisioning failed. Set only when state is FAILED.
+  """
+  failureReason: PhoneNumberFailureReason
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z when the number will be
+  released. Set only when state is SUSPENDED.
+  """
+  gracePeriodEndsAtEpochMs: Float
+  """
+  Client-supplied reference passed when provisioning, returned unchanged.
+  """
+  clientRefId: String
+  """
+  Version of this object, incremented on each update.
+  """
+  version: Int!
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z when the object was created.
+  """
+  createdAtEpochMs: Float!
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z when the object was last updated.
+  """
+  updatedAtEpochMs: Float!
+}
+
+"""
+The kind of phone message. MMS and VOICEMAIL come later.
+"""
+enum PhoneMessageType {
+  """
+  A text message.
+  """
+  SMS
+}
+
+"""
+The direction of a phone message. OUTBOUND comes with replies.
+"""
+enum PhoneMessageDirection {
+  """
+  Received on the user's number from the other party.
+  """
+  INBOUND
+}
+
+"""
+A phone message whose sensitive fields are sealed. Fields marked SEALED are
+encrypted with a key of the phone number's key ring. All other fields are in
+plaintext.
+"""
+type SealedPhoneMessage {
+  """
+  ID of the message.
+  """
+  id: ID!
+  """
+  ID of the user who owns the message.
+  """
+  owner: ID!
+  """
+  Owners taken from the ownership proofs, which tie the message to a Sudo.
+  """
+  owners: [Owner!]!
+  """
+  ID of the phone number that sent or received the message.
+  """
+  phoneNumberId: ID!
+  """
+  ID of the conversation, which groups every message between the phone number
+  and the other party.
+  """
+  conversationId: ID!
+  """
+  The kind of message.
+  """
+  type: PhoneMessageType!
+  """
+  Whether the message was received or sent.
+  """
+  direction: PhoneMessageDirection!
+  """
+  The user's number in E.164 format.
+  """
+  localPhoneNumber: String!
+  """
+  SEALED: The other party's number: the sender of an inbound message, the
+  recipient of an outbound one. E.164 or a short code. Nullable for future
+  voicemails from withheld numbers. Always set for SMS.
+  """
+  remotePhoneNumber: String
+  """
+  SEALED: The message text. Empty for a media-only MMS.
+  """
+  body: String!
+  """
+  The number of SMS segments the message was carried in, as reported by the
+  telephony provider.
+  """
+  segmentCount: Int!
+  """
+  True for an inbound MMS whose media was dropped and only its text kept.
+  """
+  mediaOmitted: Boolean!
+  """
+  Whether the user has marked the message as read.
+  """
+  seen: Boolean!
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z when the service received the
+  message from the telephony provider. createdAtEpochMs can be later if
+  processing is delayed.
+  """
+  receivedAtEpochMs: Float!
+  """
+  Version of this object, incremented on each update.
+  """
+  version: Int!
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z when the object was created.
+  """
+  createdAtEpochMs: Float!
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z when the object was last updated.
+  """
+  updatedAtEpochMs: Float!
+}
+
+"""
+The change that a phone message event reports.
+"""
+enum PhoneMessageChangeType {
+  """
+  A new message arrived.
+  """
+  RECEIVED
+  """
+  A message changed, for example its seen state.
+  """
+  UPDATED
+  """
+  A message was deleted.
+  """
+  DELETED
+}
+
+"""
+Subscription payload for a phone message change. It leaves out the body and
+the other party's number so that message content never passes through publish
+mutations. Fetch the message with getPhoneMessage.
+"""
+type PhoneMessageEvent {
+  """
+  ID of the message.
+  """
+  id: ID!
+  """
+  ID of the phone number that sent or received the message.
+  """
+  phoneNumberId: ID!
+  """
+  ID of the conversation the message belongs to.
+  """
+  conversationId: ID!
+  """
+  The kind of message.
+  """
+  type: PhoneMessageType!
+  """
+  Whether the message was received or sent.
+  """
+  direction: PhoneMessageDirection!
+  """
+  The change being reported.
+  """
+  changeType: PhoneMessageChangeType!
+  """
+  Whether the user has marked the message as read.
+  """
+  seen: Boolean!
+  """
+  ID of the user who owns the message.
+  """
+  owner: ID!
+  """
+  Version of the message after the change.
+  """
+  version: Int!
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z when the message was last updated.
+  """
+  updatedAtEpochMs: Float!
+}
+
+"""
+The outcome of a batch operation on phone messages.
+"""
+type PhoneMessageBatchResult {
+  """
+  IDs of the messages the operation applied to.
+  """
+  succeededIds: [ID!]!
+  """
+  IDs of the messages that weren't found or don't belong to the caller.
+  """
+  failedIds: [ID!]!
+}
+
+"""
+A page of phone numbers.
+"""
+type PhoneNumberConnection {
+  """
+  The phone numbers on this page.
+  """
+  items: [PhoneNumber!]!
+  """
+  Pass to the next request to get the next page. Null on the last page.
+  """
+  nextToken: String
+}
+
+"""
+A page of phone messages.
+"""
+type PhoneMessageConnection {
+  """
+  The phone messages on this page.
+  """
+  items: [SealedPhoneMessage!]!
+  """
+  Pass to the next request to get the next page. Null on the last page.
+  """
+  nextToken: String
+}
+
+"""
+Input for searchAvailablePhoneNumbers.
+"""
+input SearchAvailablePhoneNumbersInput {
+  """
+  ISO 3166-1 alpha-2 country code to search. One of getSupportedCountriesForTelephony.
+  """
+  countryCode: String!
+  """
+  Three-digit area code to search. Currently required: a request without one
+  is rejected with InvalidArgumentError, and an unknown area code with
+  InvalidAreaCode.
+  """
+  areaCode: String
+  """
+  Maximum number of results. Defaults to 10. A limit above 20 is rejected with
+  LimitExceededError.
+  """
+  limit: Int
+}
+
+"""
+The encoding of a public key.
+"""
+enum KeyFormat {
+  """
+  PKCS#1 RSA public key.
+  """
+  RSA_PUBLIC_KEY
+  """
+  X.509 SubjectPublicKeyInfo.
+  """
+  SPKI
+}
+
+"""
+The public key that seals the messages of a provisioned phone number.
+"""
+input ProvisionPhoneNumberPublicKeyInput {
+  """
+  Client-generated ID of the key.
+  """
+  keyId: String!
+  """
+  Algorithm of the key, for example RSAEncryptionOAEPAESCBC.
+  """
+  algorithm: String!
+  """
+  Encoding of publicKey. Defaults to RSA_PUBLIC_KEY.
+  """
+  keyFormat: KeyFormat
+  """
+  The base64-encoded public key.
+  """
+  publicKey: String!
+}
+
+"""
+Input for provisionPhoneNumber.
+"""
+input ProvisionPhoneNumberInput {
+  """
+  ID of one of the caller's searches that hasn't expired.
+  """
+  searchId: ID!
+  """
+  The number to provision, in E.164 format. Must be one of the search's results.
+  """
+  phoneNumber: String!
+  """
+  The public key to seal the number's messages with. The service registers it
+  in a new key ring, whose ID is returned as keyRingId.
+  """
+  key: ProvisionPhoneNumberPublicKeyInput!
+  """
+  Proofs that the caller owns the Sudo the number will belong to. Required only
+  in deployments that require Sudo ownership (RD_REQUIRE_SUDO_OWNERSHIP_PROOF).
+  When given, they must include exactly one proof issued by the Sudo service.
+  """
+  ownershipProofTokens: [String!]
+  """
+  Client-supplied reference, returned unchanged on the phone number. Repeating
+  a request with the same clientRefId returns the number the first request
+  provisioned, without provisioning another.
+  """
+  clientRefId: String
+}
+
+"""
+Input for listPhoneNumbers.
+"""
+input ListPhoneNumbersInput {
+  """
+  Maximum number of items per page. Defaults to 20. A limit above 100 returns
+  at most 100 items; a limit below 1 is rejected with InvalidArgumentError.
+  """
+  limit: Int
+  """
+  The nextToken returned by the previous page. Omit for the first page.
+  """
+  nextToken: String
+}
+
+"""
+Input for listPhoneMessages.
+"""
+input ListPhoneMessagesInput {
+  """
+  ID of the phone number whose messages to list.
+  """
+  phoneNumberId: ID!
+  """
+  Limits the list to one conversation.
+  """
+  conversationId: ID
+  """
+  Order of the messages. Defaults to DESC, newest first.
+  """
+  sortOrder: SortOrder
+  """
+  Maximum number of items per page.
+  """
+  limit: Int
+  """
+  The nextToken returned by the previous page. Omit for the first page.
+  """
+  nextToken: String
+}
+
+"""
+Input for deletePhoneMessages.
+"""
+input DeletePhoneMessagesInput {
+  """
+  IDs of the messages to delete. At most 100.
+  """
+  ids: [ID!]!
+}
+
+"""
+Input for updatePhoneMessages.
+"""
+input UpdatePhoneMessagesInput {
+  """
+  IDs of the messages to update. At most 100.
+  """
+  ids: [ID!]!
+  """
+  The read state to set.
+  """
+  seen: Boolean!
+}
+
+"""
+Input for publishPhoneNumberUpdate. Mirrors PhoneNumber.
+"""
+input PhoneNumberUpdateInput {
+  """
+  ID of the phone number.
+  """
+  id: ID!
+  """
+  The number in E.164 format.
+  """
+  phoneNumber: String!
+  """
+  ISO 3166-1 alpha-2 country code of the number.
+  """
+  countryCode: String!
+  """
+  The kind of number.
+  """
+  numberType: PhoneNumberType!
+  """
+  Area code of the number. Null where the country has no area codes.
+  """
+  areaCode: String
+  """
+  Lifecycle state of the number.
+  """
+  state: PhoneNumberState!
+  """
+  Owners taken from the ownership proofs.
+  """
+  owners: [OwnerInput!]!
+  """
+  Identity ID of the user who owns the phone number.
+  """
+  identityId: ID!
+  """
+  ID of the key ring whose keys seal the phone number's messages.
+  """
+  keyRingId: ID!
+  """
+  IDs of the keys in the key ring.
+  """
+  keyIds: [String!]!
+  """
+  Why provisioning failed. Set only when state is FAILED.
+  """
+  failureReason: PhoneNumberFailureReason
+  """
+  When the number will be released. Set only when state is SUSPENDED.
+  """
+  gracePeriodEndsAtEpochMs: Float
+  """
+  Client-supplied reference passed when provisioning.
+  """
+  clientRefId: String
+  """
+  ID of the user who owns the phone number.
+  """
+  owner: ID!
+  """
+  Version of the phone number.
+  """
+  version: Int!
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z when the phone number was created.
+  """
+  createdAtEpochMs: Float!
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z when the phone number was last updated.
+  """
+  updatedAtEpochMs: Float!
+}
+
+"""
+Input for publishPhoneMessageEvent. Mirrors PhoneMessageEvent.
+"""
+input PhoneMessageEventInput {
+  """
+  ID of the message.
+  """
+  id: ID!
+  """
+  ID of the phone number that sent or received the message.
+  """
+  phoneNumberId: ID!
+  """
+  ID of the conversation the message belongs to.
+  """
+  conversationId: ID!
+  """
+  The kind of message.
+  """
+  type: PhoneMessageType!
+  """
+  Whether the message was received or sent.
+  """
+  direction: PhoneMessageDirection!
+  """
+  The change being reported.
+  """
+  changeType: PhoneMessageChangeType!
+  """
+  Whether the user has marked the message as read.
+  """
+  seen: Boolean!
+  """
+  ID of the user who owns the message.
+  """
+  owner: ID!
+  """
+  Version of the message after the change.
+  """
+  version: Int!
+  """
+  Time in milliseconds since 1970-01-01T00:00:00Z when the message was last updated.
+  """
+  updatedAtEpochMs: Float!
+}
+
+type Query {
+  """
+  Return the set of countries the telephony service supports, as ISO 3166-1
+  alpha-2 country codes (e.g. "US", "CA", "GB").
+
+  The list is sourced behind a replaceable mechanism; today it is served from a
+  bundled static snapshot, but the API contract is a simple array of codes so
+  the backing source can change without affecting consumers.
+  """
+  getSupportedCountriesForTelephony: [String!]!
+
+  """
+  Search for phone numbers available to provision in an area code. The search
+  is kept for 15 minutes; pass its id to provisionPhoneNumber.
+
+  Errors: UnsupportedCountry, InvalidAreaCode, InvalidArgumentError,
+  LimitExceededError, InsufficientEntitlementsError.
+  """
+  searchAvailablePhoneNumbers(
+    input: SearchAvailablePhoneNumbersInput!
+  ): PhoneNumberSearch!
+
+  """
+  Get one of the caller's phone numbers in any state, including RELEASED and
+  FAILED. Null when no number with the id belongs to the caller.
+  """
+  getPhoneNumber(id: ID!): PhoneNumber
+
+  """
+  List the caller's PROVISIONING, ACTIVE, and SUSPENDED phone numbers, oldest
+  first. A nextToken that the service cannot decode, or that was issued to
+  another user, is rejected with InvalidArgumentError.
+  """
+  listPhoneNumbers(input: ListPhoneNumbersInput): PhoneNumberConnection!
+
+  """
+  Get one of the caller's phone messages. Null if not found.
+  """
+  getPhoneMessage(id: ID!): SealedPhoneMessage
+
+  """
+  List a phone number's inbox, optionally limited to one conversation.
+  """
+  listPhoneMessages(input: ListPhoneMessagesInput!): PhoneMessageConnection!
+}
+
+type Mutation {
+  """
+  Provision a number from one of the caller's searches. Returns the number in
+  PROVISIONING; onPhoneNumberUpdate reports when it becomes ACTIVE or FAILED.
+
+  Errors: PhoneNumberSearchExpired, PhoneNumberNotInSearch,
+  PhoneNumberUnavailable, IdentityContextMissing, InvalidTokenError,
+  InvalidArgumentError, InsufficientEntitlementsError.
+  """
+  provisionPhoneNumber(input: ProvisionPhoneNumberInput!): PhoneNumber!
+
+  """
+  Release one of the caller's ACTIVE or SUSPENDED numbers. Returns the number in
+  RELEASED and returns the unit of the caller's phone number allowance at once;
+  the number is returned to the carrier in the background. Releasing a RELEASED
+  number returns it unchanged.
+
+  Errors: PhoneNumberNotFound when no number with the id belongs to the caller,
+  InvalidPhoneNumberState (with the current state in errorInfo) for a
+  PROVISIONING or FAILED number.
+  """
+  deprovisionPhoneNumber(id: ID!): PhoneNumber!
+
+  """
+  Delete up to 100 of the caller's phone messages.
+  """
+  deletePhoneMessages(
+    input: DeletePhoneMessagesInput!
+  ): PhoneMessageBatchResult!
+
+  """
+  Set the read state of up to 100 of the caller's phone messages.
+  """
+  updatePhoneMessages(
+    input: UpdatePhoneMessagesInput!
+  ): PhoneMessageBatchResult!
+}
+
+"""
+Real-time updates. Each subscription resolver must reject the request unless
+owner is the caller's sub.
+"""
+type Subscription {
+  """
+  Notifies the caller when one of their phone numbers changes.
+  """
+  onPhoneNumberUpdate(owner: ID!): PhoneNumber
+
+  """
+  Notifies the caller when one of their phone messages is received, updated, or deleted.
+  """
+  onPhoneMessageEvent(owner: ID!): PhoneMessageEvent
+}

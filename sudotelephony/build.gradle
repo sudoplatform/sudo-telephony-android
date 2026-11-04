@@ -1,0 +1,369 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-parcelize'
+apply plugin: "org.owasp.dependencycheck"
+apply plugin: "org.jetbrains.kotlin.plugin.serialization"
+apply plugin: 'com.google.devtools.ksp'
+
+android {
+    compileSdkVersion 35
+
+    namespace "com.sudoplatform.sudotelephony"
+
+    defaultConfig {
+        minSdkVersion 26
+        targetSdkVersion 35
+        versionCode = 1
+        versionName = "1.0.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testApplicationId = "com.sudoplatform.sudotelephony.test"
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            testCoverageEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    resourcePrefix "stel_"
+
+    packagingOptions {
+        pickFirst("META-INF/atomicfu.kotlin_module")
+        pickFirst("META-INF/kotlinx-coroutines-core.kotlin_module")
+        pickFirst("META-INF/sudotelephony_debug.kotlin_module")
+        pickFirst("META-INF/mimetypes.default")
+        pickFirst("META-INF/mailcap.default")
+        pickFirst("META-INF/LICENSE.md")
+        pickFirst("META-INF/NOTICE.md")
+    }
+
+    testOptions {
+        managedDevices {
+            localDevices {
+                googleAtdApi33 {
+                    device = "Pixel 7"
+                    apiLevel = 33
+                    systemImageSource = "google-atd"
+                    testedAbi = "x86_64"
+                }
+            }
+        }
+
+        unitTests.includeAndroidResources = true
+        unitTests.returnDefaultValues = true
+        unitTests.all {
+            outputs.upToDateWhen { false }
+            jacoco {
+                includeNoLocationClasses = true
+                excludes = [
+                        'jdk.internal.*'
+                ]
+            }
+            doFirst {
+                // Attach Mockito agent for inline mocking compatibility
+                def mockitoCore = classpath.find { it.name.contains('mockito-core') }
+                if (mockitoCore) {
+                    jvmArgs += ["-javaagent:${mockitoCore}"]
+                }
+            }
+        }
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+}
+
+ext {
+    coroutine_version = '1.10.2'
+    kotlintest_version = "3.4.2"
+}
+
+dependencies {
+    // Core library desugaring
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutine_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
+
+    // AWS
+    //
+    // AWS SDKs do not follow semantic versioning rules so we need to strictly specify AWS SDK versions.
+    // Follow the process at https://anonyome.atlassian.net/wiki/spaces/PLA/pages/840073287/AWS+Android+SDK+versions+to+use+for+platform+SDKs
+    // for updating AWS SDK versions.
+    implementation "com.amazonaws:aws-android-sdk-core:$aws_version!!"
+
+    // Amplify
+    implementation "com.amplifyframework:core-kotlin:$amplify_version"
+    implementation "com.amplifyframework:aws-api-appsync:$amplify_version"
+    implementation "com.amplifyframework:aws-api:$amplify_version"
+
+    // Apollo Codegen
+    implementation("com.apollographql.apollo:apollo-runtime:4.3.3")
+
+    // Sudo Platform
+    implementation 'com.sudoplatform:sudokeymanager:9.0.2'
+    implementation "com.sudoplatform:sudologging:6.0.0"
+    implementation "com.sudoplatform:sudoconfigmanager:9.0.0"
+    implementation 'com.sudoplatform:sudouser:21.2.2'
+    implementation 'com.sudoplatform:sudoapiclient:12.0.2'
+
+    // Testing
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "io.kotlintest:kotlintest-assertions:$kotlintest_version"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutine_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    testImplementation 'org.mockito:mockito-core:5.19.0'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:6.0.0'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
+    testImplementation "androidx.test:core:1.7.0"
+    testImplementation 'org.robolectric:robolectric:4.16'
+    testImplementation "com.jakewharton.timber:timber:5.0.1"
+
+    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutine_version"
+    androidTestImplementation "androidx.test.ext:junit:1.3.0"
+    androidTestImplementation "androidx.test:runner:1.7.0"
+    androidTestImplementation "androidx.test:core:1.7.0"
+    androidTestImplementation "io.kotlintest:kotlintest-assertions:$kotlintest_version"
+    androidTestImplementation "com.jakewharton.timber:timber:5.0.1"
+    // Awaitility >= 4.x.x brings incompatible hamcrest 2.1 with it
+    androidTestImplementation 'org.awaitility:awaitility-kotlin:3.1.6'
+    androidTestImplementation 'org.mockito.kotlin:mockito-kotlin:6.0.0'
+    androidTestImplementation 'org.mockito:mockito-android:5.19.0'
+
+    androidTestImplementation 'com.sudoplatform:sudoentitlements:13.0.0'
+    androidTestImplementation 'com.sudoplatform:sudoentitlementsadmin:11.0.1'
+}
+
+// Returns a list of `configurations` which should not be scanned for vulnerabilities
+def getConfigurationsToSkip = { configs ->
+    configs.findAll {
+        it.name.startsWithAny("androidTest", "test", "lint") ||
+                it.name.contains("AndroidTest") ||
+                it.name.contains("UnitTest")
+    }.collect {
+        it.name
+    }
+}
+
+tasks.register("printConfigurationsToSkip") {
+    group = "OWASP dependency-check"
+    description = "Print the configurations which are skipped when scanning for vulnerable dependencies"
+    doLast {
+        println "Configurations to skip when scanning for vulnerable dependencies:"
+        println getConfigurationsToSkip(configurations).join("\n")
+    }
+}
+
+afterEvaluate {
+    // NOTE: this must be within `afterEvaluate` to ensure all the configurations have been created before filtering them
+    dependencyCheck {
+        suppressionFile file("../dependency-suppression.xml").toString()
+        failBuildOnCVSS 0
+        skipConfigurations = getConfigurationsToSkip(configurations)
+        nvd {
+            datafeedUrl = "https://anonyome-nist-cve-mirror.s3.amazonaws.com/"
+        }
+
+        analyzers {
+            assemblyEnabled = false
+            centralEnabled = false
+            ossIndex {
+                username = "${ossIndexUsername}"
+                password = "${ossIndexPassword}"
+                warnOnlyOnRemoteErrors = true
+            }
+        }
+    }
+}
+
+// https://github.com/cookpad/LicenseToolsPlugin
+apply plugin: "com.cookpad.android.plugin.license-tools"
+licenseTools {
+    licensesYaml = file("licenses.yml")
+    ignoredGroups = ["com.nhaarman:mockito-kotlin", "com.anonyome", "com.sudoplatform"]
+    ignoredProjects = ["org.mockito"]
+}
+
+@Grab('org.yaml:snakeyaml:1.17')
+// Yaml parser
+import org.yaml.snakeyaml.Yaml
+
+tasks.register('checkLicenseHaveRequiredFields') {
+    description = "Check every license entry has the mandatory fields"
+    group = "verification"
+
+    doLast {
+        def mandatoryFields = ["artifact", "name", "copyrightHolder", "url"]
+        Yaml parser = new Yaml()
+        def licenses = parser.load((file("licenses.yml") as File).text)
+        def errors = new StringBuilder()
+        licenses.each { artifact ->
+            mandatoryFields.each { field ->
+                if (artifact[field] == null) {
+                    errors.append("License entry '${artifact.artifact}' is missing required element `$field`\n")
+                }
+            }
+            if (artifact["license"] == null && artifact["licenseUrl"] == null) {
+                errors.append("License entry '${artifact.artifact}' must have one of [license,licenseUrl]\n")
+            }
+        }
+        if (errors.length() > 0) {
+            throw new GradleException("Missing license elements:\n$errors")
+        }
+    }
+}
+checkLicenses.finalizedBy checkLicenseHaveRequiredFields
+
+// Kotlin Lint
+apply plugin: 'org.jmailen.kotlinter'
+
+kotlinter {
+    reporters = ['checkstyle', 'plain']
+}
+
+import org.jmailen.gradle.kotlinter.tasks.FormatTask
+import org.jmailen.gradle.kotlinter.tasks.LintTask
+
+// Exclude the apollographql-generated classes from linting
+tasks.withType(FormatTask) {
+    exclude { it.file.path.contains("generated/")}
+}
+
+tasks.withType(LintTask) {
+    exclude { it.file.path.contains("generated/")}
+}
+
+apply plugin: "com.apollographql.apollo"
+apollo {
+    service("service") {
+        packageName.set("com.sudoplatform.sudotelephony.graphql")
+    }
+}
+
+// Configure Apollo tasks to handle incremental build issues
+afterEvaluate {
+    tasks.withType(Task).matching { it.name.contains("generateServiceApolloSources") }.configureEach {
+        doNotTrackState("Apollo source generation can have incremental build issues with missing output files")
+    }
+}
+
+// Jacoco test coverage
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+tasks.register('jacocoTestReport', JacocoReport) {
+    dependsOn "testDebugUnitTest"
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports"
+    classDirectories.setFrom(
+            fileTree(
+                    dir: "${buildDir}/tmp/kotlin-classes/debug",
+                    excludes: ['**/R.class',
+                               '**/R$*.class',
+                               '**/BuildConfig.*',
+                               '**/Manifest*.*']
+            )
+    )
+    sourceDirectories.setFrom(files("${buildDir.parent}/sudotelephony/src/main/java"))
+    executionData.setFrom(fileTree(["dir": "${buildDir.parent}", "includes": ["**/*.exec", "**/*.ec"]]))
+}
+
+// Dokka documentation generation
+apply plugin: 'org.jetbrains.dokka'
+
+dokkaHtml {
+    outputDirectory.set(project.file("$buildDir/javadoc"))
+    dokkaSourceSets {
+        configureEach {
+            jdkVersion.set(8)
+            skipEmptyPackages.set(true)
+            includes.from(files("packages.md"))
+            samples.from(files("src/test/java/com/sudoplatform/sudotelephony/samples/Samples.kt"))
+            // Root URL of the generated documentation to link with. The trailing slash is required!
+            externalDocumentationLink {
+                url.set(new URL("https://sudoplatform.github.io/sudo-user-android/sudouser/"))
+                packageListUrl.set(new URL("https://sudoplatform.github.io/sudo-user-android/sudouser/package-list"))
+            }
+        }
+    }
+}
+
+// Sonarqube code analysis
+if (project.file("${rootProject.projectDir}/util/sonarqube.gradle").exists()) {
+    ext.sonarProjectKey = "sudo-telephony-android"
+    ext.sonarProjectName = "sudo-telephony-android"
+    ext.sonarExclusions = ["*.png", "*.jks", "*.json", "*.key"]
+    apply from: "${rootProject.projectDir}/util/sonarqube.gradle"
+}
+
+// Setup common publishing variables
+ext {
+    projectArtifact = project.name
+    projectDescription = 'Sudo Telephony SDK for the Sudo Platform by Anonyome Labs.'
+    projectUrl = 'https://github.com/sudoplatform/sudo-telephony-android'
+    projectSCM = 'scm:git:github.com/sudoplatform/sudo-telephony-android.git'
+    if (project.findProperty("tag")) {
+        projectVersion = "$tag"
+    } else {
+        projectVersion = project.android.defaultConfig.versionName
+    }
+}
+
+// Internal and External publishing
+if (project.findProperty("tag") &&
+        project.file("${rootProject.projectDir}/util/publish-mavencentral.gradle").exists()) {
+    apply from: "${rootProject.projectDir}/util/publish-mavencentral.gradle"
+} else if (project.file("${rootProject.projectDir}/util/publish-internal-android.gradle").exists()) {
+    apply from: "${rootProject.projectDir}/util/publish-internal-android.gradle"
+}
+
+// Robolectric downloads its android-all runtime jars with its own resolver, bypassing Gradle's
+// repositories, so point it at the CodeArtifact mirror too (set up in settings.gradle).
+def codeArtifact = gradle.codeArtifact
+if (codeArtifact) {
+    tasks.withType(Test).configureEach {
+        systemProperty "robolectric.dependency.repo.url", codeArtifact.mavenCentralUrl
+        systemProperty "robolectric.dependency.repo.id", "codeartifact"
+        systemProperty "robolectric.dependency.repo.username", "aws"
+        systemProperty "robolectric.dependency.repo.password", codeArtifact.token
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'io.netty:netty-buffer:4.1.137.Final'
+        force 'io.netty:netty-codec:4.1.137.Final'
+        force 'io.netty:netty-codec-http:4.1.137.Final'
+        force 'io.netty:netty-codec-http2:4.1.137.Final'
+        force 'io.netty:netty-codec-socks:4.1.137.Final'
+        force 'io.netty:netty-common:4.1.137.Final'
+        force 'io.netty:netty-handler:4.1.137.Final'
+        force 'io.netty:netty-handler-proxy:4.1.137.Final'
+        force 'io.netty:netty-resolver:4.1.137.Final'
+        force 'io.netty:netty-transport:4.1.137.Final'
+        force 'io.netty:netty-transport-native-unix-common:4.1.137.Final'
+        force 'io.netty:netty-codec-compression:4.2.17.Final'
+    }
+}

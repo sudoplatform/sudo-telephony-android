@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Builder</title>
+    <link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+<script type="text/javascript" src="../../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+            <a class="library-name--link" href="../../../../index.html">
+                    sudotelephony
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active=""
+                        data-filter=":sudotelephony:dokkaHtml/release">androidJvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":sudotelephony:dokkaHtml/release"
+                                       data-filter=":sudotelephony:dokkaHtml/release"/>
+                                <span class="checkbox--icon"></span>
+                                androidJvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                        data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    sudotelephony
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="sudotelephony::com.sudoplatform.sudotelephony/SudoTelephonyClient.Builder///PointingToDeclaration//51902315">
+  <div class="breadcrumbs"><a href="../../../../index.html">sudotelephony</a><span class="delimiter">/</span><a href="../../index.html">com.sudoplatform.sudotelephony</a><span class="delimiter">/</span><a href="../index.html">SudoTelephonyClient</a><span class="delimiter">/</span><span class="current">Builder</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Builder</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">Builder</a></div><p class="paragraph">Builder used to construct the <a href="../index.html">SudoTelephonyClient</a>.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-1636988856%2FClasslikes%2F51902315" anchor-label="ConfigurationException" id="-1636988856%2FClasslikes%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-configuration-exception/index.html"><span>Configuration</span><wbr></wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1636988856%2FClasslikes%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-configuration-exception/index.html">ConfigurationException</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/java/lang/RuntimeException.html">RuntimeException</a></div><div class="brief "><p class="paragraph">A configuration item that is needed is missing.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-2024944832%2FFunctions%2F51902315" anchor-label="build" id="-2024944832%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="build.html"><span><span>build</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2024944832%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="build.html"><span class="token function">build</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">SudoTelephonyClient</a></div><div class="brief "><p class="paragraph">Construct the <a href="../index.html">SudoTelephonyClient</a>. Will throw a <a href="https://developer.android.com/reference/kotlin/java/lang/NullPointerException.html">NullPointerException</a> if the context and <a href="https://sudoplatform.github.io/sudo-user-android/sudouser/sudouser/com.sudoplatform.sudouser/-sudo-user-client/index.html">SudoUserClient</a> have not been provided.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1778650364%2FFunctions%2F51902315" anchor-label="setApiClient" id="1778650364%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-api-client.html"><span>set</span><wbr></wbr><span>Api</span><wbr></wbr><span><span>Client</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1778650364%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="set-api-client.html"><span class="token function">setApiClient</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">apiClient<span class="token operator">: </span><a href="../../../com.sudoplatform.sudotelephony.api/-api-client/index.html">ApiClient</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="brief "><p class="paragraph">Provide an <a href="../../../com.sudoplatform.sudotelephony.api/-api-client/index.html">ApiClient</a> for the <a href="../index.html">SudoTelephonyClient</a> to use (optional input). If this is not supplied, an <a href="../../../com.sudoplatform.sudotelephony.api/-api-client/index.html">ApiClient</a> will be constructed and used.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="524169352%2FFunctions%2F51902315" anchor-label="setContext" id="524169352%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-context.html"><span>set</span><wbr></wbr><span><span>Context</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="524169352%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="set-context.html"><span class="token function">setContext</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="brief "><p class="paragraph">Provide the application context (required input).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1321747774%2FFunctions%2F51902315" anchor-label="setDatabaseName" id="1321747774%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-database-name.html"><span>set</span><wbr></wbr><span>Database</span><wbr></wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1321747774%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="set-database-name.html"><span class="token function">setDatabaseName</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">databaseName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="brief "><p class="paragraph">Provide the name of the database backing the device key store (optional input).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1234949813%2FFunctions%2F51902315" anchor-label="setKeyManager" id="-1234949813%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-key-manager.html"><span>set</span><wbr></wbr><span>Key</span><wbr></wbr><span><span>Manager</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1234949813%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="set-key-manager.html"><span class="token function">setKeyManager</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">keyManager<span class="token operator">: </span><span data-unresolved-link="com.sudoplatform.sudokeymanager/KeyManagerInterface///PointingToDeclaration/">KeyManagerInterface</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="brief "><p class="paragraph">Provide a <span data-unresolved-link="com.sudoplatform.sudokeymanager/KeyManagerInterface///PointingToDeclaration/">KeyManagerInterface</span> for storing the key pairs that seal phone number messages (optional input). If this is not supplied, a key manager backed by the Android key store is constructed from <a href="set-namespace.html">setNamespace</a> and <a href="set-database-name.html">setDatabaseName</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="74986329%2FFunctions%2F51902315" anchor-label="setLogger" id="74986329%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-logger.html"><span>set</span><wbr></wbr><span><span>Logger</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="74986329%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="set-logger.html"><span class="token function">setLogger</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">logger<span class="token operator">: </span><span data-unresolved-link="com.sudoplatform.sudologging/Logger///PointingToDeclaration/">Logger</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="brief "><p class="paragraph">Provide the implementation of the <span data-unresolved-link="com.sudoplatform.sudologging/Logger///PointingToDeclaration/">Logger</span> used for logging errors (optional input). If a value is not supplied a default implementation will be used.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1936193423%2FFunctions%2F51902315" anchor-label="setNamespace" id="-1936193423%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-namespace.html"><span>set</span><wbr></wbr><span><span>Namespace</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1936193423%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="set-namespace.html"><span class="token function">setNamespace</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">namespace<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="brief "><p class="paragraph">Provide the namespace the telephony keys are stored under in the device key store (optional input). Defaults to <a href="../-companion/-d-e-f-a-u-l-t_-k-e-y_-n-a-m-e-s-p-a-c-e.html">DEFAULT_KEY_NAMESPACE</a>. Supply a distinct value when several instances must not share keys.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="519610673%2FFunctions%2F51902315" anchor-label="setSudoUserClient" id="519610673%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-sudo-user-client.html"><span>set</span><wbr></wbr><span>Sudo</span><wbr></wbr><span>User</span><wbr></wbr><span><span>Client</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="519610673%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="set-sudo-user-client.html"><span class="token function">setSudoUserClient</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sudoUserClient<span class="token operator">: </span><a href="https://sudoplatform.github.io/sudo-user-android/sudouser/sudouser/com.sudoplatform.sudouser/-sudo-user-client/index.html">SudoUserClient</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="brief "><p class="paragraph">Provide the implementation of the <a href="https://sudoplatform.github.io/sudo-user-android/sudouser/sudouser/com.sudoplatform.sudouser/-sudo-user-client/index.html">SudoUserClient</a> used to perform sign in and ownership operations (required input).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2026 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

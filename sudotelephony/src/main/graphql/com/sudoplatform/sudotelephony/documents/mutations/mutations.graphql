@@ -1,0 +1,25 @@
+mutation ProvisionPhoneNumber($input: ProvisionPhoneNumberInput!) {
+  provisionPhoneNumber(input: $input) {
+    ...PhoneNumber
+  }
+}
+
+mutation DeprovisionPhoneNumber($id: ID!) {
+  deprovisionPhoneNumber(id: $id) {
+    ...PhoneNumber
+  }
+}
+
+mutation DeletePhoneMessages($input: DeletePhoneMessagesInput!) {
+  deletePhoneMessages(input: $input) {
+    succeededIds
+    failedIds
+  }
+}
+
+mutation UpdatePhoneMessages($input: UpdatePhoneMessagesInput!) {
+  updatePhoneMessages(input: $input) {
+    succeededIds
+    failedIds
+  }
+}

@@ -1,0 +1,38 @@
+pluginManagement {
+    // Optional CodeArtifact pull-through mirrors, used only when all three properties are set.
+    // Defined here because pluginManagement is evaluated before any build script, which read it
+    // through gradle.codeArtifact.
+    def token = providers.gradleProperty("codeArtifactToken").orNull
+    def mavenCentralUrl = providers.gradleProperty("codeArtifactMavenCentralUrl").orNull
+    def gradlePluginsUrl = providers.gradleProperty("codeArtifactGradlePluginsUrl").orNull
+    def addRepo = { RepositoryHandler repositories, String repoName, String repoUrl ->
+        repositories.maven {
+            name = repoName
+            url = repoUrl
+            credentials {
+                username = "aws"
+                password = token
+            }
+            content {
+                // com.anonyome artifacts are internal and only come from Nexus.
+                excludeGroup("com.anonyome")
+            }
+        }
+    }
+    gradle.ext.codeArtifact = [token, mavenCentralUrl, gradlePluginsUrl].every { it?.trim() } ? [
+        token           : token,
+        mavenCentralUrl : mavenCentralUrl,
+        addMavenCentral : { RepositoryHandler repositories -> addRepo(repositories, "codeArtifactMavenCentral", mavenCentralUrl) },
+        addGradlePlugins: { RepositoryHandler repositories -> addRepo(repositories, "codeArtifactGradlePlugins", gradlePluginsUrl) },
+    ] : null
+
+    repositories {
+        if (gradle.codeArtifact) {
+            gradle.codeArtifact.addGradlePlugins(delegate)
+        } else {
+            gradlePluginPortal()
+        }
+    }
+}
+
+include ':sudotelephony'

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>SudoTelephonyClient</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+            <a class="library-name--link" href="../../../index.html">
+                    sudotelephony
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active=""
+                        data-filter=":sudotelephony:dokkaHtml/release">androidJvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":sudotelephony:dokkaHtml/release"
+                                       data-filter=":sudotelephony:dokkaHtml/release"/>
+                                <span class="checkbox--icon"></span>
+                                androidJvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                        data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    sudotelephony
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="sudotelephony::com.sudoplatform.sudotelephony/SudoTelephonyClient///PointingToDeclaration//51902315">
+  <div class="breadcrumbs"><a href="../../../index.html">sudotelephony</a><span class="delimiter">/</span><a href="../index.html">com.sudoplatform.sudotelephony</a><span class="delimiter">/</span><span class="current">SudoTelephonyClient</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Sudo</span><wbr></wbr><span>Telephony</span><wbr></wbr><span><span>Client</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">SudoTelephonyClient</a> : <a href="https://developer.android.com/reference/kotlin/java/lang/AutoCloseable.html">AutoCloseable</a></div><p class="paragraph">Interface encapsulating a library for interacting with the Sudo Platform Telephony service.</p><p class="paragraph">Operations are grouped by domain; all service calls are <code class="lang-kotlin">suspend</code> and return public types. Construct instances through the <a href="-builder/index.html">Builder</a>; the concrete implementation is internal.</p><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import android.content.Context
+import com.sudoplatform.sudotelephony.BaseTests
+import com.sudoplatform.sudotelephony.SudoTelephonyClient
+import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
+import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
+import com.sudoplatform.sudotelephony.subscription.Subscriber
+import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
+import com.sudoplatform.sudotelephony.types.PhoneNumber
+import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersInput
+import com.sudoplatform.sudotelephony.types.inputs.ProvisionPhoneNumberInput
+import com.sudoplatform.sudotelephony.types.inputs.SearchAvailablePhoneNumbersInput
+import com.sudoplatform.sudotelephony.types.inputs.UpdatePhoneMessagesInput
+import com.sudoplatform.sudouser.SudoUserClient
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.kotlin.mock
+import org.robolectric.RobolectricTestRunner
+
+fun main() { 
+   //sampleStart 
+   val telephonyClient =
+    SudoTelephonyClient
+        .builder()
+        .setContext(context)
+        .setSudoUserClient(sudoUserClient)
+        .build() 
+   //sampleEnd
+}</code></pre></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="2016305651%2FClasslikes%2F51902315" anchor-label="Builder" id="2016305651%2FClasslikes%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-builder/index.html"><span><span>Builder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2016305651%2FClasslikes%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-builder/index.html">Builder</a></div><div class="brief "><p class="paragraph">Builder used to construct the <a href="index.html">SudoTelephonyClient</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1439151202%2FClasslikes%2F51902315" anchor-label="Companion" id="1439151202%2FClasslikes%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1439151202%2FClasslikes%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1834535520%2FClasslikes%2F51902315" anchor-label="CryptographicKeysException" id="-1834535520%2FClasslikes%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-cryptographic-keys-exception/index.html"><span>Cryptographic</span><wbr></wbr><span>Keys</span><wbr></wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1834535520%2FClasslikes%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-cryptographic-keys-exception/index.html">CryptographicKeysException</a> : <a href="https://developer.android.com/reference/kotlin/java/lang/RuntimeException.html">RuntimeException</a></div><div class="brief "><p class="paragraph">Defines the exceptions for the cryptographic key based methods.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1754727832%2FClasslikes%2F51902315" anchor-label="PhoneMessageException" id="1754727832%2FClasslikes%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-phone-message-exception/index.html"><span>Phone</span><wbr></wbr><span>Message</span><wbr></wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1754727832%2FClasslikes%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-phone-message-exception/index.html">PhoneMessageException</a> : <a href="https://developer.android.com/reference/kotlin/java/lang/RuntimeException.html">RuntimeException</a></div><div class="brief "><p class="paragraph">Defines the exceptions for the phone message based methods. No Apollo or transport error types are ever leaked to consumers.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1829128604%2FClasslikes%2F51902315" anchor-label="PhoneNumberException" id="1829128604%2FClasslikes%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-phone-number-exception/index.html"><span>Phone</span><wbr></wbr><span>Number</span><wbr></wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1829128604%2FClasslikes%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-phone-number-exception/index.html">PhoneNumberException</a> : <a href="https://developer.android.com/reference/kotlin/java/lang/RuntimeException.html">RuntimeException</a></div><div class="brief "><p class="paragraph">Defines the exceptions for the provisioned phone number based methods. No Apollo or transport error types are ever leaked to consumers.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="406205924%2FClasslikes%2F51902315" anchor-label="PhoneNumberSearchException" id="406205924%2FClasslikes%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-phone-number-search-exception/index.html"><span>Phone</span><wbr></wbr><span>Number</span><wbr></wbr><span>Search</span><wbr></wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="406205924%2FClasslikes%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-phone-number-search-exception/index.html">PhoneNumberSearchException</a> : <a href="https://developer.android.com/reference/kotlin/java/lang/RuntimeException.html">RuntimeException</a></div><div class="brief "><p class="paragraph">Defines the exceptions for the phone number search based methods.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1038913659%2FClasslikes%2F51902315" anchor-label="SupportedCountriesException" id="-1038913659%2FClasslikes%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-supported-countries-exception/index.html"><span>Supported</span><wbr></wbr><span>Countries</span><wbr></wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1038913659%2FClasslikes%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-supported-countries-exception/index.html">SupportedCountriesException</a> : <a href="https://developer.android.com/reference/kotlin/java/lang/RuntimeException.html">RuntimeException</a></div><div class="brief "><p class="paragraph">Defines the exceptions for the supported country based methods.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-1117130810%2FFunctions%2F51902315" anchor-label="close" id="-1117130810%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1117130810%2FFunctions%2F51902315"><span><span>close</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1117130810%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="index.html#-1117130810%2FFunctions%2F51902315"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-25697115%2FFunctions%2F51902315" anchor-label="deletePhoneMessages" id="-25697115%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delete-phone-messages.html"><span>delete</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Messages</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-25697115%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="delete-phone-messages.html"><span class="token function">deletePhoneMessages</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-delete-phone-messages-input/index.html">DeletePhoneMessagesInput</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-phone-message-batch-result/index.html">PhoneMessageBatchResult</a></div><div class="brief "><p class="paragraph">Delete a batch of the caller's phone messages.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1342154824%2FFunctions%2F51902315" anchor-label="deprovisionPhoneNumber" id="1342154824%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="deprovision-phone-number.html"><span>deprovision</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Number</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1342154824%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="deprovision-phone-number.html"><span class="token function">deprovisionPhoneNumber</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-phone-number/index.html">PhoneNumber</a></div><div class="brief "><p class="paragraph">Release one of the caller's phone numbers.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1631184215%2FFunctions%2F51902315" anchor-label="exportKeys" id="1631184215%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="export-keys.html"><span>export</span><wbr></wbr><span><span>Keys</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1631184215%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="export-keys.html"><span class="token function">exportKeys</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Export the cryptographic keys held on this device as an archive.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-272532936%2FFunctions%2F51902315" anchor-label="getPhoneMessage" id="-272532936%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-phone-message.html"><span>get</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Message</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-272532936%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-phone-message.html"><span class="token function">getPhoneMessage</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-phone-message/index.html">PhoneMessage</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Retrieve one of the caller's phone messages, with its sealed fields made readable.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1029264218%2FFunctions%2F51902315" anchor-label="getPhoneNumber" id="-1029264218%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-phone-number.html"><span>get</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Number</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1029264218%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-phone-number.html"><span class="token function">getPhoneNumber</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-phone-number/index.html">PhoneNumber</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Retrieve one of the caller's phone numbers, in any state including <a href="../../com.sudoplatform.sudotelephony.types/-phone-number-state/-r-e-l-e-a-s-e-d/index.html">com.sudoplatform.sudotelephony.types.PhoneNumberState.RELEASED</a> and <a href="../../com.sudoplatform.sudotelephony.types/-phone-number-state/-f-a-i-l-e-d/index.html">com.sudoplatform.sudotelephony.types.PhoneNumberState.FAILED</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2092966399%2FFunctions%2F51902315" anchor-label="getSupportedCountries" id="2092966399%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-supported-countries.html"><span>get</span><wbr></wbr><span>Supported</span><wbr></wbr><span><span>Countries</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2092966399%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-supported-countries.html"><span class="token function">getSupportedCountries</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieve the ISO 3166-1 alpha-2 country codes in which the telephony service can search for and provision phone numbers.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="881694498%2FFunctions%2F51902315" anchor-label="importKeys" id="881694498%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="import-keys.html"><span>import</span><wbr></wbr><span><span>Keys</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="881694498%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="import-keys.html"><span class="token function">importKeys</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">archiveData<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Replace the cryptographic keys held on this device with those in <a href="import-keys.html">archiveData</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-742211003%2FFunctions%2F51902315" anchor-label="listPhoneMessages" id="-742211003%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-phone-messages.html"><span>list</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Messages</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-742211003%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="list-phone-messages.html"><span class="token function">listPhoneMessages</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-list-phone-messages-input/index.html">ListPhoneMessagesInput</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-list-output/index.html">ListOutput</a><span class="token operator">&lt;</span><a href="../../com.sudoplatform.sudotelephony.types/-phone-message/index.html">PhoneMessage</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieve a page of a phone number's messages, with their sealed fields made readable.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1017318983%2FFunctions%2F51902315" anchor-label="listPhoneNumbers" id="-1017318983%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-phone-numbers.html"><span>list</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Numbers</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1017318983%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="list-phone-numbers.html"><span class="token function">listPhoneNumbers</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-list-phone-numbers-input/index.html">ListPhoneNumbersInput</a><span class="token operator"> = </span>ListPhoneNumbersInput()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-list-output/index.html">ListOutput</a><span class="token operator">&lt;</span><a href="../../com.sudoplatform.sudotelephony.types/-phone-number/index.html">PhoneNumber</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieve a page of the caller's phone numbers, oldest first.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="356073417%2FFunctions%2F51902315" anchor-label="provisionPhoneNumber" id="356073417%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="provision-phone-number.html"><span>provision</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Number</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="356073417%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="provision-phone-number.html"><span class="token function">provisionPhoneNumber</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-provision-phone-number-input/index.html">ProvisionPhoneNumberInput</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-phone-number/index.html">PhoneNumber</a></div><div class="brief "><p class="paragraph">Provision one of the numbers from a previous search.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-85824596%2FFunctions%2F51902315" anchor-label="reset" id="-85824596%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="reset.html"><span><span>reset</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-85824596%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="reset.html"><span class="token function">reset</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Reset any internal state, dropping every subscription.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-187835547%2FFunctions%2F51902315" anchor-label="searchAvailablePhoneNumbers" id="-187835547%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="search-available-phone-numbers.html"><span>search</span><wbr></wbr><span>Available</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Numbers</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-187835547%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="search-available-phone-numbers.html"><span class="token function">searchAvailablePhoneNumbers</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-search-available-phone-numbers-input/index.html">SearchAvailablePhoneNumbersInput</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-phone-number-search/index.html">PhoneNumberSearch</a></div><div class="brief "><p class="paragraph">Search for phone numbers available to provision in an area code.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-923202281%2FFunctions%2F51902315" anchor-label="subscribeToPhoneMessages" id="-923202281%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="subscribe-to-phone-messages.html"><span>subscribe</span><wbr></wbr><span>To</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Messages</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-923202281%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="subscribe-to-phone-messages.html"><span class="token function">subscribeToPhoneMessages</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">subscriptionId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">subscriber<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.subscription/-phone-message-subscriber/index.html">PhoneMessageSubscriber</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Subscribe to the caller's phone messages being received, updated or deleted.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1261864475%2FFunctions%2F51902315" anchor-label="subscribeToPhoneNumbers" id="1261864475%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="subscribe-to-phone-numbers.html"><span>subscribe</span><wbr></wbr><span>To</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Numbers</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1261864475%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="subscribe-to-phone-numbers.html"><span class="token function">subscribeToPhoneNumbers</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">subscriptionId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">subscriber<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.subscription/-phone-number-subscriber/index.html">PhoneNumberSubscriber</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Subscribe to changes to the caller's phone numbers.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="37089915%2FFunctions%2F51902315" anchor-label="unsubscribeAllFromPhoneMessages" id="37089915%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="unsubscribe-all-from-phone-messages.html"><span>unsubscribe</span><wbr></wbr><span>All</span><wbr></wbr><span>From</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Messages</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="37089915%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="unsubscribe-all-from-phone-messages.html"><span class="token function">unsubscribeAllFromPhoneMessages</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Unsubscribe every subscriber from phone message events.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="864542953%2FFunctions%2F51902315" anchor-label="unsubscribeAllFromPhoneNumbers" id="864542953%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="unsubscribe-all-from-phone-numbers.html"><span>unsubscribe</span><wbr></wbr><span>All</span><wbr></wbr><span>From</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Numbers</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="864542953%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="unsubscribe-all-from-phone-numbers.html"><span class="token function">unsubscribeAllFromPhoneNumbers</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Unsubscribe every subscriber from phone number changes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1683014908%2FFunctions%2F51902315" anchor-label="unsubscribeFromPhoneMessages" id="-1683014908%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="unsubscribe-from-phone-messages.html"><span>unsubscribe</span><wbr></wbr><span>From</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Messages</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1683014908%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="unsubscribe-from-phone-messages.html"><span class="token function">unsubscribeFromPhoneMessages</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">subscriptionId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Unsubscribe the subscriber registered under <a href="unsubscribe-from-phone-messages.html">subscriptionId</a> from phone message events.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1372403392%2FFunctions%2F51902315" anchor-label="unsubscribeFromPhoneNumbers" id="1372403392%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="unsubscribe-from-phone-numbers.html"><span>unsubscribe</span><wbr></wbr><span>From</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Numbers</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1372403392%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="unsubscribe-from-phone-numbers.html"><span class="token function">unsubscribeFromPhoneNumbers</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">subscriptionId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Unsubscribe the subscriber registered under <a href="unsubscribe-from-phone-numbers.html">subscriptionId</a> from phone number changes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="767084773%2FFunctions%2F51902315" anchor-label="updatePhoneMessages" id="767084773%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update-phone-messages.html"><span>update</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Messages</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="767084773%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="update-phone-messages.html"><span class="token function">updatePhoneMessages</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-update-phone-messages-input/index.html">UpdatePhoneMessagesInput</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-phone-message-batch-result/index.html">PhoneMessageBatchResult</a></div><div class="brief "><p class="paragraph">Change the read state of a batch of the caller's phone messages.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2026 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,20 @@
+subscription OnPhoneNumberUpdate($owner: ID!) {
+  onPhoneNumberUpdate(owner: $owner) {
+    ...PhoneNumber
+  }
+}
+
+subscription OnPhoneMessageEvent($owner: ID!) {
+  onPhoneMessageEvent(owner: $owner) {
+    id
+    phoneNumberId
+    conversationId
+    type
+    direction
+    changeType
+    seen
+    owner
+    version
+    updatedAtEpochMs
+  }
+}

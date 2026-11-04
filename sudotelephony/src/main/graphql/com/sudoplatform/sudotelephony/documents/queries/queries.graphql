@@ -1,0 +1,39 @@
+query GetSupportedCountriesForTelephony {
+  getSupportedCountriesForTelephony
+}
+
+query SearchAvailablePhoneNumbers($input: SearchAvailablePhoneNumbersInput!) {
+  searchAvailablePhoneNumbers(input: $input) {
+    ...PhoneNumberSearch
+  }
+}
+
+query GetPhoneNumber($id: ID!) {
+  getPhoneNumber(id: $id) {
+    ...PhoneNumber
+  }
+}
+
+query ListPhoneNumbers($input: ListPhoneNumbersInput) {
+  listPhoneNumbers(input: $input) {
+    items {
+      ...PhoneNumber
+    }
+    nextToken
+  }
+}
+
+query GetPhoneMessage($id: ID!) {
+  getPhoneMessage(id: $id) {
+    ...SealedPhoneMessage
+  }
+}
+
+query ListPhoneMessages($input: ListPhoneMessagesInput!) {
+  listPhoneMessages(input: $input) {
+    items {
+      ...SealedPhoneMessage
+    }
+    nextToken
+  }
+}

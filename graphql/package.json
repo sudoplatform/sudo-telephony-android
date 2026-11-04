@@ -1,0 +1,18 @@
+{
+  "name": "@sudoplatform/internal-telephony-codegen",
+  "version": "0.0.1",
+  "author": "Anonyome Labs, Inc.",
+  "license": "Apache-2.0",
+  "scripts": {
+    "codegen": "graphql-codegen -c codegen.ts"
+  },
+  "devDependencies": {
+    "@graphql-codegen/add": "^4.0.1",
+    "@graphql-codegen/cli": "^3.3.1",
+    "@graphql-codegen/introspection": "^3.0.1",
+    "@types/node": "^18.16.3",
+    "graphql": "16.11.0",
+    "typescript": "^4.9.5"
+  },
+  "packageManager": "yarn@4.18.1+sha512.b2e1e7524f654f2749d32b4ebcb4622473cb5bcbc485df2007e12a154e50162a4d795526768bc5f5b8f81717bfd79deb2472813d86fb5ae2eb551fa9c872b08f"
+}

@@ -19,8 +19,11 @@ package com.sudoplatform.sudotelephony.types.inputs
  * @property phoneNumber [String] The number to provision, in E.164 format. Must be one of
  *  that search's results.
  * @property ownershipProofToken [String] Proof that the caller owns the Sudo the number will
- *  belong to, issued by the Sudo service. Required only in deployments configured to require
- *  Sudo ownership.
+ *  belong to, issued by the Sudo service for the audience
+ *  [com.sudoplatform.sudotelephony.SudoTelephonyClient.OWNERSHIP_PROOF_AUDIENCE]. Required
+ *  only when
+ *  [com.sudoplatform.sudotelephony.types.ConfigurationData.sudoOwnershipProofRequired] is
+ *  `true`; without it the number belongs to the user only.
  * @property clientRefId [String] Client-supplied reference, returned unchanged on the phone
  *  number. Repeating a request with the same value returns the number the first request
  *  provisioned rather than provisioning another.

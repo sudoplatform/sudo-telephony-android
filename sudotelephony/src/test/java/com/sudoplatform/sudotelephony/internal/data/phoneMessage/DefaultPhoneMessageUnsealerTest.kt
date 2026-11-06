@@ -10,6 +10,7 @@ import com.sudoplatform.sudotelephony.BaseTests
 import com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneMessageException
 import com.sudoplatform.sudotelephony.data.EntityDataFactory
 import com.sudoplatform.sudotelephony.internal.data.common.mechanisms.Unsealer
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.UnsealedPhoneMessages
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.PhoneNumberService
 import com.sudoplatform.sudotelephony.keys.ServiceKeyManager
 import io.kotlintest.shouldBe
@@ -81,12 +82,13 @@ class DefaultPhoneMessageUnsealerTest : BaseTests() {
                     listOf(EntityDataFactory.sealedPhoneMessageEntity()),
                 )
 
-            result.size shouldBe 1
-            result.first().body shouldBe "Hello there"
-            result.first().remotePhoneNumber shouldBe "+14155559876"
+            result.failed shouldBe emptyList()
+            result.unsealed.size shouldBe 1
+            result.unsealed.first().body shouldBe "Hello there"
+            result.unsealed.first().remotePhoneNumber shouldBe "+14155559876"
             // Plaintext fields pass through untouched.
-            result.first().localPhoneNumber shouldBe "+14155550123"
-            result.first().segmentCount shouldBe 1
+            result.unsealed.first().localPhoneNumber shouldBe "+14155550123"
+            result.unsealed.first().segmentCount shouldBe 1
         }
 
     @Test
@@ -103,7 +105,7 @@ class DefaultPhoneMessageUnsealerTest : BaseTests() {
                     listOf(EntityDataFactory.sealedPhoneMessageEntity(remotePhoneNumber = null)),
                 )
 
-            result.first().remotePhoneNumber shouldBe null
+            result.unsealed.first().remotePhoneNumber shouldBe null
         }
 
     @Test
@@ -151,7 +153,8 @@ class DefaultPhoneMessageUnsealerTest : BaseTests() {
     @Test
     fun `unseal() should not read the key ring for an empty page`() =
         runTest {
-            instanceUnderTest.unseal("mockPhoneNumberId", emptyList()) shouldBe emptyList()
+            instanceUnderTest.unseal("mockPhoneNumberId", emptyList()) shouldBe
+                UnsealedPhoneMessages(unsealed = emptyList(), failed = emptyList())
 
             verifyNoInteractions(mockPhoneNumberService)
             verifyNoInteractions(mockServiceKeyManager)
@@ -186,20 +189,50 @@ class DefaultPhoneMessageUnsealerTest : BaseTests() {
         }
 
     @Test
-    fun `unseal() should wrap a decryption failure in UnsealingFailedException`() =
+    fun `unseal() should return a decryption failure as a partial wrapped in UnsealingFailedException`() =
         runTest {
             stubNumberWithKeys(listOf("mockKeyId"))
+            val decryptionFailure = Unsealer.UnsealerException.SealedDataTooShortException("too short")
             mockUnsealer.stub {
-                on {
-                    unseal(any(), any(), any())
-                } doThrow Unsealer.UnsealerException.SealedDataTooShortException("too short")
+                on { unseal(any(), any(), any()) } doThrow decryptionFailure
             }
 
-            shouldThrow<PhoneMessageException.UnsealingFailedException> {
+            val result =
                 instanceUnderTest.unseal(
                     "mockPhoneNumberId",
                     listOf(EntityDataFactory.sealedPhoneMessageEntity()),
                 )
+
+            result.unsealed shouldBe emptyList()
+            result.failed.size shouldBe 1
+            result.failed.first().partial shouldBe EntityDataFactory.partialPhoneMessageEntity()
+            val cause = result.failed.first().cause
+            (cause is PhoneMessageException.UnsealingFailedException) shouldBe true
+            cause.cause shouldBe decryptionFailure
+        }
+
+    @Test
+    fun `unseal() should unseal the rest of the page when one message fails`() =
+        runTest {
+            stubNumberWithKeys(listOf("mockKeyId"))
+            mockUnsealer.stub {
+                on { unseal(any(), any(), any()) } doReturn "x"
+                on {
+                    unseal(any(), eq("corruptBody"), any())
+                } doThrow Unsealer.UnsealerException.SealedDataTooShortException("too short")
             }
+
+            val result =
+                instanceUnderTest.unseal(
+                    "mockPhoneNumberId",
+                    listOf(
+                        EntityDataFactory.sealedPhoneMessageEntity(id = "first"),
+                        EntityDataFactory.sealedPhoneMessageEntity(id = "corrupt", body = "corruptBody"),
+                        EntityDataFactory.sealedPhoneMessageEntity(id = "third"),
+                    ),
+                )
+
+            result.unsealed.map { it.id } shouldBe listOf("first", "third")
+            result.failed.map { it.partial.id } shouldBe listOf("corrupt")
         }
 }

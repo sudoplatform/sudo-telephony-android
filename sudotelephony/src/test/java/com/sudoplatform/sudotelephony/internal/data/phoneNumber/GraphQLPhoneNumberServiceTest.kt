@@ -14,6 +14,7 @@ import com.sudoplatform.sudotelephony.api.ApiClient
 import com.sudoplatform.sudotelephony.data.DataFactory
 import com.sudoplatform.sudotelephony.data.EntityDataFactory
 import com.sudoplatform.sudotelephony.internal.data.common.StringConstants
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ListPhoneNumbersForSudoIdInput
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ListPhoneNumbersInput
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.PhoneNumberStateEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ProvisionPhoneNumberRequest
@@ -706,5 +707,100 @@ class GraphQLPhoneNumberServiceTest : BaseTests() {
             }
 
             verify(mockApiClient).listPhoneNumbersQuery(any())
+        }
+
+    @Test
+    fun `listForSudoId() should return the mapped page and its next token`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { listPhoneNumbersForSudoIdQuery(any()) } doReturn
+                    DataFactory.listPhoneNumbersForSudoIdQueryResponse(
+                        numbers =
+                            listOf(
+                                DataFactory.phoneNumberFragment(id = "first"),
+                                DataFactory.phoneNumberFragment(id = "second"),
+                            ),
+                        nextToken = "mockNextToken",
+                    )
+            }
+
+            val result = instanceUnderTest.listForSudoId(ListPhoneNumbersForSudoIdInput(sudoId = "mockSudoId"))
+
+            result.items.map { it.id } shouldBe listOf("first", "second")
+            result.nextToken shouldBe "mockNextToken"
+
+            verify(mockApiClient).listPhoneNumbersForSudoIdQuery(any())
+        }
+
+    @Test
+    fun `listForSudoId() should always send the Sudo and omit unset paging parameters`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { listPhoneNumbersForSudoIdQuery(any()) } doReturn
+                    DataFactory.listPhoneNumbersForSudoIdQueryResponse(numbers = emptyList())
+            }
+
+            instanceUnderTest.listForSudoId(ListPhoneNumbersForSudoIdInput(sudoId = "mockSudoId"))
+
+            verify(mockApiClient).listPhoneNumbersForSudoIdQuery(
+                check {
+                    it.sudoId shouldBe "mockSudoId"
+                    it.limit.getOrNull() shouldBe null
+                    it.nextToken.getOrNull() shouldBe null
+                },
+            )
+        }
+
+    @Test
+    fun `listForSudoId() should send the caller's paging parameters`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { listPhoneNumbersForSudoIdQuery(any()) } doReturn
+                    DataFactory.listPhoneNumbersForSudoIdQueryResponse()
+            }
+
+            instanceUnderTest.listForSudoId(
+                ListPhoneNumbersForSudoIdInput(sudoId = "mockSudoId", limit = 5, nextToken = "token"),
+            )
+
+            verify(mockApiClient).listPhoneNumbersForSudoIdQuery(
+                check {
+                    it.limit.getOrNull() shouldBe 5
+                    it.nextToken.getOrNull() shouldBe "token"
+                },
+            )
+        }
+
+    @Test
+    fun `listForSudoId() should throw InvalidArgumentException for an input the service rejects`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { listPhoneNumbersForSudoIdQuery(any()) } doReturn
+                    DataFactory.listPhoneNumbersForSudoIdErrorResponse(
+                        DataFactory.graphQLError(
+                            extensions = mapOf(StringConstants.ERROR_TYPE to "sudoplatform.InvalidArgumentError"),
+                        ),
+                    )
+            }
+
+            shouldThrow<PhoneNumberException.InvalidArgumentException> {
+                instanceUnderTest.listForSudoId(ListPhoneNumbersForSudoIdInput(sudoId = ""))
+            }
+
+            verify(mockApiClient).listPhoneNumbersForSudoIdQuery(any())
+        }
+
+    @Test
+    fun `listForSudoId() should throw UnknownException for unexpected errors`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { listPhoneNumbersForSudoIdQuery(any()) } doThrow RuntimeException("network down")
+            }
+
+            shouldThrow<PhoneNumberException.UnknownException> {
+                instanceUnderTest.listForSudoId(ListPhoneNumbersForSudoIdInput(sudoId = "mockSudoId"))
+            }
+
+            verify(mockApiClient).listPhoneNumbersForSudoIdQuery(any())
         }
 }

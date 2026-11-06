@@ -8,6 +8,7 @@ package com.sudoplatform.sudotelephony.internal.data.common.transformers
 
 import com.amplifyframework.api.graphql.GraphQLResponse
 import com.sudoplatform.sudotelephony.SudoTelephonyClient
+import com.sudoplatform.sudotelephony.SudoTelephonyClient.ConfigurationDataException
 import com.sudoplatform.sudotelephony.SudoTelephonyClient.CryptographicKeysException
 import com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneMessageException
 import com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneNumberException
@@ -81,6 +82,52 @@ internal object ErrorTransformer {
             is SupportedCountriesException,
             -> e
             else -> SupportedCountriesException.UnknownException(e)
+        }
+
+    /**
+     * Interprets a GraphQL error and converts it to an appropriate
+     * [ConfigurationDataException].
+     *
+     * @param e [GraphQLResponse.Error] The GraphQL error to interpret.
+     * @return The corresponding [ConfigurationDataException].
+     */
+    fun interpretConfigurationDataError(e: GraphQLResponse.Error): ConfigurationDataException {
+        val httpStatusCode = e.extensions?.get(HTTP_STATUS_CODE_KEY) as Int?
+        val error = e.extensions?.get(StringConstants.ERROR_TYPE)?.toString() ?: ""
+
+        if (httpStatusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            return ConfigurationDataException.AuthenticationException("$e")
+        }
+        if (httpStatusCode != null && httpStatusCode >= HttpURLConnection.HTTP_INTERNAL_ERROR) {
+            return ConfigurationDataException.FailedException("$e")
+        }
+        if (error.contains(StringConstants.ERROR_IDENTITY_CONTEXT_MISSING)) {
+            return ConfigurationDataException.IdentityContextMissingException(
+                StringConstants.IDENTITY_CONTEXT_MISSING_MSG,
+            )
+        }
+        if (error.contains(StringConstants.ERROR_SERVICE)) {
+            return ConfigurationDataException.ServiceException(
+                StringConstants.SERVICE_ERROR_MSG,
+            )
+        }
+        return ConfigurationDataException.FailedException(e.toString())
+    }
+
+    /**
+     * Interprets a throwable exception and converts it to an appropriate
+     * [ConfigurationDataException].
+     *
+     * @param e [Throwable] The throwable to interpret.
+     * @return [Throwable] The corresponding exception, which may be the original exception if
+     *  already handled.
+     */
+    fun interpretConfigurationDataException(e: Throwable): Throwable =
+        when (e) {
+            is CancellationException,
+            is ConfigurationDataException,
+            -> e
+            else -> ConfigurationDataException.UnknownException(e)
         }
 
     /**

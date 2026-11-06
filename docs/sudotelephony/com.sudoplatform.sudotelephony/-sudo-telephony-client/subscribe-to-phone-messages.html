@@ -115,14 +115,18 @@ import com.sudoplatform.sudotelephony.SudoTelephonyClient
 import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
+import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
 import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
-import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForConversationIdInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForPhoneNumberIdInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersForSudoIdInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersInput
 import com.sudoplatform.sudotelephony.types.inputs.ProvisionPhoneNumberInput
 import com.sudoplatform.sudotelephony.types.inputs.SearchAvailablePhoneNumbersInput
 import com.sudoplatform.sudotelephony.types.inputs.UpdatePhoneMessagesInput
+import com.sudoplatform.sudouser.SudoPlatformSignInCallback
 import com.sudoplatform.sudouser.SudoUserClient
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -137,7 +141,7 @@ fun main() {
         object : PhoneMessageSubscriber {
             override fun phoneMessageEvent(event: PhoneMessageEvent) {
                 // The event carries no text; fetch the message to read it.
-                println(&quot;message ${event.id} was ${event.changeType}&quot;)
+                println(&quot;message ${event.id} of Sudo ${event.sudoId} was ${event.changeType}&quot;)
             }
 
             override fun connectionStatusChanged(state: Subscriber.ConnectionState) {

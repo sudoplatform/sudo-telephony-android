@@ -102,4 +102,8 @@ data class PhoneNumber(
     val version: Int,
     val createdAt: Date,
     val updatedAt: Date,
-) : Parcelable
+) : Parcelable {
+    /** ID of the Sudo that owns the number, or `null` when the number belongs only to the user. */
+    val sudoId: String?
+        get() = owners.sudoId()
+}

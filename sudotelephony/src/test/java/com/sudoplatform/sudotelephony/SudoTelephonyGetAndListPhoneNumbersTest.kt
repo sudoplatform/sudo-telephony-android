@@ -14,9 +14,12 @@ import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.Phone
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumberSearch.PhoneNumberSearchService
 import com.sudoplatform.sudotelephony.internal.domain.useCases.UseCaseFactory
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneNumber.GetPhoneNumberUseCase
+import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneNumber.ListPhoneNumbersForSudoIdUseCaseInput
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneNumber.ListPhoneNumbersUseCase
+import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneNumber.ListPhoneNumbersUseCaseInput
 import com.sudoplatform.sudotelephony.keys.ServiceKeyManager
 import com.sudoplatform.sudotelephony.types.PhoneNumberState
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersForSudoIdInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersInput
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
@@ -57,7 +60,7 @@ class SudoTelephonyGetAndListPhoneNumbersTest : BaseTests() {
     private val mockListUseCase by before {
         mock<ListPhoneNumbersUseCase>().stub {
             onBlocking {
-                execute(any())
+                execute(any<ListPhoneNumbersUseCaseInput>())
             } doReturn
                 ListPhoneNumbersOutput(
                     items = listOf(EntityDataFactory.phoneNumberEntity()),
@@ -172,7 +175,7 @@ class SudoTelephonyGetAndListPhoneNumbersTest : BaseTests() {
             result.nextToken shouldBe "mockNextToken"
 
             verify(mockUseCaseFactory).createListPhoneNumbersUseCase()
-            verify(mockListUseCase).execute(any())
+            verify(mockListUseCase).execute(any<ListPhoneNumbersUseCaseInput>())
         }
 
     @Test
@@ -187,7 +190,7 @@ class SudoTelephonyGetAndListPhoneNumbersTest : BaseTests() {
 
             verify(mockUseCaseFactory).createListPhoneNumbersUseCase()
             verify(mockListUseCase).execute(
-                check {
+                check<ListPhoneNumbersUseCaseInput> {
                     it.limit shouldBe 3
                     it.nextToken shouldBe "token"
                 },
@@ -198,7 +201,7 @@ class SudoTelephonyGetAndListPhoneNumbersTest : BaseTests() {
     fun `listPhoneNumbers() should return an empty page`() =
         runTest {
             mockListUseCase.stub {
-                onBlocking { execute(any()) } doReturn ListPhoneNumbersOutput(items = emptyList())
+                onBlocking { execute(any<ListPhoneNumbersUseCaseInput>()) } doReturn ListPhoneNumbersOutput(items = emptyList())
             }
 
             val deferredResult =
@@ -212,14 +215,14 @@ class SudoTelephonyGetAndListPhoneNumbersTest : BaseTests() {
             result.nextToken shouldBe null
 
             verify(mockUseCaseFactory).createListPhoneNumbersUseCase()
-            verify(mockListUseCase).execute(any())
+            verify(mockListUseCase).execute(any<ListPhoneNumbersUseCaseInput>())
         }
 
     @Test
     fun `listPhoneNumbers() should throw when the use case throws`() =
         runTest {
             mockListUseCase.stub {
-                onBlocking { execute(any()) } doThrow PhoneNumberException.InvalidArgumentException()
+                onBlocking { execute(any<ListPhoneNumbersUseCaseInput>()) } doThrow PhoneNumberException.InvalidArgumentException()
             }
 
             val deferredResult =
@@ -232,6 +235,61 @@ class SudoTelephonyGetAndListPhoneNumbersTest : BaseTests() {
             deferredResult.await()
 
             verify(mockUseCaseFactory).createListPhoneNumbersUseCase()
-            verify(mockListUseCase).execute(any())
+            verify(mockListUseCase).execute(any<ListPhoneNumbersUseCaseInput>())
+        }
+
+    @Test
+    fun `listPhoneNumbersForSudoId() should pass the Sudo and paging parameters and return the page`() =
+        runTest {
+            mockListUseCase.stub {
+                onBlocking { execute(any<ListPhoneNumbersForSudoIdUseCaseInput>()) } doReturn
+                    ListPhoneNumbersOutput(
+                        items = listOf(EntityDataFactory.phoneNumberEntity()),
+                        nextToken = "mockNextToken",
+                    )
+            }
+
+            val deferredResult =
+                async(StandardTestDispatcher(testScheduler)) {
+                    client.listPhoneNumbersForSudoId(
+                        ListPhoneNumbersForSudoIdInput(sudoId = "mockSudoId", limit = 3, nextToken = "token"),
+                    )
+                }
+            deferredResult.start()
+            val result = deferredResult.await()
+
+            result.items.map { it.id } shouldBe listOf("mockPhoneNumberId")
+            result.items.first().sudoId shouldBe "mockSudoId"
+            result.nextToken shouldBe "mockNextToken"
+
+            verify(mockUseCaseFactory).createListPhoneNumbersUseCase()
+            verify(mockListUseCase).execute(
+                check<ListPhoneNumbersForSudoIdUseCaseInput> {
+                    it.sudoId shouldBe "mockSudoId"
+                    it.limit shouldBe 3
+                    it.nextToken shouldBe "token"
+                },
+            )
+        }
+
+    @Test
+    fun `listPhoneNumbersForSudoId() should throw when the use case throws`() =
+        runTest {
+            mockListUseCase.stub {
+                onBlocking { execute(any<ListPhoneNumbersForSudoIdUseCaseInput>()) } doThrow
+                    PhoneNumberException.InvalidArgumentException()
+            }
+
+            val deferredResult =
+                async(StandardTestDispatcher(testScheduler)) {
+                    shouldThrow<PhoneNumberException.InvalidArgumentException> {
+                        client.listPhoneNumbersForSudoId(ListPhoneNumbersForSudoIdInput(sudoId = ""))
+                    }
+                }
+            deferredResult.start()
+            deferredResult.await()
+
+            verify(mockUseCaseFactory).createListPhoneNumbersUseCase()
+            verify(mockListUseCase).execute(any<ListPhoneNumbersForSudoIdUseCaseInput>())
         }
 }

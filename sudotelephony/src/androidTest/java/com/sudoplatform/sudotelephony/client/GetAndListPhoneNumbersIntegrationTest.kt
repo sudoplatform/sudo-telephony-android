@@ -8,16 +8,13 @@ package com.sudoplatform.sudotelephony.client
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.sudoplatform.sudotelephony.BaseIntegrationTest
-import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.PhoneNumberState
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersForSudoIdInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersInput
-import com.sudoplatform.sudotelephony.types.inputs.ProvisionPhoneNumberInput
-import com.sudoplatform.sudotelephony.types.inputs.SearchAvailablePhoneNumbersInput
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.kotlintest.shouldThrow
 import kotlinx.coroutines.runBlocking
-import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.UUID
@@ -29,45 +26,10 @@ import java.util.UUID
  */
 @RunWith(AndroidJUnit4::class)
 class GetAndListPhoneNumbersIntegrationTest : BaseIntegrationTest() {
-    private val countryCode = optionalArgument("COUNTRY_CODE", "US")
-    private val areaCode = optionalArgument("AREA_CODE", "415")
-
-    /** Provisions a number, skipping the test when the provider offers none. */
-    private suspend fun provisionANumber(): PhoneNumber {
-        val search =
-            telephonyClient.searchAvailablePhoneNumbers(
-                SearchAvailablePhoneNumbersInput(
-                    countryCode = countryCode,
-                    areaCode = areaCode,
-                ),
-            )
-        assumeTrue(
-            "No numbers offered in $countryCode-$areaCode on this instance",
-            search.results.isNotEmpty(),
-        )
-
-        for (available in search.results.shuffled()) {
-            try {
-                val number =
-                    telephonyClient.provisionPhoneNumber(
-                        ProvisionPhoneNumberInput(
-                            searchId = search.id,
-                            phoneNumber = available.phoneNumber,
-                        ),
-                    )
-                trackForRelease(number.id)
-                return number
-            } catch (e: com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneNumberException.PhoneNumberUnavailableException) {
-                logger.info("${available.phoneNumber} was taken after the search, trying the next")
-            }
-        }
-        throw AssertionError("Every number offered in $countryCode-$areaCode was already taken")
-    }
-
     @Test
     fun getPhoneNumberShouldReturnTheProvisionedNumber() =
         runBlocking {
-            val provisioned = provisionANumber()
+            val provisioned = provisionANumber().number
 
             val fetched = telephonyClient.getPhoneNumber(provisioned.id)
 
@@ -83,7 +45,7 @@ class GetAndListPhoneNumbersIntegrationTest : BaseIntegrationTest() {
     @Test
     fun getPhoneNumberShouldReportTheNumberLeavingProvisioning() =
         runBlocking {
-            val provisioned = provisionANumber()
+            val provisioned = provisionANumber().number
             provisioned.state shouldBe PhoneNumberState.PROVISIONING
 
             // The order completes asynchronously, so the state is read until it settles.
@@ -103,7 +65,7 @@ class GetAndListPhoneNumbersIntegrationTest : BaseIntegrationTest() {
     @Test
     fun getPhoneNumberShouldStillReturnAReleasedNumber() =
         runBlocking {
-            val provisioned = provisionANumber()
+            val provisioned = provisionANumber().number
             awaitState(provisioned.id) { it != PhoneNumberState.PROVISIONING }
             telephonyClient.deprovisionPhoneNumber(provisioned.id)
 
@@ -117,7 +79,7 @@ class GetAndListPhoneNumbersIntegrationTest : BaseIntegrationTest() {
     @Test
     fun listPhoneNumbersShouldIncludeTheProvisionedNumber() =
         runBlocking {
-            val provisioned = provisionANumber()
+            val provisioned = provisionANumber().number
 
             val page = telephonyClient.listPhoneNumbers()
 
@@ -149,7 +111,7 @@ class GetAndListPhoneNumbersIntegrationTest : BaseIntegrationTest() {
     @Test
     fun listPhoneNumbersShouldNotIncludeAReleasedNumber() =
         runBlocking {
-            val provisioned = provisionANumber()
+            val provisioned = provisionANumber().number
             awaitState(provisioned.id) { it != PhoneNumberState.PROVISIONING }
             telephonyClient.deprovisionPhoneNumber(provisioned.id)
 
@@ -163,6 +125,27 @@ class GetAndListPhoneNumbersIntegrationTest : BaseIntegrationTest() {
         runBlocking {
             shouldThrow<com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneNumberException.InvalidArgumentException> {
                 telephonyClient.listPhoneNumbers(ListPhoneNumbersInput(nextToken = "not-a-token"))
+            }
+            Unit
+        }
+
+    @Test
+    fun listPhoneNumbersForSudoIdShouldReturnAnEmptyPageForASudoWithNoNumbers() =
+        runBlocking {
+            val page =
+                telephonyClient.listPhoneNumbersForSudoId(
+                    ListPhoneNumbersForSudoIdInput(sudoId = UUID.randomUUID().toString()),
+                )
+
+            page.items shouldBe emptyList()
+            page.nextToken shouldBe null
+        }
+
+    @Test
+    fun listPhoneNumbersForSudoIdShouldRejectAnEmptySudoId() =
+        runBlocking {
+            shouldThrow<com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneNumberException.InvalidArgumentException> {
+                telephonyClient.listPhoneNumbersForSudoId(ListPhoneNumbersForSudoIdInput(sudoId = ""))
             }
             Unit
         }

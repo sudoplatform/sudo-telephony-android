@@ -94,4 +94,58 @@ data class PhoneMessage(
     val version: Int,
     val createdAt: Date,
     val updatedAt: Date,
-) : Parcelable
+) : Parcelable {
+    /** ID of the Sudo that owns the message, or `null` when it belongs only to the user. */
+    val sudoId: String?
+        get() = owners.sudoId()
+}
+
+/**
+ * A phone message whose sealed fields could not be unsealed.
+ *
+ * It carries every field of [PhoneMessage] except the sealed ones, `remotePhoneNumber` and
+ * `body`, so it can still be shown, marked as seen or deleted.
+ *
+ * @property id [String] ID of the message.
+ * @property owner [String] ID of the user who owns the message.
+ * @property owners [List] Owners taken from the ownership proofs, which tie the message to a
+ *  Sudo.
+ * @property phoneNumberId [String] ID of the phone number that sent or received the message.
+ * @property conversationId [String] ID of the conversation, which groups every message
+ *  between the phone number and the other party.
+ * @property type [PhoneMessageType] The kind of message.
+ * @property direction [PhoneMessageDirection] Whether the message was received or sent.
+ * @property localPhoneNumber [String] The user's number in E.164 format.
+ * @property segmentCount [Int] The number of SMS segments the message was carried in, as
+ *  reported by the telephony provider.
+ * @property mediaOmitted [Boolean] True for an inbound message whose media was dropped and
+ *  only its text kept.
+ * @property seen [Boolean] Whether the user has marked the message as read.
+ * @property receivedAt [Date] When the service received the message from the telephony
+ *  provider.
+ * @property version [Int] Version of this object, incremented on each update.
+ * @property createdAt [Date] When the object was created.
+ * @property updatedAt [Date] When the object was last updated.
+ */
+@Parcelize
+data class PartialPhoneMessage(
+    val id: String,
+    val owner: String,
+    val owners: List<Owner>,
+    val phoneNumberId: String,
+    val conversationId: String,
+    val type: PhoneMessageType,
+    val direction: PhoneMessageDirection,
+    val localPhoneNumber: String,
+    val segmentCount: Int,
+    val mediaOmitted: Boolean,
+    val seen: Boolean,
+    val receivedAt: Date,
+    val version: Int,
+    val createdAt: Date,
+    val updatedAt: Date,
+) : Parcelable {
+    /** ID of the Sudo that owns the message, or `null` when it belongs only to the user. */
+    val sudoId: String?
+        get() = owners.sudoId()
+}

@@ -18,7 +18,10 @@ import com.sudoplatform.sudotelephony.graphql.DeprovisionPhoneNumberMutation
 import com.sudoplatform.sudotelephony.graphql.GetPhoneMessageQuery
 import com.sudoplatform.sudotelephony.graphql.GetPhoneNumberQuery
 import com.sudoplatform.sudotelephony.graphql.GetSupportedCountriesForTelephonyQuery
-import com.sudoplatform.sudotelephony.graphql.ListPhoneMessagesQuery
+import com.sudoplatform.sudotelephony.graphql.GetTelephonyConfigQuery
+import com.sudoplatform.sudotelephony.graphql.ListPhoneMessagesForConversationIdQuery
+import com.sudoplatform.sudotelephony.graphql.ListPhoneMessagesForPhoneNumberIdQuery
+import com.sudoplatform.sudotelephony.graphql.ListPhoneNumbersForSudoIdQuery
 import com.sudoplatform.sudotelephony.graphql.ListPhoneNumbersQuery
 import com.sudoplatform.sudotelephony.graphql.OnPhoneMessageEventSubscription
 import com.sudoplatform.sudotelephony.graphql.OnPhoneNumberUpdateSubscription
@@ -26,7 +29,9 @@ import com.sudoplatform.sudotelephony.graphql.ProvisionPhoneNumberMutation
 import com.sudoplatform.sudotelephony.graphql.SearchAvailablePhoneNumbersQuery
 import com.sudoplatform.sudotelephony.graphql.UpdatePhoneMessagesMutation
 import com.sudoplatform.sudotelephony.graphql.type.DeletePhoneMessagesInput
-import com.sudoplatform.sudotelephony.graphql.type.ListPhoneMessagesInput
+import com.sudoplatform.sudotelephony.graphql.type.ListPhoneMessagesForConversationIdInput
+import com.sudoplatform.sudotelephony.graphql.type.ListPhoneMessagesForPhoneNumberIdInput
+import com.sudoplatform.sudotelephony.graphql.type.ListPhoneNumbersForSudoIdInput
 import com.sudoplatform.sudotelephony.graphql.type.ListPhoneNumbersInput
 import com.sudoplatform.sudotelephony.graphql.type.ProvisionPhoneNumberInput
 import com.sudoplatform.sudotelephony.graphql.type.SearchAvailablePhoneNumbersInput
@@ -54,6 +59,17 @@ open class ApiClient(
     open suspend fun getSupportedCountriesForTelephonyQuery(): GraphQLResponse<GetSupportedCountriesForTelephonyQuery.Data> =
         this.graphQLClient.query<GetSupportedCountriesForTelephonyQuery, GetSupportedCountriesForTelephonyQuery.Data>(
             GetSupportedCountriesForTelephonyQuery.OPERATION_DOCUMENT,
+            emptyMap(),
+        )
+
+    /**
+     * Execute the `GetTelephonyConfig` query.
+     *
+     * @return [GraphQLResponse] carrying the service configuration and any GraphQL errors.
+     */
+    open suspend fun getTelephonyConfigQuery(): GraphQLResponse<GetTelephonyConfigQuery.Data> =
+        this.graphQLClient.query<GetTelephonyConfigQuery, GetTelephonyConfigQuery.Data>(
+            GetTelephonyConfigQuery.OPERATION_DOCUMENT,
             emptyMap(),
         )
 
@@ -96,6 +112,20 @@ open class ApiClient(
         )
 
     /**
+     * Execute the `ListPhoneNumbersForSudoId` query.
+     *
+     * @param input [ListPhoneNumbersForSudoIdInput] The Sudo and paging parameters.
+     * @return [GraphQLResponse] carrying a page of phone numbers and any GraphQL errors.
+     */
+    open suspend fun listPhoneNumbersForSudoIdQuery(
+        input: ListPhoneNumbersForSudoIdInput,
+    ): GraphQLResponse<ListPhoneNumbersForSudoIdQuery.Data> =
+        this.graphQLClient.query<ListPhoneNumbersForSudoIdQuery, ListPhoneNumbersForSudoIdQuery.Data>(
+            ListPhoneNumbersForSudoIdQuery.OPERATION_DOCUMENT,
+            mapOf("input" to input),
+        )
+
+    /**
      * Execute the `GetPhoneMessage` query.
      *
      * @param id [String] ID of the phone message to retrieve.
@@ -108,14 +138,30 @@ open class ApiClient(
         )
 
     /**
-     * Execute the `ListPhoneMessages` query.
+     * Execute the `ListPhoneMessagesForPhoneNumberId` query.
      *
-     * @param input [ListPhoneMessagesInput] Which messages to list and how to page them.
+     * @param input [ListPhoneMessagesForPhoneNumberIdInput] Which phone number's messages to list and how to page them.
      * @return [GraphQLResponse] carrying a page of sealed messages and any GraphQL errors.
      */
-    open suspend fun listPhoneMessagesQuery(input: ListPhoneMessagesInput): GraphQLResponse<ListPhoneMessagesQuery.Data> =
-        this.graphQLClient.query<ListPhoneMessagesQuery, ListPhoneMessagesQuery.Data>(
-            ListPhoneMessagesQuery.OPERATION_DOCUMENT,
+    open suspend fun listPhoneMessagesForPhoneNumberIdQuery(
+        input: ListPhoneMessagesForPhoneNumberIdInput,
+    ): GraphQLResponse<ListPhoneMessagesForPhoneNumberIdQuery.Data> =
+        this.graphQLClient.query<ListPhoneMessagesForPhoneNumberIdQuery, ListPhoneMessagesForPhoneNumberIdQuery.Data>(
+            ListPhoneMessagesForPhoneNumberIdQuery.OPERATION_DOCUMENT,
+            mapOf("input" to input),
+        )
+
+    /**
+     * Execute the `ListPhoneMessagesForConversationId` query.
+     *
+     * @param input [ListPhoneMessagesForConversationIdInput] Which conversation's messages to list and how to page them.
+     * @return [GraphQLResponse] carrying a page of sealed messages and any GraphQL errors.
+     */
+    open suspend fun listPhoneMessagesForConversationIdQuery(
+        input: ListPhoneMessagesForConversationIdInput,
+    ): GraphQLResponse<ListPhoneMessagesForConversationIdQuery.Data> =
+        this.graphQLClient.query<ListPhoneMessagesForConversationIdQuery, ListPhoneMessagesForConversationIdQuery.Data>(
+            ListPhoneMessagesForConversationIdQuery.OPERATION_DOCUMENT,
             mapOf("input" to input),
         )
 

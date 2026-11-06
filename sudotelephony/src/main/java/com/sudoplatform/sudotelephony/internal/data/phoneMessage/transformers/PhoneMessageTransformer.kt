@@ -7,9 +7,14 @@
 package com.sudoplatform.sudotelephony.internal.data.phoneMessage.transformers
 
 import com.sudoplatform.sudotelephony.internal.data.phoneNumber.transformers.OwnerTransformer
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.ListAPIResultEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PartialPhoneMessageEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.SealedPhoneMessageEntity
 import com.sudoplatform.sudotelephony.internal.util.toDate
+import com.sudoplatform.sudotelephony.types.ListAPIResult
+import com.sudoplatform.sudotelephony.types.PartialPhoneMessage
+import com.sudoplatform.sudotelephony.types.PartialResult
 import com.sudoplatform.sudotelephony.types.PhoneMessage
 import com.sudoplatform.sudotelephony.graphql.fragment.SealedPhoneMessage as SealedPhoneMessageFragment
 
@@ -79,6 +84,77 @@ internal object PhoneMessageTransformer {
             createdAt = sealed.createdAt,
             updatedAt = sealed.updatedAt,
         )
+
+    /**
+     * Keep the plaintext fields of a [sealed] message that could not be unsealed.
+     */
+    fun fromSealedToPartialEntity(sealed: SealedPhoneMessageEntity): PartialPhoneMessageEntity =
+        PartialPhoneMessageEntity(
+            id = sealed.id,
+            owner = sealed.owner,
+            owners = sealed.owners,
+            phoneNumberId = sealed.phoneNumberId,
+            conversationId = sealed.conversationId,
+            type = sealed.type,
+            direction = sealed.direction,
+            localPhoneNumber = sealed.localPhoneNumber,
+            segmentCount = sealed.segmentCount,
+            mediaOmitted = sealed.mediaOmitted,
+            seen = sealed.seen,
+            receivedAt = sealed.receivedAt,
+            version = sealed.version,
+            createdAt = sealed.createdAt,
+            updatedAt = sealed.updatedAt,
+        )
+
+    /**
+     * Map a partial [entity] to the public [PartialPhoneMessage] type.
+     */
+    fun fromPartialEntityToApi(entity: PartialPhoneMessageEntity): PartialPhoneMessage =
+        PartialPhoneMessage(
+            id = entity.id,
+            owner = entity.owner,
+            owners = entity.owners.map { OwnerTransformer.fromEntityToApi(it) },
+            phoneNumberId = entity.phoneNumberId,
+            conversationId = entity.conversationId,
+            type = PhoneMessageTypeTransformer.fromEntityToApi(entity.type),
+            direction = PhoneMessageDirectionTransformer.fromEntityToApi(entity.direction),
+            localPhoneNumber = entity.localPhoneNumber,
+            segmentCount = entity.segmentCount,
+            mediaOmitted = entity.mediaOmitted,
+            seen = entity.seen,
+            receivedAt = entity.receivedAt,
+            version = entity.version,
+            createdAt = entity.createdAt,
+            updatedAt = entity.updatedAt,
+        )
+
+    /**
+     * Map a page of message entities to the public [ListAPIResult] type.
+     */
+    fun fromListEntityToApi(
+        entity: ListAPIResultEntity<PhoneMessageEntity, PartialPhoneMessageEntity>,
+    ): ListAPIResult<PhoneMessage, PartialPhoneMessage> =
+        when (entity) {
+            is ListAPIResultEntity.Success ->
+                ListAPIResult.Success(
+                    ListAPIResult.ListSuccessResult(
+                        items = entity.result.items.map { fromEntityToApi(it) },
+                        nextToken = entity.result.nextToken,
+                    ),
+                )
+            is ListAPIResultEntity.Partial ->
+                ListAPIResult.Partial(
+                    ListAPIResult.ListPartialResult(
+                        items = entity.result.items.map { fromEntityToApi(it) },
+                        failed =
+                            entity.result.failed.map {
+                                PartialResult(fromPartialEntityToApi(it.partial), it.cause)
+                            },
+                        nextToken = entity.result.nextToken,
+                    ),
+                )
+        }
 
     /**
      * Map an [entity] to the public [PhoneMessage] type.

@@ -30,11 +30,15 @@ internal class GetPhoneMessageUseCase(
      * @param id [String] ID of the message to retrieve.
      * @return The readable [PhoneMessageEntity], or `null` when it does not belong to the
      *  caller.
+     * @throws com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneMessageException.UnsealingFailedException
+     *  if the message could not be unsealed.
      */
     suspend fun execute(id: String): PhoneMessageEntity? {
         logger.debug(this::class.java.simpleName)
 
         val sealed = phoneMessageService.get(id) ?: return null
-        return unsealer.unseal(sealed.phoneNumberId, listOf(sealed)).first()
+        val result = unsealer.unseal(sealed.phoneNumberId, listOf(sealed))
+        result.failed.firstOrNull()?.let { throw it.cause }
+        return result.unsealed.first()
     }
 }

@@ -9,11 +9,18 @@ package com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage
 import com.sudoplatform.sudotelephony.BaseTests
 import com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneMessageException
 import com.sudoplatform.sudotelephony.data.EntityDataFactory
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.ListAPIResultEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.ListPartialResultEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.ListSuccessResultEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.PartialResultEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.ListPhoneMessagesForConversationIdInput
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.ListPhoneMessagesForPhoneNumberIdInput
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.ListPhoneMessagesOutput
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageBatchResultEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageService
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageUnsealer
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.SortOrderEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.UnsealedPhoneMessages
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import kotlinx.coroutines.test.runTest
@@ -63,7 +70,7 @@ class PhoneMessageUseCasesTest : BaseTests() {
                 onBlocking { get(any()) } doReturn EntityDataFactory.sealedPhoneMessageEntity()
             }
             mockUnsealer.stub {
-                onBlocking { unseal(any(), any()) } doReturn listOf(unsealed)
+                onBlocking { unseal(any(), any()) } doReturn UnsealedPhoneMessages(listOf(unsealed), emptyList())
             }
 
             getUseCase.execute("mockMessageId") shouldBe unsealed
@@ -85,7 +92,7 @@ class PhoneMessageUseCasesTest : BaseTests() {
         }
 
     @Test
-    fun `GetPhoneMessageUseCase execute() should propagate an unsealing failure`() =
+    fun `GetPhoneMessageUseCase execute() should propagate a missing key`() =
         runTest {
             mockPhoneMessageService.stub {
                 onBlocking { get(any()) } doReturn EntityDataFactory.sealedPhoneMessageEntity()
@@ -102,10 +109,40 @@ class PhoneMessageUseCasesTest : BaseTests() {
         }
 
     @Test
-    fun `ListPhoneMessagesUseCase execute() should return the unsealed page and next token`() =
+    fun `GetPhoneMessageUseCase execute() should throw the cause when the message cannot be unsealed`() =
+        runTest {
+            val unsealingFailure = PhoneMessageException.UnsealingFailedException("bad")
+            mockPhoneMessageService.stub {
+                onBlocking { get(any()) } doReturn EntityDataFactory.sealedPhoneMessageEntity()
+            }
+            mockUnsealer.stub {
+                onBlocking {
+                    unseal(any(), any())
+                } doReturn
+                    UnsealedPhoneMessages(
+                        unsealed = emptyList(),
+                        failed =
+                            listOf(
+                                PartialResultEntity(
+                                    EntityDataFactory.partialPhoneMessageEntity(),
+                                    unsealingFailure,
+                                ),
+                            ),
+                    )
+            }
+
+            val thrown =
+                shouldThrow<PhoneMessageException.UnsealingFailedException> {
+                    getUseCase.execute("mockMessageId")
+                }
+            thrown shouldBe unsealingFailure
+        }
+
+    @Test
+    fun `ListPhoneMessagesUseCase execute(phoneNumberId) should return the unsealed page and next token`() =
         runTest {
             mockPhoneMessageService.stub {
-                onBlocking { list(any()) } doReturn
+                onBlocking { listForPhoneNumberId(any()) } doReturn
                     ListPhoneMessagesOutput(
                         items = listOf(EntityDataFactory.sealedPhoneMessageEntity()),
                         nextToken = "mockNextToken",
@@ -114,43 +151,49 @@ class PhoneMessageUseCasesTest : BaseTests() {
             mockUnsealer.stub {
                 onBlocking {
                     unseal(any(), any())
-                } doReturn listOf(EntityDataFactory.phoneMessageEntity(body = "Hello there"))
+                } doReturn
+                    UnsealedPhoneMessages(
+                        unsealed = listOf(EntityDataFactory.phoneMessageEntity(body = "Hello there")),
+                        failed = emptyList(),
+                    )
             }
 
             val result =
                 listUseCase.execute(
-                    ListPhoneMessagesUseCaseInput(phoneNumberId = "mockPhoneNumberId"),
+                    ListPhoneMessagesForPhoneNumberIdInput(phoneNumberId = "mockPhoneNumberId"),
                 )
 
-            result.items.size shouldBe 1
-            result.items.first().body shouldBe "Hello there"
-            result.nextToken shouldBe "mockNextToken"
+            result shouldBe
+                ListAPIResultEntity.Success(
+                    ListSuccessResultEntity(
+                        items = listOf(EntityDataFactory.phoneMessageEntity(body = "Hello there")),
+                        nextToken = "mockNextToken",
+                    ),
+                )
         }
 
     @Test
-    fun `ListPhoneMessagesUseCase execute() should map every filter onto the service input`() =
+    fun `ListPhoneMessagesUseCase execute(phoneNumberId) should map every filter onto the service input`() =
         runTest {
             mockPhoneMessageService.stub {
-                onBlocking { list(any()) } doReturn ListPhoneMessagesOutput(items = emptyList())
+                onBlocking { listForPhoneNumberId(any()) } doReturn ListPhoneMessagesOutput(items = emptyList())
             }
             mockUnsealer.stub {
-                onBlocking { unseal(any(), any()) } doReturn emptyList()
+                onBlocking { unseal(any(), any()) } doReturn UnsealedPhoneMessages(emptyList(), emptyList())
             }
 
             listUseCase.execute(
-                ListPhoneMessagesUseCaseInput(
+                ListPhoneMessagesForPhoneNumberIdInput(
                     phoneNumberId = "mockPhoneNumberId",
-                    conversationId = "mockConversationId",
                     sortOrder = SortOrderEntity.ASC,
                     limit = 4,
                     nextToken = "token",
                 ),
             )
 
-            verify(mockPhoneMessageService).list(
+            verify(mockPhoneMessageService).listForPhoneNumberId(
                 check {
                     it.phoneNumberId shouldBe "mockPhoneNumberId"
-                    it.conversationId shouldBe "mockConversationId"
                     it.sortOrder shouldBe SortOrderEntity.ASC
                     it.limit shouldBe 4
                     it.nextToken shouldBe "token"
@@ -159,38 +202,131 @@ class PhoneMessageUseCasesTest : BaseTests() {
         }
 
     @Test
-    fun `ListPhoneMessagesUseCase execute() should return an empty page unchanged`() =
+    fun `ListPhoneMessagesUseCase execute(phoneNumberId) should return an empty page unchanged`() =
         runTest {
             mockPhoneMessageService.stub {
-                onBlocking { list(any()) } doReturn ListPhoneMessagesOutput(items = emptyList())
+                onBlocking { listForPhoneNumberId(any()) } doReturn ListPhoneMessagesOutput(items = emptyList())
             }
             mockUnsealer.stub {
-                onBlocking { unseal(any(), any()) } doReturn emptyList()
+                onBlocking { unseal(any(), any()) } doReturn UnsealedPhoneMessages(emptyList(), emptyList())
             }
 
             val result =
                 listUseCase.execute(
-                    ListPhoneMessagesUseCaseInput(phoneNumberId = "mockPhoneNumberId"),
+                    ListPhoneMessagesForPhoneNumberIdInput(phoneNumberId = "mockPhoneNumberId"),
                 )
 
-            result.items shouldBe emptyList()
-            result.nextToken shouldBe null
+            result shouldBe ListAPIResultEntity.Success(ListSuccessResultEntity(emptyList(), null))
         }
 
     @Test
-    fun `ListPhoneMessagesUseCase execute() should propagate a domain exception unchanged`() =
+    fun `ListPhoneMessagesUseCase execute(phoneNumberId) should return a partial page when a message cannot be unsealed`() =
+        runTest {
+            val unsealed = EntityDataFactory.phoneMessageEntity(id = "readable")
+            val failed =
+                PartialResultEntity(
+                    EntityDataFactory.partialPhoneMessageEntity(id = "unreadable"),
+                    PhoneMessageException.UnsealingFailedException("bad"),
+                )
+            mockPhoneMessageService.stub {
+                onBlocking { listForPhoneNumberId(any()) } doReturn
+                    ListPhoneMessagesOutput(
+                        items =
+                            listOf(
+                                EntityDataFactory.sealedPhoneMessageEntity(id = "readable"),
+                                EntityDataFactory.sealedPhoneMessageEntity(id = "unreadable"),
+                            ),
+                        nextToken = "mockNextToken",
+                    )
+            }
+            mockUnsealer.stub {
+                onBlocking {
+                    unseal(any(), any())
+                } doReturn UnsealedPhoneMessages(listOf(unsealed), listOf(failed))
+            }
+
+            val result =
+                listUseCase.execute(
+                    ListPhoneMessagesForPhoneNumberIdInput(phoneNumberId = "mockPhoneNumberId"),
+                )
+
+            result shouldBe
+                ListAPIResultEntity.Partial(
+                    ListPartialResultEntity(
+                        items = listOf(unsealed),
+                        failed = listOf(failed),
+                        nextToken = "mockNextToken",
+                    ),
+                )
+        }
+
+    @Test
+    fun `ListPhoneMessagesUseCase execute(phoneNumberId) should propagate a domain exception unchanged`() =
         runTest {
             mockPhoneMessageService.stub {
                 onBlocking {
-                    list(any())
+                    listForPhoneNumberId(any())
                 } doThrow PhoneMessageException.PhoneNumberNotFoundException("gone")
             }
 
             shouldThrow<PhoneMessageException.PhoneNumberNotFoundException> {
                 listUseCase.execute(
-                    ListPhoneMessagesUseCaseInput(phoneNumberId = "mockPhoneNumberId"),
+                    ListPhoneMessagesForPhoneNumberIdInput(phoneNumberId = "mockPhoneNumberId"),
                 )
             }
+        }
+
+    @Test
+    fun `ListPhoneMessagesUseCase execute(conversationId) should unseal with the phone number of the page's messages`() =
+        runTest {
+            val input =
+                ListPhoneMessagesForConversationIdInput(
+                    conversationId = "mockConversationId",
+                    sortOrder = SortOrderEntity.ASC,
+                    limit = 4,
+                    nextToken = "token",
+                )
+            mockPhoneMessageService.stub {
+                onBlocking { listForConversationId(any()) } doReturn
+                    ListPhoneMessagesOutput(
+                        items = listOf(EntityDataFactory.sealedPhoneMessageEntity(phoneNumberId = "conversationNumberId")),
+                        nextToken = "mockNextToken",
+                    )
+            }
+            mockUnsealer.stub {
+                onBlocking {
+                    unseal(any(), any())
+                } doReturn UnsealedPhoneMessages(listOf(EntityDataFactory.phoneMessageEntity()), emptyList())
+            }
+
+            val result = listUseCase.execute(input)
+
+            result shouldBe
+                ListAPIResultEntity.Success(
+                    ListSuccessResultEntity(
+                        items = listOf(EntityDataFactory.phoneMessageEntity()),
+                        nextToken = "mockNextToken",
+                    ),
+                )
+            verify(mockPhoneMessageService).listForConversationId(eq(input))
+            verify(mockUnsealer).unseal(eq("conversationNumberId"), any())
+        }
+
+    @Test
+    fun `ListPhoneMessagesUseCase execute(conversationId) should return an empty page without unsealing`() =
+        runTest {
+            mockPhoneMessageService.stub {
+                onBlocking { listForConversationId(any()) } doReturn
+                    ListPhoneMessagesOutput(items = emptyList(), nextToken = "mockNextToken")
+            }
+
+            val result =
+                listUseCase.execute(
+                    ListPhoneMessagesForConversationIdInput(conversationId = "mockConversationId"),
+                )
+
+            result shouldBe ListAPIResultEntity.Success(ListSuccessResultEntity(emptyList(), "mockNextToken"))
+            verifyNoInteractions(mockUnsealer)
         }
 
     @Test

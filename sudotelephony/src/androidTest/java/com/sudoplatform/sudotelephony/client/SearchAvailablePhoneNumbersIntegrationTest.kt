@@ -25,9 +25,6 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class SearchAvailablePhoneNumbersIntegrationTest : BaseIntegrationTest() {
-    private val countryCode = optionalArgument("COUNTRY_CODE", "US")
-    private val areaCode = optionalArgument("AREA_CODE", "415")
-
     /** The number of results the service returns when the request sets no limit. */
     private val defaultLimit = 10
 

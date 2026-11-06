@@ -6,6 +6,7 @@
 
 package com.sudoplatform.sudotelephony.internal.data.phoneNumber.transformers
 
+import com.sudoplatform.sudotelephony.graphql.OnPhoneMessageEventSubscription
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.OwnerEntity
 import com.sudoplatform.sudotelephony.types.Owner
 import com.sudoplatform.sudotelephony.graphql.fragment.PhoneNumber as PhoneNumberFragment
@@ -32,6 +33,16 @@ internal object OwnerTransformer {
      */
     fun fromGraphQLToEntity(data: SealedPhoneMessageFragment.Owner): OwnerEntity =
         OwnerEntity(
+            id = data.id,
+            issuer = data.issuer,
+        )
+
+    /**
+     * Transform the GraphQL [data] of a phone message event to its public type. Events skip
+     * the entity layer, so this maps straight to [Owner].
+     */
+    fun fromGraphQLToApi(data: OnPhoneMessageEventSubscription.Owner): Owner =
+        Owner(
             id = data.id,
             issuer = data.issuer,
         )

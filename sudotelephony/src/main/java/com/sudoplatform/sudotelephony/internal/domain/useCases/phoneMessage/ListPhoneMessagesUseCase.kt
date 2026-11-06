@@ -7,33 +7,19 @@
 package com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage
 
 import com.sudoplatform.sudologging.Logger
-import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.ListPhoneMessagesInput
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.ListAPIResultEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.ListPartialResultEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.ListSuccessResultEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.ListPhoneMessagesForConversationIdInput
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.ListPhoneMessagesForPhoneNumberIdInput
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.ListPhoneMessagesOutput
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PartialPhoneMessageEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageService
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageUnsealer
-import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.SortOrderEntity
 
 /**
- * Input for [ListPhoneMessagesUseCase].
- */
-internal data class ListPhoneMessagesUseCaseInput(
-    val phoneNumberId: String,
-    val conversationId: String? = null,
-    val sortOrder: SortOrderEntity? = null,
-    val limit: Int? = null,
-    val nextToken: String? = null,
-)
-
-/**
- * Output for [ListPhoneMessagesUseCase].
- */
-internal data class ListPhoneMessagesUseCaseOutput(
-    val items: List<PhoneMessageEntity>,
-    val nextToken: String? = null,
-)
-
-/**
- * Application business logic for listing a phone number's messages and making them readable.
+ * Application business logic for listing phone messages and making them readable.
  *
  * Every message on a page belongs to the same phone number, so the whole page is handed to
  * the unsealer at once and the sealing key is resolved once.
@@ -48,28 +34,58 @@ internal class ListPhoneMessagesUseCase(
     private val logger: Logger,
 ) {
     /**
-     * Retrieve and unseal a page of messages.
+     * Retrieve and unseal a page of a phone number's messages.
      *
-     * @param input [ListPhoneMessagesUseCaseInput] Which messages to list.
-     * @return A [ListPhoneMessagesUseCaseOutput] of readable messages and the next token.
+     * @param input [ListPhoneMessagesForPhoneNumberIdInput] Which messages to list.
+     * @return A [ListAPIResultEntity.Success] when every message was unsealed, otherwise a
+     *  [ListAPIResultEntity.Partial] that also holds the messages that could not be.
      */
-    suspend fun execute(input: ListPhoneMessagesUseCaseInput): ListPhoneMessagesUseCaseOutput {
+    suspend fun execute(
+        input: ListPhoneMessagesForPhoneNumberIdInput,
+    ): ListAPIResultEntity<PhoneMessageEntity, PartialPhoneMessageEntity> {
         logger.debug(this::class.java.simpleName)
+        val page = phoneMessageService.listForPhoneNumberId(input)
+        return unseal(input.phoneNumberId, page)
+    }
 
-        val page =
-            phoneMessageService.list(
-                ListPhoneMessagesInput(
-                    phoneNumberId = input.phoneNumberId,
-                    conversationId = input.conversationId,
-                    sortOrder = input.sortOrder,
-                    limit = input.limit,
-                    nextToken = input.nextToken,
-                ),
+    /**
+     * Retrieve and unseal a page of a conversation's messages.
+     *
+     * A conversation belongs to one phone number, which the page's messages identify.
+     *
+     * @param input [ListPhoneMessagesForConversationIdInput] Which messages to list.
+     * @return A [ListAPIResultEntity.Success] when every message was unsealed, otherwise a
+     *  [ListAPIResultEntity.Partial] that also holds the messages that could not be.
+     */
+    suspend fun execute(
+        input: ListPhoneMessagesForConversationIdInput,
+    ): ListAPIResultEntity<PhoneMessageEntity, PartialPhoneMessageEntity> {
+        logger.debug(this::class.java.simpleName)
+        val page = phoneMessageService.listForConversationId(input)
+        val phoneNumberId =
+            page.items.firstOrNull()?.phoneNumberId
+                ?: return ListAPIResultEntity.Success(
+                    ListSuccessResultEntity(items = emptyList(), nextToken = page.nextToken),
+                )
+        return unseal(phoneNumberId, page)
+    }
+
+    private suspend fun unseal(
+        phoneNumberId: String,
+        page: ListPhoneMessagesOutput,
+    ): ListAPIResultEntity<PhoneMessageEntity, PartialPhoneMessageEntity> {
+        val result = unsealer.unseal(phoneNumberId, page.items)
+        if (result.failed.isEmpty()) {
+            return ListAPIResultEntity.Success(
+                ListSuccessResultEntity(items = result.unsealed, nextToken = page.nextToken),
             )
-
-        return ListPhoneMessagesUseCaseOutput(
-            items = unsealer.unseal(input.phoneNumberId, page.items),
-            nextToken = page.nextToken,
+        }
+        return ListAPIResultEntity.Partial(
+            ListPartialResultEntity(
+                items = result.unsealed,
+                failed = result.failed,
+                nextToken = page.nextToken,
+            ),
         )
     }
 }

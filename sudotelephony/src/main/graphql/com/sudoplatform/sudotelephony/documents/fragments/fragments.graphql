@@ -65,3 +65,14 @@ fragment SealedPhoneMessage on SealedPhoneMessage {
   createdAtEpochMs
   updatedAtEpochMs
 }
+
+fragment TelephonyConfigurationData on TelephonyConfigurationData {
+  sudoOwnershipProofRequired
+  phoneNumberSearchDefaultLimit
+  phoneNumberSearchMaxLimit
+  phoneNumberSearchLifetimeMs
+  listDefaultLimit
+  listMaxLimit
+  deletePhoneMessagesLimit
+  updatePhoneMessagesLimit
+}

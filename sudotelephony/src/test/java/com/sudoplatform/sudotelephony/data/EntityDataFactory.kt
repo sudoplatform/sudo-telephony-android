@@ -6,6 +6,8 @@
 
 package com.sudoplatform.sudotelephony.data
 
+import com.sudoplatform.sudotelephony.internal.domain.entities.configuration.ConfigurationDataEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PartialPhoneMessageEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageDirectionEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageTypeEntity
@@ -18,6 +20,7 @@ import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumberSearch
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumberSearch.PhoneNumberSearchEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumberSearch.PhoneNumberTypeEntity
 import com.sudoplatform.sudotelephony.keys.KeyPair
+import com.sudoplatform.sudotelephony.types.Owner
 import com.sudoplatform.sudotelephony.types.PhoneMessageChangeType
 import com.sudoplatform.sudotelephony.types.PhoneMessageDirection
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
@@ -200,11 +203,32 @@ internal object EntityDataFactory {
         updatedAt = Date(UPDATED_AT_EPOCH_MS.toLong()),
     )
 
+    /** A [PartialPhoneMessageEntity] fixture matching [sealedPhoneMessageEntity]. */
+    fun partialPhoneMessageEntity(id: String = "mockMessageId") =
+        PartialPhoneMessageEntity(
+            id = id,
+            owner = "mockOwner",
+            owners = listOf(ownerEntity()),
+            phoneNumberId = "mockPhoneNumberId",
+            conversationId = "mockConversationId",
+            type = PhoneMessageTypeEntity.SMS,
+            direction = PhoneMessageDirectionEntity.INBOUND,
+            localPhoneNumber = "+14155550123",
+            segmentCount = 1,
+            mediaOmitted = false,
+            seen = false,
+            receivedAt = Date(CREATED_AT_EPOCH_MS.toLong()),
+            version = 1,
+            createdAt = Date(CREATED_AT_EPOCH_MS.toLong()),
+            updatedAt = Date(UPDATED_AT_EPOCH_MS.toLong()),
+        )
+
     /** A public [PhoneMessageEvent] fixture, as a subscription would deliver it. */
     fun phoneMessageEvent(
         id: String = "mockMessageId",
         changeType: PhoneMessageChangeType = PhoneMessageChangeType.RECEIVED,
         seen: Boolean = false,
+        owners: List<Owner> = listOf(Owner(id = "mockSudoId", issuer = "sudoplatform.sudoservice")),
     ) = PhoneMessageEvent(
         id = id,
         phoneNumberId = "mockPhoneNumberId",
@@ -214,7 +238,21 @@ internal object EntityDataFactory {
         changeType = changeType,
         seen = seen,
         owner = "mockOwner",
+        owners = owners,
         version = 1,
         updatedAt = Date(UPDATED_AT_EPOCH_MS.toLong()),
     )
+
+    /** A [ConfigurationDataEntity] fixture. */
+    fun configurationDataEntity(sudoOwnershipProofRequired: Boolean = true) =
+        ConfigurationDataEntity(
+            sudoOwnershipProofRequired = sudoOwnershipProofRequired,
+            phoneNumberSearchDefaultLimit = 10,
+            phoneNumberSearchMaxLimit = 50,
+            phoneNumberSearchLifetimeMs = 900_000,
+            listDefaultLimit = 20,
+            listMaxLimit = 100,
+            deletePhoneMessagesLimit = 100,
+            updatePhoneMessagesLimit = 100,
+        )
 }

@@ -12,7 +12,10 @@ import com.sudoplatform.sudotelephony.graphql.DeprovisionPhoneNumberMutation
 import com.sudoplatform.sudotelephony.graphql.GetPhoneMessageQuery
 import com.sudoplatform.sudotelephony.graphql.GetPhoneNumberQuery
 import com.sudoplatform.sudotelephony.graphql.GetSupportedCountriesForTelephonyQuery
-import com.sudoplatform.sudotelephony.graphql.ListPhoneMessagesQuery
+import com.sudoplatform.sudotelephony.graphql.GetTelephonyConfigQuery
+import com.sudoplatform.sudotelephony.graphql.ListPhoneMessagesForConversationIdQuery
+import com.sudoplatform.sudotelephony.graphql.ListPhoneMessagesForPhoneNumberIdQuery
+import com.sudoplatform.sudotelephony.graphql.ListPhoneNumbersForSudoIdQuery
 import com.sudoplatform.sudotelephony.graphql.ListPhoneNumbersQuery
 import com.sudoplatform.sudotelephony.graphql.ProvisionPhoneNumberMutation
 import com.sudoplatform.sudotelephony.graphql.SearchAvailablePhoneNumbersQuery
@@ -26,6 +29,7 @@ import com.sudoplatform.sudotelephony.graphql.fragment.AvailablePhoneNumber as A
 import com.sudoplatform.sudotelephony.graphql.fragment.PhoneNumber as PhoneNumberFragment
 import com.sudoplatform.sudotelephony.graphql.fragment.PhoneNumberSearch as PhoneNumberSearchFragment
 import com.sudoplatform.sudotelephony.graphql.fragment.SealedPhoneMessage as SealedPhoneMessageFragment
+import com.sudoplatform.sudotelephony.graphql.fragment.TelephonyConfigurationData as TelephonyConfigurationDataFragment
 
 /**
  * Builders for consistent GraphQL-wire fixtures (responses and errors) used across unit
@@ -49,6 +53,36 @@ internal object DataFactory {
     /** Build a response for `GetSupportedCountriesForTelephony` carrying neither data nor errors. */
     fun getSupportedCountriesForTelephonyEmptyResponse(): GraphQLResponse<GetSupportedCountriesForTelephonyQuery.Data> =
         GraphQLResponse(null, null)
+
+    /** Build a successful response for `GetTelephonyConfig`. */
+    fun getTelephonyConfigQueryResponse(sudoOwnershipProofRequired: Boolean = true): GraphQLResponse<GetTelephonyConfigQuery.Data> =
+        GraphQLResponse(
+            GetTelephonyConfigQuery.Data(
+                getTelephonyConfig =
+                    GetTelephonyConfigQuery.GetTelephonyConfig(
+                        __typename = "TelephonyConfigurationData",
+                        telephonyConfigurationData =
+                            TelephonyConfigurationDataFragment(
+                                sudoOwnershipProofRequired = sudoOwnershipProofRequired,
+                                phoneNumberSearchDefaultLimit = 10,
+                                phoneNumberSearchMaxLimit = 50,
+                                phoneNumberSearchLifetimeMs = 900_000,
+                                listDefaultLimit = 20,
+                                listMaxLimit = 100,
+                                deletePhoneMessagesLimit = 100,
+                                updatePhoneMessagesLimit = 100,
+                            ),
+                    ),
+            ),
+            null,
+        )
+
+    /** Build an error response for `GetTelephonyConfig`. */
+    fun getTelephonyConfigErrorResponse(error: GraphQLResponse.Error): GraphQLResponse<GetTelephonyConfigQuery.Data> =
+        GraphQLResponse(null, listOf(error))
+
+    /** Build a response for `GetTelephonyConfig` carrying neither data nor errors. */
+    fun getTelephonyConfigEmptyResponse(): GraphQLResponse<GetTelephonyConfigQuery.Data> = GraphQLResponse(null, null)
 
     /** Build an [AvailablePhoneNumberFragment] fixture. */
     fun availablePhoneNumberFragment(
@@ -253,6 +287,32 @@ internal object DataFactory {
     /** Build a response for `ListPhoneNumbers` carrying neither data nor errors. */
     fun listPhoneNumbersEmptyResponse(): GraphQLResponse<ListPhoneNumbersQuery.Data> = GraphQLResponse(null, null)
 
+    /** Build a successful response for `ListPhoneNumbersForSudoId`. */
+    fun listPhoneNumbersForSudoIdQueryResponse(
+        numbers: List<PhoneNumberFragment> = listOf(phoneNumberFragment()),
+        nextToken: String? = null,
+    ): GraphQLResponse<ListPhoneNumbersForSudoIdQuery.Data> =
+        GraphQLResponse(
+            ListPhoneNumbersForSudoIdQuery.Data(
+                listPhoneNumbersForSudoId =
+                    ListPhoneNumbersForSudoIdQuery.ListPhoneNumbersForSudoId(
+                        items =
+                            numbers.map {
+                                ListPhoneNumbersForSudoIdQuery.Item(
+                                    __typename = "PhoneNumber",
+                                    phoneNumber = it,
+                                )
+                            },
+                        nextToken = nextToken,
+                    ),
+            ),
+            null,
+        )
+
+    /** Build an error response for `ListPhoneNumbersForSudoId`. */
+    fun listPhoneNumbersForSudoIdErrorResponse(error: GraphQLResponse.Error): GraphQLResponse<ListPhoneNumbersForSudoIdQuery.Data> =
+        GraphQLResponse(null, listOf(error))
+
     /** Build a [SealedPhoneMessageFragment] fixture. */
     fun sealedPhoneMessageFragment(
         id: String = "mockMessageId",
@@ -302,18 +362,18 @@ internal object DataFactory {
     fun getPhoneMessageErrorResponse(error: GraphQLResponse.Error): GraphQLResponse<GetPhoneMessageQuery.Data> =
         GraphQLResponse(null, listOf(error))
 
-    /** Build a successful response for `ListPhoneMessages`. */
+    /** Build a successful response for `ListPhoneMessagesForPhoneNumberId`. */
     fun listPhoneMessagesQueryResponse(
         messages: List<SealedPhoneMessageFragment> = listOf(sealedPhoneMessageFragment()),
         nextToken: String? = null,
-    ): GraphQLResponse<ListPhoneMessagesQuery.Data> =
+    ): GraphQLResponse<ListPhoneMessagesForPhoneNumberIdQuery.Data> =
         GraphQLResponse(
-            ListPhoneMessagesQuery.Data(
-                listPhoneMessages =
-                    ListPhoneMessagesQuery.ListPhoneMessages(
+            ListPhoneMessagesForPhoneNumberIdQuery.Data(
+                listPhoneMessagesForPhoneNumberId =
+                    ListPhoneMessagesForPhoneNumberIdQuery.ListPhoneMessagesForPhoneNumberId(
                         items =
                             messages.map {
-                                ListPhoneMessagesQuery.Item(
+                                ListPhoneMessagesForPhoneNumberIdQuery.Item(
                                     __typename = "SealedPhoneMessage",
                                     sealedPhoneMessage = it,
                                 )
@@ -324,12 +384,34 @@ internal object DataFactory {
             null,
         )
 
-    /** Build an error response for `ListPhoneMessages`. */
-    fun listPhoneMessagesErrorResponse(error: GraphQLResponse.Error): GraphQLResponse<ListPhoneMessagesQuery.Data> =
+    /** Build a successful response for `ListPhoneMessagesForConversationId`. */
+    fun listPhoneMessagesForConversationIdQueryResponse(
+        messages: List<SealedPhoneMessageFragment> = listOf(sealedPhoneMessageFragment()),
+        nextToken: String? = null,
+    ): GraphQLResponse<ListPhoneMessagesForConversationIdQuery.Data> =
+        GraphQLResponse(
+            ListPhoneMessagesForConversationIdQuery.Data(
+                listPhoneMessagesForConversationId =
+                    ListPhoneMessagesForConversationIdQuery.ListPhoneMessagesForConversationId(
+                        items =
+                            messages.map {
+                                ListPhoneMessagesForConversationIdQuery.Item(
+                                    __typename = "SealedPhoneMessage",
+                                    sealedPhoneMessage = it,
+                                )
+                            },
+                        nextToken = nextToken,
+                    ),
+            ),
+            null,
+        )
+
+    /** Build an error response for `ListPhoneMessagesForPhoneNumberId`. */
+    fun listPhoneMessagesErrorResponse(error: GraphQLResponse.Error): GraphQLResponse<ListPhoneMessagesForPhoneNumberIdQuery.Data> =
         GraphQLResponse(null, listOf(error))
 
-    /** Build a response for `ListPhoneMessages` carrying neither data nor errors. */
-    fun listPhoneMessagesEmptyResponse(): GraphQLResponse<ListPhoneMessagesQuery.Data> = GraphQLResponse(null, null)
+    /** Build a response for `ListPhoneMessagesForPhoneNumberId` carrying neither data nor errors. */
+    fun listPhoneMessagesEmptyResponse(): GraphQLResponse<ListPhoneMessagesForPhoneNumberIdQuery.Data> = GraphQLResponse(null, null)
 
     /** Build a successful response for `DeletePhoneMessages`. */
     fun deletePhoneMessagesMutationResponse(

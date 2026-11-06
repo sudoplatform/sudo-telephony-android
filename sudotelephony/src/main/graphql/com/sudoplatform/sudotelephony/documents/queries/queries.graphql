@@ -2,6 +2,12 @@ query GetSupportedCountriesForTelephony {
   getSupportedCountriesForTelephony
 }
 
+query GetTelephonyConfig {
+  getTelephonyConfig {
+    ...TelephonyConfigurationData
+  }
+}
+
 query SearchAvailablePhoneNumbers($input: SearchAvailablePhoneNumbersInput!) {
   searchAvailablePhoneNumbers(input: $input) {
     ...PhoneNumberSearch
@@ -23,14 +29,32 @@ query ListPhoneNumbers($input: ListPhoneNumbersInput) {
   }
 }
 
+query ListPhoneNumbersForSudoId($input: ListPhoneNumbersForSudoIdInput!) {
+  listPhoneNumbersForSudoId(input: $input) {
+    items {
+      ...PhoneNumber
+    }
+    nextToken
+  }
+}
+
 query GetPhoneMessage($id: ID!) {
   getPhoneMessage(id: $id) {
     ...SealedPhoneMessage
   }
 }
 
-query ListPhoneMessages($input: ListPhoneMessagesInput!) {
-  listPhoneMessages(input: $input) {
+query ListPhoneMessagesForPhoneNumberId($input: ListPhoneMessagesForPhoneNumberIdInput!) {
+  listPhoneMessagesForPhoneNumberId(input: $input) {
+    items {
+      ...SealedPhoneMessage
+    }
+    nextToken
+  }
+}
+
+query ListPhoneMessagesForConversationId($input: ListPhoneMessagesForConversationIdInput!) {
+  listPhoneMessagesForConversationId(input: $input) {
     items {
       ...SealedPhoneMessage
     }

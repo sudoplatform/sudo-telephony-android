@@ -20,18 +20,24 @@ import com.sudoplatform.sudotelephony.logging.LogConstants
 import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
+import com.sudoplatform.sudotelephony.types.ConfigurationData
+import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.ListOutput
+import com.sudoplatform.sudotelephony.types.PartialPhoneMessage
 import com.sudoplatform.sudotelephony.types.PhoneMessage
 import com.sudoplatform.sudotelephony.types.PhoneMessageBatchResult
 import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.PhoneNumberSearch
 import com.sudoplatform.sudotelephony.types.PhoneNumberState
 import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
-import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForConversationIdInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForPhoneNumberIdInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersForSudoIdInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersInput
 import com.sudoplatform.sudotelephony.types.inputs.ProvisionPhoneNumberInput
 import com.sudoplatform.sudotelephony.types.inputs.SearchAvailablePhoneNumbersInput
 import com.sudoplatform.sudotelephony.types.inputs.UpdatePhoneMessagesInput
+import com.sudoplatform.sudouser.SudoPlatformSignInCallback
 import com.sudoplatform.sudouser.SudoUserClient
 import java.util.Objects
 
@@ -57,7 +63,31 @@ interface SudoTelephonyClient : AutoCloseable {
 
         /** Namespace the telephony keys are stored under in the device key store. */
         const val DEFAULT_KEY_NAMESPACE = "tels"
+
+        /**
+         * Audience to request a Sudo ownership proof for when provisioning a phone number.
+         * The service rejects a proof issued for any other audience.
+         */
+        const val OWNERSHIP_PROOF_AUDIENCE = "sudoplatform.telephony.phone-number"
     }
+
+    /**
+     * Set a callback that signs the user in when an operation is attempted while they are
+     * signed out.
+     *
+     * When a callback is set, every operation that calls the service first checks whether the
+     * user is signed in and, if not, invokes the callback before continuing. If the callback
+     * throws, the exception is propagated to the caller and the operation is not executed.
+     * Subscriptions, key import and export, [reset] and [close] are not checked.
+     *
+     * The client holds the callback through a weak reference, so the caller must keep its own
+     * reference for as long as the callback should stay in effect.
+     *
+     * @param callback [SudoPlatformSignInCallback] The callback to invoke, or `null` to stop
+     *  checking, which is the default.
+     * @sample com.sudoplatform.sudotelephony.samples.Samples.setSignInCallback
+     */
+    fun setSignInCallback(callback: SudoPlatformSignInCallback?)
 
     /**
      * Retrieve the ISO 3166-1 alpha-2 country codes in which the telephony service can
@@ -73,6 +103,20 @@ interface SudoTelephonyClient : AutoCloseable {
      */
     @Throws(SupportedCountriesException::class)
     suspend fun getSupportedCountries(): List<String>
+
+    /**
+     * Retrieve how the telephony service deployment is configured.
+     *
+     * Check [ConfigurationData.sudoOwnershipProofRequired] before provisioning to find out
+     * whether a number must belong to a Sudo, and use the limits to size searches, pages and
+     * message batches rather than hard-coding them.
+     *
+     * @return The [ConfigurationData] of the deployment.
+     * @throws ConfigurationDataException if the configuration could not be retrieved.
+     * @sample com.sudoplatform.sudotelephony.samples.Samples.getConfigurationData
+     */
+    @Throws(ConfigurationDataException::class)
+    suspend fun getConfigurationData(): ConfigurationData
 
     /**
      * Search for phone numbers available to provision in an area code.
@@ -98,6 +142,10 @@ interface SudoTelephonyClient : AutoCloseable {
      *
      * The returned number is in [com.sudoplatform.sudotelephony.types.PhoneNumberState.PROVISIONING];
      * the order completes asynchronously with the telephony provider.
+     *
+     * To make the number belong to a Sudo, pass a Sudo ownership proof issued for
+     * [OWNERSHIP_PROOF_AUDIENCE]. Check [getConfigurationData] to find out whether the
+     * deployment requires one.
      *
      * @param input [ProvisionPhoneNumberInput] The search and number to provision.
      * @return The [PhoneNumber] being provisioned.
@@ -159,6 +207,21 @@ interface SudoTelephonyClient : AutoCloseable {
     suspend fun listPhoneNumbers(input: ListPhoneNumbersInput = ListPhoneNumbersInput()): ListOutput<PhoneNumber>
 
     /**
+     * Retrieve a page of the caller's phone numbers that one Sudo owns, oldest first.
+     *
+     * Lists the same states as [listPhoneNumbers]. A Sudo that has no numbers, or that
+     * belongs to another user, reads as an empty page.
+     *
+     * @param input [ListPhoneNumbersForSudoIdInput] The Sudo and paging parameters.
+     * @return A [ListOutput] holding this page of numbers and the token for the next one.
+     * @throws PhoneNumberException if the numbers could not be retrieved, or if the Sudo ID is
+     *  empty ([PhoneNumberException.InvalidArgumentException]).
+     * @sample com.sudoplatform.sudotelephony.samples.Samples.listPhoneNumbersForSudoId
+     */
+    @Throws(PhoneNumberException::class)
+    suspend fun listPhoneNumbersForSudoId(input: ListPhoneNumbersForSudoIdInput): ListOutput<PhoneNumber>
+
+    /**
      * Retrieve one of the caller's phone messages, with its sealed fields made readable.
      *
      * The other party's number and the message text are sealed with the key registered for
@@ -174,21 +237,56 @@ interface SudoTelephonyClient : AutoCloseable {
     suspend fun getPhoneMessage(id: String): PhoneMessage?
 
     /**
-     * Retrieve a page of a phone number's messages, with their sealed fields made readable.
-     *
-     * Defaults to newest first across every conversation of the number; set
-     * [ListPhoneMessagesInput.conversationId] to limit the page to one conversation.
+     * Retrieve a page of a phone number's messages across all its conversations, with their
+     * sealed fields made readable. Defaults to newest first.
      *
      * The service filters the inbox by owner rather than rejecting an unknown phone number,
      * so a number that does not exist, or belongs to someone else, reads as an empty page.
      *
-     * @param input [ListPhoneMessagesInput] Which messages to list and how to page them.
-     * @return A [ListOutput] holding this page of messages and the token for the next one.
-     * @throws PhoneMessageException if the messages could not be retrieved or unsealed.
-     * @sample com.sudoplatform.sudotelephony.samples.Samples.listPhoneMessages
+     * A message that cannot be unsealed does not fail the page. The result is then a
+     * [ListAPIResult.Partial] that returns it as a [PartialPhoneMessage], without its sealed
+     * fields, alongside a [PhoneMessageException.UnsealingFailedException] explaining why.
+     *
+     * @param input [ListPhoneMessagesForPhoneNumberIdInput] Which phone number's messages to
+     *  list and how to page them.
+     * @return A [ListAPIResult.Success] when every message was unsealed, otherwise a
+     *  [ListAPIResult.Partial]. Either holds the token for the next page.
+     * @throws PhoneMessageException if the messages could not be retrieved, or if this device
+     *  holds none of the number's keys
+     *  ([PhoneMessageException.KeyNotFoundException]).
+     * @sample com.sudoplatform.sudotelephony.samples.Samples.listPhoneMessagesForPhoneNumberId
      */
     @Throws(PhoneMessageException::class)
-    suspend fun listPhoneMessages(input: ListPhoneMessagesInput): ListOutput<PhoneMessage>
+    suspend fun listPhoneMessagesForPhoneNumberId(
+        input: ListPhoneMessagesForPhoneNumberIdInput,
+    ): ListAPIResult<PhoneMessage, PartialPhoneMessage>
+
+    /**
+     * Retrieve a page of one conversation's messages, with their sealed fields made readable.
+     * Defaults to newest first.
+     *
+     * A conversation groups every message between one phone number and one other party; its
+     * ID is [PhoneMessage.conversationId]. The service filters by owner rather than rejecting
+     * an unknown conversation, so a conversation that does not exist, or belongs to someone
+     * else, reads as an empty page.
+     *
+     * A message that cannot be unsealed does not fail the page. The result is then a
+     * [ListAPIResult.Partial] that returns it as a [PartialPhoneMessage], without its sealed
+     * fields, alongside a [PhoneMessageException.UnsealingFailedException] explaining why.
+     *
+     * @param input [ListPhoneMessagesForConversationIdInput] Which conversation's messages to
+     *  list and how to page them.
+     * @return A [ListAPIResult.Success] when every message was unsealed, otherwise a
+     *  [ListAPIResult.Partial]. Either holds the token for the next page.
+     * @throws PhoneMessageException if the messages could not be retrieved, or if this device
+     *  holds none of the conversation's phone number's keys
+     *  ([PhoneMessageException.KeyNotFoundException]).
+     * @sample com.sudoplatform.sudotelephony.samples.Samples.listPhoneMessagesForConversationId
+     */
+    @Throws(PhoneMessageException::class)
+    suspend fun listPhoneMessagesForConversationId(
+        input: ListPhoneMessagesForConversationIdInput,
+    ): ListAPIResult<PhoneMessage, PartialPhoneMessage>
 
     /**
      * Delete a batch of the caller's phone messages.
@@ -499,6 +597,46 @@ interface SudoTelephonyClient : AutoCloseable {
         class UnknownException(
             cause: Throwable,
         ) : SupportedCountriesException(cause = cause)
+    }
+
+    /**
+     * Defines the exceptions for [getConfigurationData].
+     *
+     * @property message [String] Accompanying message for the exception.
+     * @property cause [Throwable] The cause for the exception.
+     */
+    sealed class ConfigurationDataException(
+        message: String? = null,
+        cause: Throwable? = null,
+    ) : RuntimeException(message, cause) {
+        /** A generic, non-recoverable failure. */
+        class FailedException(
+            message: String? = null,
+            cause: Throwable? = null,
+        ) : ConfigurationDataException(message = message, cause = cause)
+
+        /** The caller is not authenticated or the session has expired. */
+        class AuthenticationException(
+            message: String? = null,
+            cause: Throwable? = null,
+        ) : ConfigurationDataException(message = message, cause = cause)
+
+        /** The identity context required for the operation was missing. */
+        class IdentityContextMissingException(
+            message: String? = null,
+            cause: Throwable? = null,
+        ) : ConfigurationDataException(message = message, cause = cause)
+
+        /** The service reported an error. */
+        class ServiceException(
+            message: String? = null,
+            cause: Throwable? = null,
+        ) : ConfigurationDataException(message = message, cause = cause)
+
+        /** An unexpected error wrapping the underlying cause. */
+        class UnknownException(
+            cause: Throwable,
+        ) : ConfigurationDataException(cause = cause)
     }
 
     /**

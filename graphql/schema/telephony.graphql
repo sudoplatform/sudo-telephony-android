@@ -18,6 +18,50 @@ input OwnerInput {
 }
 
 """
+How the deployment is configured, so that clients can follow its rules
+without hard-coding them.
+"""
+type TelephonyConfigurationData {
+  """
+  Whether provisionPhoneNumber requires a Sudo ownership proof. When false, a
+  number provisioned without a proof belongs to the user only.
+  """
+  sudoOwnershipProofRequired: Boolean!
+  """
+  The number of results searchAvailablePhoneNumbers returns when the request
+  sets no limit.
+  """
+  phoneNumberSearchDefaultLimit: Int!
+  """
+  The largest limit searchAvailablePhoneNumbers accepts. A larger limit is
+  rejected with LimitExceededError.
+  """
+  phoneNumberSearchMaxLimit: Int!
+  """
+  How long, in milliseconds, a phone number search can be passed to
+  provisionPhoneNumber after it is created.
+  """
+  phoneNumberSearchLifetimeMs: Int!
+  """
+  The page size of the list queries when the request sets no limit.
+  """
+  listDefaultLimit: Int!
+  """
+  The largest page the list queries return. A larger limit returns this many
+  items at most.
+  """
+  listMaxLimit: Int!
+  """
+  The most message ids one deletePhoneMessages request may name.
+  """
+  deletePhoneMessagesLimit: Int!
+  """
+  The most message ids one updatePhoneMessages request may name.
+  """
+  updatePhoneMessagesLimit: Int!
+}
+
+"""
 The order in which a list is returned.
 """
 enum SortOrder {
@@ -362,6 +406,10 @@ type PhoneMessageEvent {
   """
   id: ID!
   """
+  Owners taken from the ownership proofs, which tie the phone number to a Sudo.
+  """
+  owners: [Owner!]!
+  """
   ID of the phone number that sent or received the message.
   """
   phoneNumberId: ID!
@@ -545,23 +593,63 @@ input ListPhoneNumbersInput {
 }
 
 """
-Input for listPhoneMessages.
+Input for listPhoneNumbersForSudoId.
 """
-input ListPhoneMessagesInput {
+input ListPhoneNumbersForSudoIdInput {
+  """
+  The Sudo whose phone numbers to list. A Sudo of another user lists nothing.
+  """
+  sudoId: ID!
+  """
+  Maximum number of items per page. Defaults to 20. A limit above 100 returns
+  at most 100 items; a limit below 1 is rejected with InvalidArgumentError.
+  """
+  limit: Int
+  """
+  The nextToken returned by the previous page. Omit for the first page.
+  """
+  nextToken: String
+}
+
+"""
+Input for listPhoneMessagesForPhoneNumberId.
+"""
+input ListPhoneMessagesForPhoneNumberIdInput {
   """
   ID of the phone number whose messages to list.
   """
   phoneNumberId: ID!
   """
-  Limits the list to one conversation.
+  Order of the messages. Defaults to DESC, newest first.
   """
-  conversationId: ID
+  sortOrder: SortOrder
+  """
+  Maximum number of items per page. Defaults to 20. A limit above 100 returns
+  at most 100 items; a limit below 1 is rejected with InvalidArgumentError.
+  """
+  limit: Int
+  """
+  The nextToken returned by the previous page. Omit for the first page.
+  """
+  nextToken: String
+}
+
+"""
+Input for listPhoneMessagesForConversationId.
+"""
+input ListPhoneMessagesForConversationIdInput {
+  """
+  ID of the conversation whose messages to list. A conversation belongs to one
+  phone number.
+  """
+  conversationId: ID!
   """
   Order of the messages. Defaults to DESC, newest first.
   """
   sortOrder: SortOrder
   """
-  Maximum number of items per page.
+  Maximum number of items per page. Defaults to 20. A limit above 100 returns
+  at most 100 items; a limit below 1 is rejected with InvalidArgumentError.
   """
   limit: Int
   """
@@ -677,6 +765,10 @@ input PhoneMessageEventInput {
   """
   id: ID!
   """
+  Owners taken from the ownership proofs, which tie the phone number to a Sudo.
+  """
+  owners: [OwnerInput!]!
+  """
   ID of the phone number that sent or received the message.
   """
   phoneNumberId: ID!
@@ -724,7 +816,10 @@ type Query {
   the backing source can change without affecting consumers.
   """
   getSupportedCountriesForTelephony: [String!]!
-
+  """
+  Returns configuration related to the telephony service configuration.
+  """
+  getTelephonyConfig: TelephonyConfigurationData!
   """
   Search for phone numbers available to provision in an area code. The search
   is kept for 15 minutes; pass its id to provisionPhoneNumber.
@@ -735,29 +830,46 @@ type Query {
   searchAvailablePhoneNumbers(
     input: SearchAvailablePhoneNumbersInput!
   ): PhoneNumberSearch!
-
   """
   Get one of the caller's phone numbers in any state, including RELEASED and
   FAILED. Null when no number with the id belongs to the caller.
   """
   getPhoneNumber(id: ID!): PhoneNumber
-
   """
   List the caller's PROVISIONING, ACTIVE, and SUSPENDED phone numbers, oldest
   first. A nextToken that the service cannot decode, or that was issued to
   another user, is rejected with InvalidArgumentError.
   """
   listPhoneNumbers(input: ListPhoneNumbersInput): PhoneNumberConnection!
-
+  """
+  List the caller's PROVISIONING, ACTIVE, and SUSPENDED phone numbers that the
+  Sudo owns, oldest first. An empty sudoId, or a nextToken that the service
+  cannot decode or that was issued to another user, Sudo, or list, is rejected
+  with InvalidArgumentError.
+  """
+  listPhoneNumbersForSudoId(
+    input: ListPhoneNumbersForSudoIdInput!
+  ): PhoneNumberConnection!
   """
   Get one of the caller's phone messages. Null if not found.
   """
   getPhoneMessage(id: ID!): SealedPhoneMessage
-
   """
-  List a phone number's inbox, optionally limited to one conversation.
+  List the caller's messages of one phone number, newest first by default. A
+  nextToken that the service cannot decode, or that was issued by another list
+  or for another phone number, is rejected with InvalidArgumentError.
   """
-  listPhoneMessages(input: ListPhoneMessagesInput!): PhoneMessageConnection!
+  listPhoneMessagesForPhoneNumberId(
+    input: ListPhoneMessagesForPhoneNumberIdInput!
+  ): PhoneMessageConnection!
+  """
+  List the caller's messages of one conversation, newest first by default. A
+  nextToken that the service cannot decode, or that was issued by another list
+  or for another conversation, is rejected with InvalidArgumentError.
+  """
+  listPhoneMessagesForConversationId(
+    input: ListPhoneMessagesForConversationIdInput!
+  ): PhoneMessageConnection!
 }
 
 type Mutation {
@@ -770,7 +882,6 @@ type Mutation {
   InvalidArgumentError, InsufficientEntitlementsError.
   """
   provisionPhoneNumber(input: ProvisionPhoneNumberInput!): PhoneNumber!
-
   """
   Release one of the caller's ACTIVE or SUSPENDED numbers. Returns the number in
   RELEASED and returns the unit of the caller's phone number allowance at once;
@@ -782,20 +893,28 @@ type Mutation {
   PROVISIONING or FAILED number.
   """
   deprovisionPhoneNumber(id: ID!): PhoneNumber!
-
   """
   Delete up to 100 of the caller's phone messages.
   """
   deletePhoneMessages(
     input: DeletePhoneMessagesInput!
   ): PhoneMessageBatchResult!
-
   """
   Set the read state of up to 100 of the caller's phone messages.
   """
   updatePhoneMessages(
     input: UpdatePhoneMessagesInput!
   ): PhoneMessageBatchResult!
+  """
+  Internal. Called by the service's stream processors to notify
+  onPhoneNumberUpdate subscribers. IAM only.
+  """
+  publishPhoneNumberUpdate(input: PhoneNumberUpdateInput!): PhoneNumber
+  """
+  Internal. Called by the service's stream processors to notify
+  onPhoneMessageEvent subscribers. IAM only.
+  """
+  publishPhoneMessageEvent(input: PhoneMessageEventInput!): PhoneMessageEvent
 }
 
 """
@@ -807,7 +926,6 @@ type Subscription {
   Notifies the caller when one of their phone numbers changes.
   """
   onPhoneNumberUpdate(owner: ID!): PhoneNumber
-
   """
   Notifies the caller when one of their phone messages is received, updated, or deleted.
   """

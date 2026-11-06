@@ -8,6 +8,7 @@ package com.sudoplatform.sudotelephony.internal.data.phoneMessage.transformers
 
 import com.sudoplatform.sudotelephony.data.EntityDataFactory
 import com.sudoplatform.sudotelephony.graphql.OnPhoneMessageEventSubscription
+import com.sudoplatform.sudotelephony.types.Owner
 import com.sudoplatform.sudotelephony.types.PhoneMessageChangeType
 import com.sudoplatform.sudotelephony.types.PhoneMessageDirection
 import com.sudoplatform.sudotelephony.types.PhoneMessageType
@@ -26,6 +27,8 @@ class PhoneMessageEventTransformerTest {
     private fun graphQLEvent(
         changeType: PhoneMessageChangeTypeGraphQL = PhoneMessageChangeTypeGraphQL.RECEIVED,
         seen: Boolean = false,
+        owners: List<OnPhoneMessageEventSubscription.Owner> =
+            listOf(OnPhoneMessageEventSubscription.Owner(id = "mockSudoId", issuer = "sudoplatform.sudoservice")),
     ) = OnPhoneMessageEventSubscription.OnPhoneMessageEvent(
         id = "mockMessageId",
         phoneNumberId = "mockPhoneNumberId",
@@ -35,6 +38,7 @@ class PhoneMessageEventTransformerTest {
         changeType = changeType,
         seen = seen,
         owner = "mockOwner",
+        owners = owners,
         version = 1,
         updatedAtEpochMs = EntityDataFactory.UPDATED_AT_EPOCH_MS,
     )
@@ -51,6 +55,8 @@ class PhoneMessageEventTransformerTest {
         event.changeType shouldBe PhoneMessageChangeType.RECEIVED
         event.seen shouldBe false
         event.owner shouldBe "mockOwner"
+        event.owners shouldBe listOf(Owner(id = "mockSudoId", issuer = "sudoplatform.sudoservice"))
+        event.sudoId shouldBe "mockSudoId"
         event.version shouldBe 1
         event.updatedAt shouldBe Date(EntityDataFactory.UPDATED_AT_EPOCH_MS.toLong())
     }
@@ -64,6 +70,14 @@ class PhoneMessageEventTransformerTest {
 
         event.changeType shouldBe PhoneMessageChangeType.UPDATED
         event.seen shouldBe true
+    }
+
+    @Test
+    fun `fromGraphQLToApi() should map an event without a Sudo owner`() {
+        val event = PhoneMessageEventTransformer.fromGraphQLToApi(graphQLEvent(owners = emptyList()))
+
+        event.owners shouldBe emptyList()
+        event.sudoId shouldBe null
     }
 
     @Test

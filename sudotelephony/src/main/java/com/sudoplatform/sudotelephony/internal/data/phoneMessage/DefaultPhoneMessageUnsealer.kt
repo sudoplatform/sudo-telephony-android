@@ -11,9 +11,12 @@ import com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneMessageException
 import com.sudoplatform.sudotelephony.internal.data.common.StringConstants
 import com.sudoplatform.sudotelephony.internal.data.common.mechanisms.Unsealer
 import com.sudoplatform.sudotelephony.internal.data.phoneMessage.transformers.PhoneMessageTransformer
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.PartialResultEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PartialPhoneMessageEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageUnsealer
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.SealedPhoneMessageEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.UnsealedPhoneMessages
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.PhoneNumberService
 import com.sudoplatform.sudotelephony.keys.ServiceKeyManager
 
@@ -39,13 +42,24 @@ internal class DefaultPhoneMessageUnsealer(
     override suspend fun unseal(
         phoneNumberId: String,
         sealed: List<SealedPhoneMessageEntity>,
-    ): List<PhoneMessageEntity> {
+    ): UnsealedPhoneMessages {
         if (sealed.isEmpty()) {
-            return emptyList()
+            return UnsealedPhoneMessages(unsealed = emptyList(), failed = emptyList())
         }
 
         val keyId = resolveKeyId(phoneNumberId)
-        return sealed.map { unsealOne(it, keyId) }
+        val unsealed = mutableListOf<PhoneMessageEntity>()
+        val failed = mutableListOf<PartialResultEntity<PartialPhoneMessageEntity>>()
+        for (message in sealed) {
+            try {
+                unsealed.add(unsealOne(message, keyId))
+            } catch (e: PhoneMessageException.UnsealingFailedException) {
+                failed.add(
+                    PartialResultEntity(PhoneMessageTransformer.fromSealedToPartialEntity(message), e),
+                )
+            }
+        }
+        return UnsealedPhoneMessages(unsealed = unsealed, failed = failed)
     }
 
     private suspend fun resolveKeyId(phoneNumberId: String): String {

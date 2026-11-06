@@ -58,6 +58,28 @@ internal data class PhoneMessageEntity(
     val updatedAt: Date,
 )
 
+/**
+ * Core entity representation of a phone message whose sealed fields could not be unsealed,
+ * so it carries only the plaintext fields.
+ */
+internal data class PartialPhoneMessageEntity(
+    val id: String,
+    val owner: String,
+    val owners: List<OwnerEntity>,
+    val phoneNumberId: String,
+    val conversationId: String,
+    val type: PhoneMessageTypeEntity,
+    val direction: PhoneMessageDirectionEntity,
+    val localPhoneNumber: String,
+    val segmentCount: Int,
+    val mediaOmitted: Boolean,
+    val seen: Boolean,
+    val receivedAt: Date,
+    val version: Int,
+    val createdAt: Date,
+    val updatedAt: Date,
+)
+
 /** The kind of a phone message. */
 internal enum class PhoneMessageTypeEntity {
     SMS,

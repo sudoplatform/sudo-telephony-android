@@ -9,7 +9,6 @@ package com.sudoplatform.sudotelephony.client
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.sudoplatform.sudotelephony.BaseIntegrationTest
 import com.sudoplatform.sudotelephony.SudoTelephonyClient
-import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.PhoneNumberState
 import com.sudoplatform.sudotelephony.types.PhoneNumberType
 import com.sudoplatform.sudotelephony.types.inputs.ProvisionPhoneNumberInput
@@ -35,67 +34,13 @@ import java.util.UUID
  */
 @RunWith(AndroidJUnit4::class)
 class ProvisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
-    private val countryCode = optionalArgument("COUNTRY_CODE", "US")
-    private val areaCode = optionalArgument("AREA_CODE", "415")
-
     /** A number in the requested area code that no search will offer. */
     private val numberNotInAnySearch = "+1${areaCode}5550199"
-
-    /** The outcome of provisioning one of a search's results. */
-    private data class Provisioned(
-        val searchId: String,
-        val number: PhoneNumber,
-    )
-
-    /**
-     * Searches, then provisions the first result that is still free.
-     *
-     * Skips the test when the provider offers nothing, and fails only if every offered
-     * number has already been taken.
-     *
-     * @param clientRefId [String] Optional client reference to provision with.
-     * @return The search the number came from and the provisioned number.
-     */
-    private suspend fun provisionAnAvailableNumber(clientRefId: String? = null): Provisioned {
-        val search =
-            telephonyClient.searchAvailablePhoneNumbers(
-                SearchAvailablePhoneNumbersInput(
-                    countryCode = countryCode,
-                    areaCode = areaCode,
-                ),
-            )
-        assumeTrue(
-            "No numbers offered in $countryCode-$areaCode on this instance",
-            search.results.isNotEmpty(),
-        )
-
-        // Shuffled so concurrent runs are unlikely to contend for the same number.
-        for (available in search.results.shuffled()) {
-            try {
-                val number =
-                    telephonyClient.provisionPhoneNumber(
-                        ProvisionPhoneNumberInput(
-                            searchId = search.id,
-                            phoneNumber = available.phoneNumber,
-                            clientRefId = clientRefId,
-                        ),
-                    )
-                trackForRelease(number.id)
-                return Provisioned(search.id, number)
-            } catch (e: SudoTelephonyClient.PhoneNumberException.PhoneNumberUnavailableException) {
-                // Someone took this one after the search; try the next.
-                logger.info("${available.phoneNumber} was taken after the search, trying the next")
-            }
-        }
-        throw AssertionError(
-            "Every number offered in $countryCode-$areaCode was already taken",
-        )
-    }
 
     @Test
     fun provisionPhoneNumberShouldReturnANumberBeingProvisioned() =
         runBlocking {
-            val provisioned = provisionAnAvailableNumber().number
+            val provisioned = provisionANumber().number
 
             provisioned shouldNotBe null
             provisioned.id.isNotBlank() shouldBe true
@@ -113,7 +58,7 @@ class ProvisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
     @Test
     fun provisionPhoneNumberShouldRegisterTheKeyUsedToSealMessages() =
         runBlocking {
-            val provisioned = provisionAnAvailableNumber().number
+            val provisioned = provisionANumber().number
 
             // The service registered the public key the SDK generated into a new key ring
             // and reports the ring and the key it holds.
@@ -126,7 +71,7 @@ class ProvisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
         runBlocking {
             val clientRefId = UUID.randomUUID().toString()
 
-            val provisioned = provisionAnAvailableNumber(clientRefId).number
+            val provisioned = provisionANumber(clientRefId).number
 
             provisioned.clientRefId shouldBe clientRefId
         }
@@ -135,7 +80,7 @@ class ProvisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
     fun provisionPhoneNumberShouldBeIdempotentForTheSameClientRefId() =
         runBlocking {
             val clientRefId = UUID.randomUUID().toString()
-            val first = provisionAnAvailableNumber(clientRefId)
+            val first = provisionANumber(clientRefId)
 
             // Repeating the request returns the number the first one provisioned rather than
             // provisioning another.
@@ -145,6 +90,7 @@ class ProvisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
                         searchId = first.searchId,
                         phoneNumber = first.number.phoneNumber,
                         clientRefId = clientRefId,
+                        ownershipProofToken = first.ownershipProofToken,
                     ),
                 )
 
@@ -172,6 +118,7 @@ class ProvisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
                     ProvisionPhoneNumberInput(
                         searchId = search.id,
                         phoneNumber = numberNotInAnySearch,
+                        ownershipProofToken = newOwnershipProof(),
                     ),
                 )
             }
@@ -186,6 +133,7 @@ class ProvisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
                     ProvisionPhoneNumberInput(
                         searchId = "tel-pns-${UUID.randomUUID()}",
                         phoneNumber = numberNotInAnySearch,
+                        ownershipProofToken = newOwnershipProof(),
                     ),
                 )
             }

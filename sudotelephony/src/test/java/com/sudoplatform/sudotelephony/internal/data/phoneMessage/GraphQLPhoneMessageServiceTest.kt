@@ -13,7 +13,8 @@ import com.sudoplatform.sudotelephony.data.DataFactory
 import com.sudoplatform.sudotelephony.data.EntityDataFactory
 import com.sudoplatform.sudotelephony.internal.data.common.StringConstants
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.DeletePhoneMessagesInput
-import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.ListPhoneMessagesInput
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.ListPhoneMessagesForConversationIdInput
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.ListPhoneMessagesForPhoneNumberIdInput
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageDirectionEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageTypeEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.SortOrderEntity
@@ -49,7 +50,7 @@ class GraphQLPhoneMessageServiceTest : BaseTests() {
         GraphQLPhoneMessageService(mockApiClient, mockLogger)
     }
 
-    private val listInput = ListPhoneMessagesInput(phoneNumberId = "mockPhoneNumberId")
+    private val listInput = ListPhoneMessagesForPhoneNumberIdInput(phoneNumberId = "mockPhoneNumberId")
 
     @After
     fun fini() {
@@ -125,10 +126,10 @@ class GraphQLPhoneMessageServiceTest : BaseTests() {
         }
 
     @Test
-    fun `list() should return the mapped page and its next token`() =
+    fun `listForPhoneNumberId() should return the mapped page and its next token`() =
         runTest {
             mockApiClient.stub {
-                onBlocking { listPhoneMessagesQuery(any()) } doReturn
+                onBlocking { listPhoneMessagesForPhoneNumberIdQuery(any()) } doReturn
                     DataFactory.listPhoneMessagesQueryResponse(
                         messages =
                             listOf(
@@ -139,44 +140,43 @@ class GraphQLPhoneMessageServiceTest : BaseTests() {
                     )
             }
 
-            val result = instanceUnderTest.list(listInput)
+            val result = instanceUnderTest.listForPhoneNumberId(listInput)
 
             result.items.map { it.id } shouldBe listOf("first", "second")
             result.nextToken shouldBe "mockNextToken"
 
-            verify(mockApiClient).listPhoneMessagesQuery(any())
+            verify(mockApiClient).listPhoneMessagesForPhoneNumberIdQuery(any())
         }
 
     @Test
-    fun `list() should return an empty page`() =
+    fun `listForPhoneNumberId() should return an empty page`() =
         runTest {
             mockApiClient.stub {
-                onBlocking { listPhoneMessagesQuery(any()) } doReturn
+                onBlocking { listPhoneMessagesForPhoneNumberIdQuery(any()) } doReturn
                     DataFactory.listPhoneMessagesQueryResponse(messages = emptyList())
             }
 
-            val result = instanceUnderTest.list(listInput)
+            val result = instanceUnderTest.listForPhoneNumberId(listInput)
 
             result.items shouldBe emptyList()
             result.nextToken shouldBe null
 
-            verify(mockApiClient).listPhoneMessagesQuery(any())
+            verify(mockApiClient).listPhoneMessagesForPhoneNumberIdQuery(any())
         }
 
     @Test
-    fun `list() should always send the phone number and omit unset filters`() =
+    fun `listForPhoneNumberId() should always send the phone number and omit unset filters`() =
         runTest {
             mockApiClient.stub {
-                onBlocking { listPhoneMessagesQuery(any()) } doReturn
+                onBlocking { listPhoneMessagesForPhoneNumberIdQuery(any()) } doReturn
                     DataFactory.listPhoneMessagesQueryResponse()
             }
 
-            instanceUnderTest.list(listInput)
+            instanceUnderTest.listForPhoneNumberId(listInput)
 
-            verify(mockApiClient).listPhoneMessagesQuery(
+            verify(mockApiClient).listPhoneMessagesForPhoneNumberIdQuery(
                 check {
                     it.phoneNumberId shouldBe "mockPhoneNumberId"
-                    it.conversationId.getOrNull() shouldBe null
                     it.sortOrder.getOrNull() shouldBe null
                     it.limit.getOrNull() shouldBe null
                     it.nextToken.getOrNull() shouldBe null
@@ -185,26 +185,25 @@ class GraphQLPhoneMessageServiceTest : BaseTests() {
         }
 
     @Test
-    fun `list() should send every filter the caller set`() =
+    fun `listForPhoneNumberId() should send every filter the caller set`() =
         runTest {
             mockApiClient.stub {
-                onBlocking { listPhoneMessagesQuery(any()) } doReturn
+                onBlocking { listPhoneMessagesForPhoneNumberIdQuery(any()) } doReturn
                     DataFactory.listPhoneMessagesQueryResponse()
             }
 
-            instanceUnderTest.list(
-                ListPhoneMessagesInput(
+            instanceUnderTest.listForPhoneNumberId(
+                ListPhoneMessagesForPhoneNumberIdInput(
                     phoneNumberId = "mockPhoneNumberId",
-                    conversationId = "mockConversationId",
                     sortOrder = SortOrderEntity.ASC,
                     limit = 9,
                     nextToken = "token",
                 ),
             )
 
-            verify(mockApiClient).listPhoneMessagesQuery(
+            verify(mockApiClient).listPhoneMessagesForPhoneNumberIdQuery(
                 check {
-                    it.conversationId.getOrNull() shouldBe "mockConversationId"
+                    it.phoneNumberId shouldBe "mockPhoneNumberId"
                     it.sortOrder.getOrNull() shouldBe SortOrderGraphQL.ASC
                     it.limit.getOrNull() shouldBe 9
                     it.nextToken.getOrNull() shouldBe "token"
@@ -213,25 +212,59 @@ class GraphQLPhoneMessageServiceTest : BaseTests() {
         }
 
     @Test
-    fun `list() should throw FailedException when result is null`() =
+    fun `listForConversationId() should return the mapped page and send every filter the caller set`() =
         runTest {
             mockApiClient.stub {
-                onBlocking { listPhoneMessagesQuery(any()) } doReturn
+                onBlocking { listPhoneMessagesForConversationIdQuery(any()) } doReturn
+                    DataFactory.listPhoneMessagesForConversationIdQueryResponse(
+                        messages = listOf(DataFactory.sealedPhoneMessageFragment(id = "first")),
+                        nextToken = "mockNextToken",
+                    )
+            }
+
+            val result =
+                instanceUnderTest.listForConversationId(
+                    ListPhoneMessagesForConversationIdInput(
+                        conversationId = "mockConversationId",
+                        sortOrder = SortOrderEntity.ASC,
+                        limit = 9,
+                        nextToken = "token",
+                    ),
+                )
+
+            result.items.map { it.id } shouldBe listOf("first")
+            result.nextToken shouldBe "mockNextToken"
+
+            verify(mockApiClient).listPhoneMessagesForConversationIdQuery(
+                check {
+                    it.conversationId shouldBe "mockConversationId"
+                    it.sortOrder.getOrNull() shouldBe SortOrderGraphQL.ASC
+                    it.limit.getOrNull() shouldBe 9
+                    it.nextToken.getOrNull() shouldBe "token"
+                },
+            )
+        }
+
+    @Test
+    fun `listForPhoneNumberId() should throw FailedException when result is null`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { listPhoneMessagesForPhoneNumberIdQuery(any()) } doReturn
                     DataFactory.listPhoneMessagesEmptyResponse()
             }
 
             shouldThrow<PhoneMessageException.FailedException> {
-                instanceUnderTest.list(listInput)
+                instanceUnderTest.listForPhoneNumberId(listInput)
             }
 
-            verify(mockApiClient).listPhoneMessagesQuery(any())
+            verify(mockApiClient).listPhoneMessagesForPhoneNumberIdQuery(any())
         }
 
     @Test
-    fun `list() should throw PhoneNumberNotFoundException for an unknown number`() =
+    fun `listForPhoneNumberId() should throw PhoneNumberNotFoundException for an unknown number`() =
         runTest {
             mockApiClient.stub {
-                onBlocking { listPhoneMessagesQuery(any()) } doReturn
+                onBlocking { listPhoneMessagesForPhoneNumberIdQuery(any()) } doReturn
                     DataFactory.listPhoneMessagesErrorResponse(
                         DataFactory.graphQLError(
                             extensions =
@@ -243,24 +276,24 @@ class GraphQLPhoneMessageServiceTest : BaseTests() {
             }
 
             shouldThrow<PhoneMessageException.PhoneNumberNotFoundException> {
-                instanceUnderTest.list(listInput)
+                instanceUnderTest.listForPhoneNumberId(listInput)
             }
 
-            verify(mockApiClient).listPhoneMessagesQuery(any())
+            verify(mockApiClient).listPhoneMessagesForPhoneNumberIdQuery(any())
         }
 
     @Test
-    fun `list() should throw UnknownException for unexpected errors`() =
+    fun `listForPhoneNumberId() should throw UnknownException for unexpected errors`() =
         runTest {
             mockApiClient.stub {
-                onBlocking { listPhoneMessagesQuery(any()) } doThrow RuntimeException("network down")
+                onBlocking { listPhoneMessagesForPhoneNumberIdQuery(any()) } doThrow RuntimeException("network down")
             }
 
             shouldThrow<PhoneMessageException.UnknownException> {
-                instanceUnderTest.list(listInput)
+                instanceUnderTest.listForPhoneNumberId(listInput)
             }
 
-            verify(mockApiClient).listPhoneMessagesQuery(any())
+            verify(mockApiClient).listPhoneMessagesForPhoneNumberIdQuery(any())
         }
 
     @Test

@@ -54,6 +54,7 @@ internal object StringConstants {
     const val INVALID_TOKEN_MSG = "The ownership proof could not be verified"
     const val INVALID_PHONE_NUMBER_STATE_MSG = "The phone number is in a state that does not allow the operation"
     const val NO_SUPPORTED_COUNTRIES_ERROR_MSG = "No supported countries returned."
+    const val NO_CONFIGURATION_DATA_ERROR_MSG = "No configuration data returned."
     const val NO_PHONE_NUMBER_SEARCH_ERROR_MSG = "No phone number search returned."
     const val NO_PHONE_NUMBER_ERROR_MSG = "No phone number returned."
     const val NO_PHONE_NUMBERS_ERROR_MSG = "No phone numbers returned."

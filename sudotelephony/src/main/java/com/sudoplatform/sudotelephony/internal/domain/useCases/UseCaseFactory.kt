@@ -7,11 +7,13 @@
 package com.sudoplatform.sudotelephony.internal.domain.useCases
 
 import com.sudoplatform.sudologging.Logger
+import com.sudoplatform.sudotelephony.internal.domain.entities.configuration.ConfigurationDataService
 import com.sudoplatform.sudotelephony.internal.domain.entities.country.CountryService
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageService
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageUnsealer
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.PhoneNumberService
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumberSearch.PhoneNumberSearchService
+import com.sudoplatform.sudotelephony.internal.domain.useCases.configuration.GetConfigurationDataUseCase
 import com.sudoplatform.sudotelephony.internal.domain.useCases.country.GetSupportedCountriesUseCase
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage.DeletePhoneMessagesUseCase
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage.GetPhoneMessageUseCase
@@ -34,6 +36,9 @@ import com.sudoplatform.sudotelephony.keys.ServiceKeyManager
 internal interface UseCaseFactory {
     /** Create a [GetSupportedCountriesUseCase]. */
     fun createGetSupportedCountriesUseCase(): GetSupportedCountriesUseCase
+
+    /** Create a [GetConfigurationDataUseCase]. */
+    fun createGetConfigurationDataUseCase(): GetConfigurationDataUseCase
 
     /** Create a [SearchAvailablePhoneNumbersUseCase]. */
     fun createSearchAvailablePhoneNumbersUseCase(): SearchAvailablePhoneNumbersUseCase
@@ -68,6 +73,8 @@ internal interface UseCaseFactory {
  * use case.
  *
  * @property countryService [CountryService] The country domain service port.
+ * @property configurationDataService [ConfigurationDataService] The service configuration
+ *  domain service port.
  * @property phoneNumberSearchService [PhoneNumberSearchService] The phone number search
  *  domain service port.
  * @property phoneNumberService [PhoneNumberService] The provisioned phone number domain
@@ -80,6 +87,7 @@ internal interface UseCaseFactory {
  */
 internal class DefaultUseCaseFactory(
     private val countryService: CountryService,
+    private val configurationDataService: ConfigurationDataService,
     private val phoneNumberSearchService: PhoneNumberSearchService,
     private val phoneNumberService: PhoneNumberService,
     private val phoneMessageService: PhoneMessageService,
@@ -88,6 +96,9 @@ internal class DefaultUseCaseFactory(
     private val logger: Logger,
 ) : UseCaseFactory {
     override fun createGetSupportedCountriesUseCase(): GetSupportedCountriesUseCase = GetSupportedCountriesUseCase(countryService, logger)
+
+    override fun createGetConfigurationDataUseCase(): GetConfigurationDataUseCase =
+        GetConfigurationDataUseCase(configurationDataService, logger)
 
     override fun createSearchAvailablePhoneNumbersUseCase(): SearchAvailablePhoneNumbersUseCase =
         SearchAvailablePhoneNumbersUseCase(phoneNumberSearchService, logger)

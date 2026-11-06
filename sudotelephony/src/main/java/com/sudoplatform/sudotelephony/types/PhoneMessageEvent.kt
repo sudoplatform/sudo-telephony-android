@@ -42,6 +42,8 @@ enum class PhoneMessageChangeType {
  * @property changeType [PhoneMessageChangeType] The change being reported.
  * @property seen [Boolean] Whether the user has marked the message as read.
  * @property owner [String] ID of the user who owns the message.
+ * @property owners [List] Owners taken from the ownership proofs, which tie the message's phone
+ *  number to a Sudo.
  * @property version [Int] Version of the message after the change.
  * @property updatedAt [Date] When the message was last updated.
  */
@@ -55,6 +57,10 @@ data class PhoneMessageEvent(
     val changeType: PhoneMessageChangeType,
     val seen: Boolean,
     val owner: String,
+    val owners: List<Owner>,
     val version: Int,
     val updatedAt: Date,
-) : Parcelable
+) : Parcelable {
+    /** ID of the Sudo that owns the message's phone number, or `null` when it belongs to the user only. */
+    val sudoId: String? get() = owners.sudoId()
+}

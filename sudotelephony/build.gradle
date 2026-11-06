@@ -120,7 +120,7 @@ dependencies {
     implementation("com.apollographql.apollo:apollo-runtime:4.3.3")
 
     // Sudo Platform
-    implementation 'com.sudoplatform:sudokeymanager:9.0.2'
+    implementation 'com.sudoplatform:sudokeymanager:9.0.3'
     implementation "com.sudoplatform:sudologging:6.0.0"
     implementation "com.sudoplatform:sudoconfigmanager:9.0.0"
     implementation 'com.sudoplatform:sudouser:21.2.2'
@@ -149,8 +149,9 @@ dependencies {
     androidTestImplementation 'org.mockito.kotlin:mockito-kotlin:6.0.0'
     androidTestImplementation 'org.mockito:mockito-android:5.19.0'
 
-    androidTestImplementation 'com.sudoplatform:sudoentitlements:13.0.0'
+    androidTestImplementation 'com.sudoplatform:sudoentitlements:13.0.1'
     androidTestImplementation 'com.sudoplatform:sudoentitlementsadmin:11.0.1'
+    androidTestImplementation 'com.sudoplatform:sudoprofiles:18.0.2'
 }
 
 // Returns a list of `configurations` which should not be scanned for vulnerabilities

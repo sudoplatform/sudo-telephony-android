@@ -114,14 +114,18 @@ import com.sudoplatform.sudotelephony.SudoTelephonyClient
 import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
+import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
 import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
-import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForConversationIdInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForPhoneNumberIdInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersForSudoIdInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersInput
 import com.sudoplatform.sudotelephony.types.inputs.ProvisionPhoneNumberInput
 import com.sudoplatform.sudotelephony.types.inputs.SearchAvailablePhoneNumbersInput
 import com.sudoplatform.sudotelephony.types.inputs.UpdatePhoneMessagesInput
+import com.sudoplatform.sudouser.SudoPlatformSignInCallback
 import com.sudoplatform.sudouser.SudoUserClient
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -170,6 +174,21 @@ fun main() {
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-46334843%2FClasslikes%2F51902315" anchor-label="ConfigurationDataException" id="-46334843%2FClasslikes%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-configuration-data-exception/index.html"><span>Configuration</span><wbr></wbr><span>Data</span><wbr></wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-46334843%2FClasslikes%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-configuration-data-exception/index.html">ConfigurationDataException</a> : <a href="https://developer.android.com/reference/kotlin/java/lang/RuntimeException.html">RuntimeException</a></div><div class="brief "><p class="paragraph">Defines the exceptions for <a href="get-configuration-data.html">getConfigurationData</a>.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -313,6 +332,21 @@ fun main() {
               </div>
             </div>
           </div>
+<a data-name="1682155477%2FFunctions%2F51902315" anchor-label="getConfigurationData" id="1682155477%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-configuration-data.html"><span>get</span><wbr></wbr><span>Configuration</span><wbr></wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1682155477%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-configuration-data.html"><span class="token function">getConfigurationData</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-configuration-data/index.html">ConfigurationData</a></div><div class="brief "><p class="paragraph">Retrieve how the telephony service deployment is configured.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
 <a data-name="-272532936%2FFunctions%2F51902315" anchor-label="getPhoneMessage" id="-272532936%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
           <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
             <div class="main-subrow keyValue ">
@@ -373,17 +407,32 @@ fun main() {
               </div>
             </div>
           </div>
-<a data-name="-742211003%2FFunctions%2F51902315" anchor-label="listPhoneMessages" id="-742211003%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+<a data-name="1532507931%2FFunctions%2F51902315" anchor-label="listPhoneMessagesForConversationId" id="1532507931%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
           <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="list-phone-messages.html"><span>list</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Messages</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-742211003%2FFunctions%2F51902315"></span>
+                  <div><a href="list-phone-messages-for-conversation-id.html"><span>list</span><wbr></wbr><span>Phone</span><wbr></wbr><span>Messages</span><wbr></wbr><span>For</span><wbr></wbr><span>Conversation</span><wbr></wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1532507931%2FFunctions%2F51902315"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="list-phone-messages.html"><span class="token function">listPhoneMessages</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-list-phone-messages-input/index.html">ListPhoneMessagesInput</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-list-output/index.html">ListOutput</a><span class="token operator">&lt;</span><a href="../../com.sudoplatform.sudotelephony.types/-phone-message/index.html">PhoneMessage</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieve a page of a phone number's messages, with their sealed fields made readable.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="list-phone-messages-for-conversation-id.html"><span class="token function">listPhoneMessagesForConversationId</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-list-phone-messages-for-conversation-id-input/index.html">ListPhoneMessagesForConversationIdInput</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-list-a-p-i-result/index.html">ListAPIResult</a><span class="token operator">&lt;</span><a href="../../com.sudoplatform.sudotelephony.types/-phone-message/index.html">PhoneMessage</a><span class="token punctuation">, </span><a href="../../com.sudoplatform.sudotelephony.types/-partial-phone-message/index.html">PartialPhoneMessage</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieve a page of one conversation's messages, with their sealed fields made readable. Defaults to newest first.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1121594587%2FFunctions%2F51902315" anchor-label="listPhoneMessagesForPhoneNumberId" id="-1121594587%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-phone-messages-for-phone-number-id.html"><span>list</span><wbr></wbr><span>Phone</span><wbr></wbr><span>Messages</span><wbr></wbr><span>For</span><wbr></wbr><span>Phone</span><wbr></wbr><span>Number</span><wbr></wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1121594587%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="list-phone-messages-for-phone-number-id.html"><span class="token function">listPhoneMessagesForPhoneNumberId</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-list-phone-messages-for-phone-number-id-input/index.html">ListPhoneMessagesForPhoneNumberIdInput</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-list-a-p-i-result/index.html">ListAPIResult</a><span class="token operator">&lt;</span><a href="../../com.sudoplatform.sudotelephony.types/-phone-message/index.html">PhoneMessage</a><span class="token punctuation">, </span><a href="../../com.sudoplatform.sudotelephony.types/-partial-phone-message/index.html">PartialPhoneMessage</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieve a page of a phone number's messages across all its conversations, with their sealed fields made readable. Defaults to newest first.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -399,6 +448,21 @@ fun main() {
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="list-phone-numbers.html"><span class="token function">listPhoneNumbers</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-list-phone-numbers-input/index.html">ListPhoneNumbersInput</a><span class="token operator"> = </span>ListPhoneNumbersInput()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-list-output/index.html">ListOutput</a><span class="token operator">&lt;</span><a href="../../com.sudoplatform.sudotelephony.types/-phone-number/index.html">PhoneNumber</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieve a page of the caller's phone numbers, oldest first.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1884702181%2FFunctions%2F51902315" anchor-label="listPhoneNumbersForSudoId" id="1884702181%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-phone-numbers-for-sudo-id.html"><span>list</span><wbr></wbr><span>Phone</span><wbr></wbr><span>Numbers</span><wbr></wbr><span>For</span><wbr></wbr><span>Sudo</span><wbr></wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1884702181%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="list-phone-numbers-for-sudo-id.html"><span class="token function">listPhoneNumbersForSudoId</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-list-phone-numbers-for-sudo-id-input/index.html">ListPhoneNumbersForSudoIdInput</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-list-output/index.html">ListOutput</a><span class="token operator">&lt;</span><a href="../../com.sudoplatform.sudotelephony.types/-phone-number/index.html">PhoneNumber</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieve a page of the caller's phone numbers that one Sudo owns, oldest first.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -444,6 +508,21 @@ fun main() {
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="search-available-phone-numbers.html"><span class="token function">searchAvailablePhoneNumbers</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-search-available-phone-numbers-input/index.html">SearchAvailablePhoneNumbersInput</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-phone-number-search/index.html">PhoneNumberSearch</a></div><div class="brief "><p class="paragraph">Search for phone numbers available to provision in an area code.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="669819309%2FFunctions%2F51902315" anchor-label="setSignInCallback" id="669819309%2FFunctions%2F51902315" data-filterable-set=":sudotelephony:dokkaHtml/release"></a>
+          <div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-sign-in-callback.html"><span>set</span><wbr></wbr><span>Sign</span><wbr></wbr><span>In</span><wbr></wbr><span><span>Callback</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="669819309%2FFunctions%2F51902315"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="set-sign-in-callback.html"><span class="token function">setSignInCallback</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">callback<span class="token operator">: </span><a href="https://sudoplatform.github.io/sudo-user-android/sudouser/sudouser/com.sudoplatform.sudouser/-sudo-platform-sign-in-callback/index.html">SudoPlatformSignInCallback</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Set a callback that signs the user in when an operation is attempted while they are signed out.</p></div></div></div>
                 </div>
               </div>
             </div>

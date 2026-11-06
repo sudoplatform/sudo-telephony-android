@@ -8,10 +8,12 @@ package com.sudoplatform.sudotelephony.internal.data.phoneNumber
 
 import com.amazonaws.services.cognitoidentity.model.NotAuthorizedException
 import com.amazonaws.util.Base64
+import com.amplifyframework.api.graphql.GraphQLResponse
 import com.apollographql.apollo.api.Optional
 import com.sudoplatform.sudologging.Logger
 import com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneNumberException
 import com.sudoplatform.sudotelephony.api.ApiClient
+import com.sudoplatform.sudotelephony.graphql.fragment.PhoneNumber
 import com.sudoplatform.sudotelephony.internal.data.common.StringConstants
 import com.sudoplatform.sudotelephony.internal.data.common.transformers.ErrorTransformer
 import com.sudoplatform.sudotelephony.internal.data.common.transformers.PublicKeyFormatTransformer
@@ -20,9 +22,11 @@ import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ListP
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.PhoneNumberEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.PhoneNumberService
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ProvisionPhoneNumberRequest
+import com.sudoplatform.sudotelephony.graphql.type.ListPhoneNumbersForSudoIdInput as ListPhoneNumbersForSudoIdInputGraphQL
 import com.sudoplatform.sudotelephony.graphql.type.ListPhoneNumbersInput as ListPhoneNumbersInputGraphQL
 import com.sudoplatform.sudotelephony.graphql.type.ProvisionPhoneNumberInput as ProvisionPhoneNumberInputGraphQL
 import com.sudoplatform.sudotelephony.graphql.type.ProvisionPhoneNumberPublicKeyInput as PublicKeyInputGraphQL
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ListPhoneNumbersForSudoIdInput as ListPhoneNumbersForSudoIdInputEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ListPhoneNumbersInput as ListPhoneNumbersInputEntity
 
 /**
@@ -153,19 +157,44 @@ internal class GraphQLPhoneNumberService(
                 nextToken = Optional.presentIfNotNull(input.nextToken),
             )
 
+        return listPage({ apiClient.listPhoneNumbersQuery(queryInput) }) { data ->
+            data.listPhoneNumbers.let { page -> page.items.map { it.phoneNumber } to page.nextToken }
+        }
+    }
+
+    override suspend fun listForSudoId(input: ListPhoneNumbersForSudoIdInputEntity): ListPhoneNumbersOutput {
+        logger.debug("listPhoneNumbersForSudoId input: $input")
+
+        // Omit the paging fields the caller left unset so the service applies its defaults.
+        val queryInput =
+            ListPhoneNumbersForSudoIdInputGraphQL(
+                sudoId = input.sudoId,
+                limit = Optional.presentIfNotNull(input.limit),
+                nextToken = Optional.presentIfNotNull(input.nextToken),
+            )
+
+        return listPage({ apiClient.listPhoneNumbersForSudoIdQuery(queryInput) }) { data ->
+            data.listPhoneNumbersForSudoId.let { page -> page.items.map { it.phoneNumber } to page.nextToken }
+        }
+    }
+
+    private suspend fun <D> listPage(
+        query: suspend () -> GraphQLResponse<D>,
+        toPage: (D) -> Pair<List<PhoneNumber>, String?>,
+    ): ListPhoneNumbersOutput {
         try {
-            val queryResponse = apiClient.listPhoneNumbersQuery(queryInput)
+            val queryResponse = query()
 
             if (queryResponse.hasErrors()) {
                 logger.error("errors = ${queryResponse.errors}")
                 throw ErrorTransformer.interpretPhoneNumberError(queryResponse.errors.first())
             }
 
-            val result = queryResponse.data?.listPhoneNumbers
-            result?.let {
+            queryResponse.data?.let { data ->
+                val (items, nextToken) = toPage(data)
                 return ListPhoneNumbersOutput(
-                    items = it.items.map { item -> PhoneNumberTransformer.fromGraphQLToEntity(item.phoneNumber) },
-                    nextToken = it.nextToken,
+                    items = items.map { PhoneNumberTransformer.fromGraphQLToEntity(it) },
+                    nextToken = nextToken,
                 )
             }
             logger.error("no phone numbers returned")

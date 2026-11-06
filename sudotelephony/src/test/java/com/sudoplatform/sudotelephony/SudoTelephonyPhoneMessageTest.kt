@@ -8,6 +8,10 @@ package com.sudoplatform.sudotelephony
 
 import com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneMessageException
 import com.sudoplatform.sudotelephony.data.EntityDataFactory
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.ListAPIResultEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.ListPartialResultEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.ListSuccessResultEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.common.PartialResultEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.country.CountryService
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageBatchResultEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.PhoneMessageService
@@ -19,14 +23,15 @@ import com.sudoplatform.sudotelephony.internal.domain.useCases.UseCaseFactory
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage.DeletePhoneMessagesUseCase
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage.GetPhoneMessageUseCase
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage.ListPhoneMessagesUseCase
-import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage.ListPhoneMessagesUseCaseOutput
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage.UpdatePhoneMessagesUseCase
 import com.sudoplatform.sudotelephony.keys.ServiceKeyManager
+import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.PhoneMessageDirection
 import com.sudoplatform.sudotelephony.types.PhoneMessageType
 import com.sudoplatform.sudotelephony.types.SortOrder
 import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
-import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForConversationIdInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForPhoneNumberIdInput
 import com.sudoplatform.sudotelephony.types.inputs.UpdatePhoneMessagesInput
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
@@ -46,10 +51,13 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.robolectric.RobolectricTestRunner
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.ListPhoneMessagesForConversationIdInput as ListPhoneMessagesForConversationIdInputEntity
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.ListPhoneMessagesForPhoneNumberIdInput as ListPhoneMessagesForPhoneNumberIdInputEntity
 
 /**
  * Test the correct operation of [SudoTelephonyClient.getPhoneMessage] and
- * [SudoTelephonyClient.listPhoneMessages] using mocks and spies.
+ * [SudoTelephonyClient.listPhoneMessagesForPhoneNumberId],
+ * [SudoTelephonyClient.listPhoneMessagesForConversationId] using mocks and spies.
  */
 @RunWith(RobolectricTestRunner::class)
 class SudoTelephonyPhoneMessageTest : BaseTests() {
@@ -69,11 +77,13 @@ class SudoTelephonyPhoneMessageTest : BaseTests() {
     private val mockListUseCase by before {
         mock<ListPhoneMessagesUseCase>().stub {
             onBlocking {
-                execute(any())
+                execute(any<ListPhoneMessagesForPhoneNumberIdInputEntity>())
             } doReturn
-                ListPhoneMessagesUseCaseOutput(
-                    items = listOf(EntityDataFactory.phoneMessageEntity()),
-                    nextToken = "mockNextToken",
+                ListAPIResultEntity.Success(
+                    ListSuccessResultEntity(
+                        items = listOf(EntityDataFactory.phoneMessageEntity()),
+                        nextToken = "mockNextToken",
+                    ),
                 )
         }
     }
@@ -208,34 +218,35 @@ class SudoTelephonyPhoneMessageTest : BaseTests() {
         }
 
     @Test
-    fun `listPhoneMessages() should return the readable page and next token`() =
+    fun `listPhoneMessagesForPhoneNumberId() should return the readable page and next token`() =
         runTest {
             val deferredResult =
                 async(StandardTestDispatcher(testScheduler)) {
-                    client.listPhoneMessages(
-                        ListPhoneMessagesInput(phoneNumberId = "mockPhoneNumberId"),
+                    client.listPhoneMessagesForPhoneNumberId(
+                        ListPhoneMessagesForPhoneNumberIdInput(phoneNumberId = "mockPhoneNumberId"),
                     )
                 }
             deferredResult.start()
             val result = deferredResult.await()
 
-            result.items.size shouldBe 1
-            result.items.first().body shouldBe "Hello there"
-            result.nextToken shouldBe "mockNextToken"
+            val page = (result as ListAPIResult.Success).result
+            page.items.size shouldBe 1
+            page.items.first().body shouldBe "Hello there"
+            page.items.first().sudoId shouldBe "mockSudoId"
+            page.nextToken shouldBe "mockNextToken"
 
             verify(mockUseCaseFactory).createListPhoneMessagesUseCase()
-            verify(mockListUseCase).execute(any())
+            verify(mockListUseCase).execute(any<ListPhoneMessagesForPhoneNumberIdInputEntity>())
         }
 
     @Test
-    fun `listPhoneMessages() should pass every filter to the use case`() =
+    fun `listPhoneMessagesForPhoneNumberId() should pass every filter to the use case`() =
         runTest {
             val deferredResult =
                 async(StandardTestDispatcher(testScheduler)) {
-                    client.listPhoneMessages(
-                        ListPhoneMessagesInput(
+                    client.listPhoneMessagesForPhoneNumberId(
+                        ListPhoneMessagesForPhoneNumberIdInput(
                             phoneNumberId = "mockPhoneNumberId",
-                            conversationId = "mockConversationId",
                             sortOrder = SortOrder.ASC,
                             limit = 5,
                             nextToken = "token",
@@ -247,8 +258,49 @@ class SudoTelephonyPhoneMessageTest : BaseTests() {
 
             verify(mockUseCaseFactory).createListPhoneMessagesUseCase()
             verify(mockListUseCase).execute(
-                check {
+                check<ListPhoneMessagesForPhoneNumberIdInputEntity> {
                     it.phoneNumberId shouldBe "mockPhoneNumberId"
+                    it.sortOrder shouldBe SortOrderEntity.ASC
+                    it.limit shouldBe 5
+                    it.nextToken shouldBe "token"
+                },
+            )
+        }
+
+    @Test
+    fun `listPhoneMessagesForConversationId() should pass every filter to the use case and return the readable page`() =
+        runTest {
+            mockListUseCase.stub {
+                onBlocking { execute(any<ListPhoneMessagesForConversationIdInputEntity>()) } doReturn
+                    ListAPIResultEntity.Success(
+                        ListSuccessResultEntity(
+                            items = listOf(EntityDataFactory.phoneMessageEntity()),
+                            nextToken = "mockNextToken",
+                        ),
+                    )
+            }
+
+            val deferredResult =
+                async(StandardTestDispatcher(testScheduler)) {
+                    client.listPhoneMessagesForConversationId(
+                        ListPhoneMessagesForConversationIdInput(
+                            conversationId = "mockConversationId",
+                            sortOrder = SortOrder.ASC,
+                            limit = 5,
+                            nextToken = "token",
+                        ),
+                    )
+                }
+            deferredResult.start()
+            val result = deferredResult.await()
+
+            val page = (result as ListAPIResult.Success).result
+            page.items.map { it.body } shouldBe listOf("Hello there")
+            page.nextToken shouldBe "mockNextToken"
+
+            verify(mockUseCaseFactory).createListPhoneMessagesUseCase()
+            verify(mockListUseCase).execute(
+                check<ListPhoneMessagesForConversationIdInputEntity> {
                     it.conversationId shouldBe "mockConversationId"
                     it.sortOrder shouldBe SortOrderEntity.ASC
                     it.limit shouldBe 5
@@ -258,42 +310,90 @@ class SudoTelephonyPhoneMessageTest : BaseTests() {
         }
 
     @Test
-    fun `listPhoneMessages() should return an empty page`() =
+    fun `listPhoneMessagesForPhoneNumberId() should return an empty page`() =
         runTest {
             mockListUseCase.stub {
-                onBlocking { execute(any()) } doReturn ListPhoneMessagesUseCaseOutput(items = emptyList())
+                onBlocking { execute(any<ListPhoneMessagesForPhoneNumberIdInputEntity>()) } doReturn
+                    ListAPIResultEntity.Success(ListSuccessResultEntity(emptyList(), null))
             }
 
             val deferredResult =
                 async(StandardTestDispatcher(testScheduler)) {
-                    client.listPhoneMessages(
-                        ListPhoneMessagesInput(phoneNumberId = "mockPhoneNumberId"),
+                    client.listPhoneMessagesForPhoneNumberId(
+                        ListPhoneMessagesForPhoneNumberIdInput(phoneNumberId = "mockPhoneNumberId"),
                     )
                 }
             deferredResult.start()
             val result = deferredResult.await()
 
-            result.items shouldBe emptyList()
-            result.nextToken shouldBe null
+            result shouldBe ListAPIResult.Success(ListAPIResult.ListSuccessResult(emptyList(), null))
 
             verify(mockUseCaseFactory).createListPhoneMessagesUseCase()
-            verify(mockListUseCase).execute(any())
+            verify(mockListUseCase).execute(any<ListPhoneMessagesForPhoneNumberIdInputEntity>())
         }
 
     @Test
-    fun `listPhoneMessages() should throw when the use case throws`() =
+    fun `listPhoneMessagesForPhoneNumberId() should return the readable and unreadable messages of a partial page`() =
+        runTest {
+            val unsealingFailure = PhoneMessageException.UnsealingFailedException("bad")
+            mockListUseCase.stub {
+                onBlocking {
+                    execute(any<ListPhoneMessagesForPhoneNumberIdInputEntity>())
+                } doReturn
+                    ListAPIResultEntity.Partial(
+                        ListPartialResultEntity(
+                            items = listOf(EntityDataFactory.phoneMessageEntity(id = "readable")),
+                            failed =
+                                listOf(
+                                    PartialResultEntity(
+                                        EntityDataFactory.partialPhoneMessageEntity(id = "unreadable"),
+                                        unsealingFailure,
+                                    ),
+                                ),
+                            nextToken = "mockNextToken",
+                        ),
+                    )
+            }
+
+            val deferredResult =
+                async(StandardTestDispatcher(testScheduler)) {
+                    client.listPhoneMessagesForPhoneNumberId(
+                        ListPhoneMessagesForPhoneNumberIdInput(phoneNumberId = "mockPhoneNumberId"),
+                    )
+                }
+            deferredResult.start()
+            val result = deferredResult.await()
+
+            val page = (result as ListAPIResult.Partial).result
+            page.items.map { it.id } shouldBe listOf("readable")
+            page.failed.size shouldBe 1
+            page.failed
+                .first()
+                .partial.id shouldBe "unreadable"
+            page.failed
+                .first()
+                .partial.sudoId shouldBe "mockSudoId"
+            page.failed.first().cause shouldBe unsealingFailure
+            page.nextToken shouldBe "mockNextToken"
+
+            verify(mockUseCaseFactory).createListPhoneMessagesUseCase()
+            verify(mockListUseCase).execute(any<ListPhoneMessagesForPhoneNumberIdInputEntity>())
+        }
+
+    @Test
+    fun `listPhoneMessagesForPhoneNumberId() should throw when the use case throws`() =
         runTest {
             mockListUseCase.stub {
                 onBlocking {
-                    execute(any())
+                    execute(any<ListPhoneMessagesForPhoneNumberIdInputEntity>())
                 } doThrow PhoneMessageException.PhoneNumberNotFoundException()
             }
 
             val deferredResult =
                 async(StandardTestDispatcher(testScheduler)) {
                     shouldThrow<PhoneMessageException.PhoneNumberNotFoundException> {
-                        client.listPhoneMessages(
-                            ListPhoneMessagesInput(phoneNumberId = "mockPhoneNumberId"),
+                        client.listPhoneMessagesForPhoneNumberId(
+                            ListPhoneMessagesForPhoneNumberIdInput(phoneNumberId = "mockPhoneNumberId"),
                         )
                     }
                 }
@@ -301,7 +401,7 @@ class SudoTelephonyPhoneMessageTest : BaseTests() {
             deferredResult.await()
 
             verify(mockUseCaseFactory).createListPhoneMessagesUseCase()
-            verify(mockListUseCase).execute(any())
+            verify(mockListUseCase).execute(any<ListPhoneMessagesForPhoneNumberIdInputEntity>())
         }
 
     @Test

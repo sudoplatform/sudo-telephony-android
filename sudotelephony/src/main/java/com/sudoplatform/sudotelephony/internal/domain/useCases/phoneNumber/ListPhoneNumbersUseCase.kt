@@ -7,6 +7,7 @@
 package com.sudoplatform.sudotelephony.internal.domain.useCases.phoneNumber
 
 import com.sudoplatform.sudologging.Logger
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ListPhoneNumbersForSudoIdInput
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ListPhoneNumbersInput
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ListPhoneNumbersOutput
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.PhoneNumberService
@@ -15,6 +16,15 @@ import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.Phone
  * Input for [ListPhoneNumbersUseCase].
  */
 internal data class ListPhoneNumbersUseCaseInput(
+    val limit: Int? = null,
+    val nextToken: String? = null,
+)
+
+/**
+ * Input for [ListPhoneNumbersUseCase] when listing the numbers one Sudo owns.
+ */
+internal data class ListPhoneNumbersForSudoIdUseCaseInput(
+    val sudoId: String,
     val limit: Int? = null,
     val nextToken: String? = null,
 )
@@ -39,6 +49,23 @@ internal class ListPhoneNumbersUseCase(
         logger.debug(this::class.java.simpleName)
         return phoneNumberService.list(
             ListPhoneNumbersInput(
+                limit = input.limit,
+                nextToken = input.nextToken,
+            ),
+        )
+    }
+
+    /**
+     * Retrieve a page of the numbers one Sudo owns.
+     *
+     * @param input [ListPhoneNumbersForSudoIdUseCaseInput] The Sudo and paging parameters.
+     * @return A [ListPhoneNumbersOutput] holding the page and its next token.
+     */
+    suspend fun execute(input: ListPhoneNumbersForSudoIdUseCaseInput): ListPhoneNumbersOutput {
+        logger.debug(this::class.java.simpleName)
+        return phoneNumberService.listForSudoId(
+            ListPhoneNumbersForSudoIdInput(
+                sudoId = input.sudoId,
                 limit = input.limit,
                 nextToken = input.nextToken,
             ),

@@ -7,6 +7,7 @@
 package com.sudoplatform.sudotelephony
 
 import android.content.Context
+import android.net.Uri
 import android.os.StrictMode
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
@@ -17,8 +18,13 @@ import com.sudoplatform.sudokeymanager.KeyManagerFactory
 import com.sudoplatform.sudologging.AndroidUtilsLogDriver
 import com.sudoplatform.sudologging.LogLevel
 import com.sudoplatform.sudologging.Logger
+import com.sudoplatform.sudoprofiles.Sudo
+import com.sudoplatform.sudoprofiles.SudoProfilesClient
 import com.sudoplatform.sudotelephony.types.PhoneNumber
+import com.sudoplatform.sudotelephony.types.PhoneNumberSearch
 import com.sudoplatform.sudotelephony.types.PhoneNumberState
+import com.sudoplatform.sudotelephony.types.inputs.ProvisionPhoneNumberInput
+import com.sudoplatform.sudotelephony.types.inputs.SearchAvailablePhoneNumbersInput
 import com.sudoplatform.sudouser.SudoUserClient
 import com.sudoplatform.sudouser.TESTAuthenticationProvider
 import io.kotlintest.shouldBe
@@ -27,6 +33,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.AfterClass
+import org.junit.Assume.assumeTrue
 import org.junit.BeforeClass
 import timber.log.Timber
 
@@ -41,6 +48,115 @@ abstract class BaseIntegrationTest {
     /** Numbers provisioned by the running test, released by [releaseProvisionedPhoneNumbers]. */
     private val provisionedPhoneNumberIds = mutableSetOf<String>()
 
+    /** Sudos created by the running test, deleted by [releaseProvisionedPhoneNumbers]. */
+    private val createdSudos = mutableListOf<Sudo>()
+
+    /** Country to search for numbers in, overridable with the `COUNTRY_CODE` argument. */
+    protected val countryCode = optionalArgument("COUNTRY_CODE", "US")
+
+    /** Area code to search for numbers in, overridable with the `AREA_CODE` argument. */
+    protected val areaCode = optionalArgument("AREA_CODE", "415")
+
+    /** The outcome of provisioning one of a search's results. */
+    protected data class ProvisionedNumber(
+        val searchId: String,
+        val ownershipProofToken: String?,
+        val number: PhoneNumber,
+    )
+
+    /**
+     * Creates a Sudo that is deleted after the test, once its numbers have been released.
+     *
+     * @return The created [Sudo].
+     */
+    protected suspend fun createSudo(): Sudo =
+        sudoClient
+            .createSudo(Sudo("Mr", "Theodore", "Bear", "Telephony", null, null))
+            .also { createdSudos.add(it) }
+
+    /**
+     * Gets an ownership proof for [sudo], for the audience the telephony service accepts
+     * unless another is given.
+     *
+     * @param sudo [Sudo] The Sudo the proof is for.
+     * @param audience [String] The audience the proof is issued for.
+     * @return The proof.
+     */
+    protected suspend fun getOwnershipProof(
+        sudo: Sudo,
+        audience: String = SudoTelephonyClient.OWNERSHIP_PROOF_AUDIENCE,
+    ): String = sudoClient.getOwnershipProof(sudo, audience)
+
+    /**
+     * Creates a Sudo and gets an ownership proof for it, so a number can be provisioned on a
+     * deployment that requires one. A valid proof is accepted whether or not one is required.
+     *
+     * @return The proof.
+     */
+    protected suspend fun newOwnershipProof(): String = getOwnershipProof(createSudo())
+
+    /**
+     * Searches for numbers in [countryCode] and [areaCode].
+     *
+     * How many numbers the provider offers is not guaranteed, so the test is skipped rather
+     * than failed when the search comes back empty.
+     *
+     * @return The search, which has at least one result.
+     */
+    protected suspend fun searchAvailableNumbersOrSkip(): PhoneNumberSearch {
+        val search =
+            telephonyClient.searchAvailablePhoneNumbers(
+                SearchAvailablePhoneNumbersInput(countryCode = countryCode, areaCode = areaCode),
+            )
+        assumeTrue(
+            "No numbers offered in $countryCode-$areaCode on this instance",
+            search.results.isNotEmpty(),
+        )
+        return search
+    }
+
+    /**
+     * Searches, then provisions the first result that is still free, and registers it for
+     * release after the test.
+     *
+     * A search result is not a reservation, so this walks the results until one is still
+     * free, which is what a real caller has to do. Skips the test when the provider offers
+     * nothing, and fails only if every offered number has already been taken.
+     *
+     * @param clientRefId [String] Optional client reference to provision with.
+     * @param ownershipProof Gets the ownership proof to provision with, or null for none. It
+     *   is called only once the search has found numbers. Defaults to a proof for a new Sudo,
+     *   which every deployment accepts.
+     * @return The search the number came from, the proof it was provisioned with, and the
+     *   provisioned number.
+     */
+    protected suspend fun provisionANumber(
+        clientRefId: String? = null,
+        ownershipProof: suspend () -> String? = { newOwnershipProof() },
+    ): ProvisionedNumber {
+        val search = searchAvailableNumbersOrSkip()
+        val ownershipProofToken = ownershipProof()
+        // Shuffled so concurrent runs are unlikely to contend for the same number.
+        for (available in search.results.shuffled()) {
+            try {
+                val number =
+                    telephonyClient.provisionPhoneNumber(
+                        ProvisionPhoneNumberInput(
+                            searchId = search.id,
+                            phoneNumber = available.phoneNumber,
+                            clientRefId = clientRefId,
+                            ownershipProofToken = ownershipProofToken,
+                        ),
+                    )
+                trackForRelease(number.id)
+                return ProvisionedNumber(search.id, ownershipProofToken, number)
+            } catch (e: SudoTelephonyClient.PhoneNumberException.PhoneNumberUnavailableException) {
+                logger.info("${available.phoneNumber} was taken after the search, trying the next")
+            }
+        }
+        throw AssertionError("Every number offered in $countryCode-$areaCode was already taken")
+    }
+
     /**
      * Registers a provisioned phone number for automatic release after the test, so a run
      * does not consume the user's phone number allowance.
@@ -54,7 +170,7 @@ abstract class BaseIntegrationTest {
         }
 
     /**
-     * Releases every number the test provisioned.
+     * Releases every number the test provisioned, then deletes every Sudo it created.
      *
      * A number cannot be released until its provisioning order completes, so this waits for
      * it to leave [PhoneNumberState.PROVISIONING] first. Failures are logged rather than
@@ -66,6 +182,11 @@ abstract class BaseIntegrationTest {
         runBlocking {
             provisionedPhoneNumberIds.forEach { releaseQuietly(it) }
             provisionedPhoneNumberIds.clear()
+            createdSudos.forEach { sudo ->
+                runCatching { sudoClient.deleteSudo(sudo) }
+                    .onFailure { logger.error("failed to delete Sudo ${sudo.id}: $it") }
+            }
+            createdSudos.clear()
         }
 
     /**
@@ -130,16 +251,20 @@ abstract class BaseIntegrationTest {
         val logger = Logger("tels-test", AndroidUtilsLogDriver(logLevel))
 
         /**
-         * The telephony entitlements the test user needs. Searching for available numbers is
-         * gated behind the service entitlement. The phone number allowance is deliberately
-         * small: [releaseProvisionedPhoneNumbers] returns each number after its test, so a
-         * run that leaks numbers fails here rather than passing quietly.
+         * The entitlements the test user needs. Searching for available numbers is gated
+         * behind the service entitlement. The phone number allowances are deliberately small:
+         * [releaseProvisionedPhoneNumbers] returns each number after its test, so a run that
+         * leaks numbers fails here rather than passing quietly. Every provisioned number
+         * belongs to a Sudo of its own, so the Sudo allowance covers every Sudo a suite
+         * creates, in case a deleted Sudo is not returned to it straight away.
          */
         @JvmStatic
         protected val entitlements =
             listOf(
                 Entitlement("sudoplatform.telephony.serviceUserEntitled", "test", 1),
                 Entitlement("sudoplatform.telephony.phoneNumberMaxPerUser", "test", 2),
+                Entitlement("sudoplatform.telephony.phoneNumberMaxPerSudo", "test", 1),
+                Entitlement("sudoplatform.sudo.max", "test", 10),
             )
 
         @JvmStatic
@@ -147,6 +272,13 @@ abstract class BaseIntegrationTest {
             SudoUserClient
                 .builder(context)
                 .setNamespace(NAMESPACE)
+                .build()
+        }
+
+        @JvmStatic
+        protected val sudoClient by lazy {
+            SudoProfilesClient
+                .builder(context, userClient, Uri.fromFile(context.cacheDir))
                 .build()
         }
 
@@ -265,6 +397,8 @@ abstract class BaseIntegrationTest {
             )
 
             userClient.reset()
+            runTest { sudoClient.reset() }
+            sudoClient.generateEncryptionKey()
 
             telephonyClient =
                 SudoTelephonyClient
@@ -287,6 +421,7 @@ abstract class BaseIntegrationTest {
                     deregister()
                 }
                 telephonyClient.close()
+                sudoClient.reset()
                 userClient.reset()
                 Timber.uprootAll()
             }

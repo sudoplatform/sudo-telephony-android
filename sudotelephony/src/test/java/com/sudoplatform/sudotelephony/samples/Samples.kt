@@ -12,14 +12,18 @@ import com.sudoplatform.sudotelephony.SudoTelephonyClient
 import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
+import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
 import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
-import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForConversationIdInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForPhoneNumberIdInput
+import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersForSudoIdInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneNumbersInput
 import com.sudoplatform.sudotelephony.types.inputs.ProvisionPhoneNumberInput
 import com.sudoplatform.sudotelephony.types.inputs.SearchAvailablePhoneNumbersInput
 import com.sudoplatform.sudotelephony.types.inputs.UpdatePhoneMessagesInput
+import com.sudoplatform.sudouser.SudoPlatformSignInCallback
 import com.sudoplatform.sudouser.SudoUserClient
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -49,9 +53,34 @@ class Samples : BaseTests() {
                 .build()
     }
 
+    // The client holds the callback weakly, so keep it in a field that outlives the client.
+    private lateinit var signInCallback: SudoPlatformSignInCallback
+
+    fun setSignInCallback(
+        telephonyClient: SudoTelephonyClient,
+        sudoUserClient: SudoUserClient,
+    ) {
+        signInCallback =
+            object : SudoPlatformSignInCallback {
+                override suspend fun signIn() {
+                    // Throwing here stops the operation that needed the sign in.
+                    sudoUserClient.signInWithKey()
+                }
+            }
+        telephonyClient.setSignInCallback(signInCallback)
+    }
+
     suspend fun getSupportedCountries(telephonyClient: SudoTelephonyClient) {
         val supportedCountries = telephonyClient.getSupportedCountries()
         // "US", "CA", ... Pass one of these as the country code of a phone number search.
+    }
+
+    suspend fun getConfigurationData(telephonyClient: SudoTelephonyClient) {
+        val config = telephonyClient.getConfigurationData()
+        if (config.sudoOwnershipProofRequired) {
+            // Provisioning must pass a Sudo ownership proof, so every number belongs to a Sudo.
+        }
+        val pageSize = config.listMaxLimit
     }
 
     suspend fun searchAvailablePhoneNumbers(telephonyClient: SudoTelephonyClient) {
@@ -67,12 +96,19 @@ class Samples : BaseTests() {
         val firstAvailable = search.results.firstOrNull()?.phoneNumber
     }
 
-    suspend fun provisionPhoneNumber(telephonyClient: SudoTelephonyClient) {
+    suspend fun provisionPhoneNumber(
+        telephonyClient: SudoTelephonyClient,
+        getOwnershipProof: suspend (audience: String) -> String,
+    ) {
         val search =
             telephonyClient.searchAvailablePhoneNumbers(
                 SearchAvailablePhoneNumbersInput(countryCode = "US", areaCode = "415"),
             )
         val available = search.results.first()
+
+        // A proof makes the number belong to a Sudo. Request it for the telephony audience,
+        // for example with sudoProfilesClient.getOwnershipProof(sudo, audience).
+        val ownershipProof = getOwnershipProof(SudoTelephonyClient.OWNERSHIP_PROOF_AUDIENCE)
 
         // The SDK generates the key pair that seals the number's messages and keeps the
         // private key in the device key store.
@@ -81,8 +117,10 @@ class Samples : BaseTests() {
                 ProvisionPhoneNumberInput(
                     searchId = search.id,
                     phoneNumber = available.phoneNumber,
+                    ownershipProofToken = ownershipProof,
                 ),
             )
+        // phoneNumber.sudoId is the Sudo the proof was issued for.
         // phoneNumber.state is PROVISIONING until the order completes with the provider.
     }
 
@@ -116,6 +154,22 @@ class Samples : BaseTests() {
         } while (nextToken != null)
     }
 
+    suspend fun listPhoneNumbersForSudoId(
+        telephonyClient: SudoTelephonyClient,
+        sudoId: String,
+    ) {
+        var nextToken: String? = null
+        val sudoNumbers = mutableListOf<PhoneNumber>()
+        do {
+            val page =
+                telephonyClient.listPhoneNumbersForSudoId(
+                    ListPhoneNumbersForSudoIdInput(sudoId = sudoId, nextToken = nextToken),
+                )
+            sudoNumbers.addAll(page.items)
+            nextToken = page.nextToken
+        } while (nextToken != null)
+    }
+
     suspend fun getPhoneMessage(
         telephonyClient: SudoTelephonyClient,
         messageId: String,
@@ -126,17 +180,56 @@ class Samples : BaseTests() {
         val body = message?.body
     }
 
-    suspend fun listPhoneMessages(
+    suspend fun listPhoneMessagesForPhoneNumberId(
         telephonyClient: SudoTelephonyClient,
         phoneNumberId: String,
     ) {
-        // Newest first across every conversation; pass conversationId to narrow it.
-        val page =
-            telephonyClient.listPhoneMessages(
-                ListPhoneMessagesInput(phoneNumberId = phoneNumberId),
-            )
-        page.items.forEach { message ->
-            println("${message.remotePhoneNumber}: ${message.body}")
+        // Newest first across every conversation of the number.
+        when (
+            val result =
+                telephonyClient.listPhoneMessagesForPhoneNumberId(
+                    ListPhoneMessagesForPhoneNumberIdInput(phoneNumberId = phoneNumberId),
+                )
+        ) {
+            is ListAPIResult.Success ->
+                result.result.items.forEach { message ->
+                    println("${message.remotePhoneNumber}: ${message.body}")
+                }
+            is ListAPIResult.Partial -> {
+                result.result.items.forEach { message ->
+                    println("${message.remotePhoneNumber}: ${message.body}")
+                }
+                // These could not be unsealed, so they have no text or remote number.
+                result.result.failed.forEach { failed ->
+                    println("${failed.partial.id} unreadable: ${failed.cause.message}")
+                }
+            }
+        }
+    }
+
+    suspend fun listPhoneMessagesForConversationId(
+        telephonyClient: SudoTelephonyClient,
+        conversationId: String,
+    ) {
+        // One conversation, newest first. Messages carry their conversationId.
+        when (
+            val result =
+                telephonyClient.listPhoneMessagesForConversationId(
+                    ListPhoneMessagesForConversationIdInput(conversationId = conversationId),
+                )
+        ) {
+            is ListAPIResult.Success ->
+                result.result.items.forEach { message ->
+                    println("${message.remotePhoneNumber}: ${message.body}")
+                }
+            is ListAPIResult.Partial -> {
+                result.result.items.forEach { message ->
+                    println("${message.remotePhoneNumber}: ${message.body}")
+                }
+                result.result.failed.forEach { failed ->
+                    println("${failed.partial.id} unreadable: ${failed.cause.message}")
+                }
+            }
         }
     }
 
@@ -186,7 +279,7 @@ class Samples : BaseTests() {
                 object : PhoneMessageSubscriber {
                     override fun phoneMessageEvent(event: PhoneMessageEvent) {
                         // The event carries no text; fetch the message to read it.
-                        println("message ${event.id} was ${event.changeType}")
+                        println("message ${event.id} of Sudo ${event.sudoId} was ${event.changeType}")
                     }
 
                     override fun connectionStatusChanged(state: Subscriber.ConnectionState) {

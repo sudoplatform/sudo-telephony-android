@@ -159,4 +159,44 @@ class GetAndListPhoneNumbersUseCaseTest : BaseTests() {
 
             verify(mockPhoneNumberService).list(any())
         }
+
+    @Test
+    fun `ListPhoneNumbersUseCase execute(sudoId) should map its input onto the service input and return the page`() =
+        runTest {
+            val output =
+                ListPhoneNumbersOutput(
+                    items = listOf(EntityDataFactory.phoneNumberEntity()),
+                    nextToken = "mockNextToken",
+                )
+            mockPhoneNumberService.stub {
+                onBlocking { listForSudoId(any()) } doReturn output
+            }
+
+            listUseCase.execute(
+                ListPhoneNumbersForSudoIdUseCaseInput(sudoId = "mockSudoId", limit = 7, nextToken = "token"),
+            ) shouldBe output
+
+            verify(mockPhoneNumberService).listForSudoId(
+                check {
+                    it.sudoId shouldBe "mockSudoId"
+                    it.limit shouldBe 7
+                    it.nextToken shouldBe "token"
+                },
+            )
+        }
+
+    @Test
+    fun `ListPhoneNumbersUseCase execute(sudoId) should propagate a domain exception unchanged`() =
+        runTest {
+            mockPhoneNumberService.stub {
+                onBlocking { listForSudoId(any()) } doThrow
+                    PhoneNumberException.InvalidArgumentException("empty sudoId")
+            }
+
+            shouldThrow<PhoneNumberException.InvalidArgumentException> {
+                listUseCase.execute(ListPhoneNumbersForSudoIdUseCaseInput(sudoId = ""))
+            }
+
+            verify(mockPhoneNumberService).listForSudoId(any())
+        }
 }

@@ -8,20 +8,16 @@ package com.sudoplatform.sudotelephony.client
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.sudoplatform.sudotelephony.BaseIntegrationTest
-import com.sudoplatform.sudotelephony.SudoTelephonyClient
 import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
 import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.PhoneNumberState
-import com.sudoplatform.sudotelephony.types.inputs.ProvisionPhoneNumberInput
-import com.sudoplatform.sudotelephony.types.inputs.SearchAvailablePhoneNumbersInput
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import kotlinx.coroutines.runBlocking
 import org.junit.AfterClass
-import org.junit.Assume.assumeTrue
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,9 +41,6 @@ import java.util.concurrent.TimeUnit
  */
 @RunWith(AndroidJUnit4::class)
 class SubscriptionIntegrationTest : BaseIntegrationTest() {
-    private val countryCode = optionalArgument("COUNTRY_CODE", "US")
-    private val areaCode = optionalArgument("AREA_CODE", "415")
-
     /** Records what a phone number subscriber is told. */
     class RecordingPhoneNumberSubscriber : PhoneNumberSubscriber {
         val connected = CountDownLatch(1)
@@ -133,38 +126,6 @@ class SubscriptionIntegrationTest : BaseIntegrationTest() {
         }
     }
 
-    /** Provisions a number, skipping the test when the provider offers none. */
-    private suspend fun provisionANumber(): PhoneNumber {
-        val search =
-            telephonyClient.searchAvailablePhoneNumbers(
-                SearchAvailablePhoneNumbersInput(
-                    countryCode = countryCode,
-                    areaCode = areaCode,
-                ),
-            )
-        assumeTrue(
-            "No numbers offered in $countryCode-$areaCode on this instance",
-            search.results.isNotEmpty(),
-        )
-
-        for (available in search.results.shuffled()) {
-            try {
-                val number =
-                    telephonyClient.provisionPhoneNumber(
-                        ProvisionPhoneNumberInput(
-                            searchId = search.id,
-                            phoneNumber = available.phoneNumber,
-                        ),
-                    )
-                trackForRelease(number.id)
-                return number
-            } catch (e: SudoTelephonyClient.PhoneNumberException.PhoneNumberUnavailableException) {
-                logger.info("${available.phoneNumber} was taken after the search, trying the next")
-            }
-        }
-        throw AssertionError("Every number offered in $countryCode-$areaCode was already taken")
-    }
-
     @Test
     fun subscribeToPhoneNumbersShouldReportTheConnectionOpening() {
         numberSubscriber.connected.await(UPDATE_TIMEOUT_SECONDS, TimeUnit.SECONDS) shouldBe true
@@ -183,7 +144,7 @@ class SubscriptionIntegrationTest : BaseIntegrationTest() {
         runBlocking {
             // Provisioning completes asynchronously, which is exactly what the subscription
             // exists to report.
-            val provisioned = provisionANumber()
+            val provisioned = provisionANumber().number
             provisioned.state shouldBe PhoneNumberState.PROVISIONING
 
             // Wait for the update that reports the terminal state, not merely the first one.
@@ -209,7 +170,7 @@ class SubscriptionIntegrationTest : BaseIntegrationTest() {
             telephonyClient.subscribeToPhoneNumbers("late-subscriber", late)
             late.connected.await(UPDATE_TIMEOUT_SECONDS, TimeUnit.SECONDS) shouldBe true
 
-            val provisioned = provisionANumber()
+            val provisioned = provisionANumber().number
 
             // Both the original and the late subscriber receive the same update.
             numberSubscriber.awaitUpdate(UPDATE_TIMEOUT_SECONDS) { it.id == provisioned.id } shouldNotBe null
@@ -231,7 +192,7 @@ class SubscriptionIntegrationTest : BaseIntegrationTest() {
 
             // The class-wide subscriber keeps the subscription open, so delivery continues
             // for it while the unsubscribed one hears nothing more.
-            val provisioned = provisionANumber()
+            val provisioned = provisionANumber().number
             numberSubscriber.awaitUpdate(UPDATE_TIMEOUT_SECONDS) { it.id == provisioned.id } shouldNotBe null
 
             transient.updates.none { it.id == provisioned.id } shouldBe true

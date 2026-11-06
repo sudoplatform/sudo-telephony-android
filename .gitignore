@@ -64,5 +64,7 @@ secret.properties
 .mcp-project.json
 
 sudotelephony/src/main/assets/
+sudotelephony/src/androidTest/assets/sudoplatformconfig.json
+sudotelephony/src/androidTest/assets/api.key
 
 .kiro/

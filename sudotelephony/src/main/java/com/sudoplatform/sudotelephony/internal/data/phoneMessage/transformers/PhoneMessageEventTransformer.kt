@@ -7,6 +7,7 @@
 package com.sudoplatform.sudotelephony.internal.data.phoneMessage.transformers
 
 import com.sudoplatform.sudotelephony.graphql.OnPhoneMessageEventSubscription
+import com.sudoplatform.sudotelephony.internal.data.phoneNumber.transformers.OwnerTransformer
 import com.sudoplatform.sudotelephony.internal.util.toDate
 import com.sudoplatform.sudotelephony.types.PhoneMessageChangeType
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
@@ -54,6 +55,7 @@ internal object PhoneMessageEventTransformer {
             changeType = PhoneMessageChangeTypeTransformer.fromGraphQLToApi(data.changeType),
             seen = data.seen,
             owner = data.owner,
+            owners = data.owners.map { OwnerTransformer.fromGraphQLToApi(it) },
             version = data.version,
             updatedAt = data.updatedAtEpochMs.toDate(),
         )

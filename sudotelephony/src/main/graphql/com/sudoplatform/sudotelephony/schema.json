@@ -302,18 +302,22 @@
       },
       {
         "kind": "INPUT_OBJECT",
-        "name": "ListPhoneMessagesInput",
-        "description": "Input for listPhoneMessages.",
+        "name": "ListPhoneMessagesForConversationIdInput",
+        "description": "Input for listPhoneMessagesForConversationId.",
         "isOneOf": false,
         "fields": null,
         "inputFields": [
           {
             "name": "conversationId",
-            "description": "Limits the list to one conversation.",
+            "description": "ID of the conversation whose messages to list. A conversation belongs to one\nphone number.",
             "type": {
-              "kind": "SCALAR",
-              "name": "ID",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "ID",
+                "ofType": null
+              }
             },
             "defaultValue": null,
             "isDeprecated": false,
@@ -321,7 +325,55 @@
           },
           {
             "name": "limit",
-            "description": "Maximum number of items per page.",
+            "description": "Maximum number of items per page. Defaults to 20. A limit above 100 returns\nat most 100 items; a limit below 1 is rejected with InvalidArgumentError.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "nextToken",
+            "description": "The nextToken returned by the previous page. Omit for the first page.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "sortOrder",
+            "description": "Order of the messages. Defaults to DESC, newest first.",
+            "type": {
+              "kind": "ENUM",
+              "name": "SortOrder",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "ListPhoneMessagesForPhoneNumberIdInput",
+        "description": "Input for listPhoneMessagesForPhoneNumberId.",
+        "isOneOf": false,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "limit",
+            "description": "Maximum number of items per page. Defaults to 20. A limit above 100 returns\nat most 100 items; a limit below 1 is rejected with InvalidArgumentError.",
             "type": {
               "kind": "SCALAR",
               "name": "Int",
@@ -366,6 +418,58 @@
               "kind": "ENUM",
               "name": "SortOrder",
               "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "ListPhoneNumbersForSudoIdInput",
+        "description": "Input for listPhoneNumbersForSudoId.",
+        "isOneOf": false,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "limit",
+            "description": "Maximum number of items per page. Defaults to 20. A limit above 100 returns\nat most 100 items; a limit below 1 is rejected with InvalidArgumentError.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "nextToken",
+            "description": "The nextToken returned by the previous page. Omit for the first page.",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "sudoId",
+            "description": "The Sudo whose phone numbers to list. A Sudo of another user lists nothing.",
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "ID",
+                "ofType": null
+              }
             },
             "defaultValue": null,
             "isDeprecated": false,
@@ -513,6 +617,64 @@
                 "name": "PhoneNumber",
                 "ofType": null
               }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "publishPhoneMessageEvent",
+            "description": "Internal. Called by the service's stream processors to notify\nonPhoneMessageEvent subscribers. IAM only.",
+            "args": [
+              {
+                "name": "input",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "PhoneMessageEventInput",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "PhoneMessageEvent",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "publishPhoneNumberUpdate",
+            "description": "Internal. Called by the service's stream processors to notify\nonPhoneNumberUpdate subscribers. IAM only.",
+            "args": [
+              {
+                "name": "input",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "PhoneNumberUpdateInput",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "PhoneNumber",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -887,6 +1049,30 @@
             "deprecationReason": null
           },
           {
+            "name": "owners",
+            "description": "Owners taken from the ownership proofs, which tie the phone number to a Sudo.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Owner",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "phoneNumberId",
             "description": "ID of the phone number that sent or received the message.",
             "args": [],
@@ -1053,6 +1239,30 @@
                 "kind": "SCALAR",
                 "name": "ID",
                 "ofType": null
+              }
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "owners",
+            "description": "Owners taken from the ownership proofs, which tie the phone number to a Sudo.",
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "OwnerInput",
+                    "ofType": null
+                  }
+                }
               }
             },
             "defaultValue": null,
@@ -2275,8 +2485,24 @@
             "deprecationReason": null
           },
           {
-            "name": "listPhoneMessages",
-            "description": "List a phone number's inbox, optionally limited to one conversation.",
+            "name": "getTelephonyConfig",
+            "description": "Returns configuration related to the telephony service configuration.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "TelephonyConfigurationData",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "listPhoneMessagesForConversationId",
+            "description": "List the caller's messages of one conversation, newest first by default. A\nnextToken that the service cannot decode, or that was issued by another list\nor for another conversation, is rejected with InvalidArgumentError.",
             "args": [
               {
                 "name": "input",
@@ -2286,7 +2512,40 @@
                   "name": null,
                   "ofType": {
                     "kind": "INPUT_OBJECT",
-                    "name": "ListPhoneMessagesInput",
+                    "name": "ListPhoneMessagesForConversationIdInput",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "PhoneMessageConnection",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "listPhoneMessagesForPhoneNumberId",
+            "description": "List the caller's messages of one phone number, newest first by default. A\nnextToken that the service cannot decode, or that was issued by another list\nor for another phone number, is rejected with InvalidArgumentError.",
+            "args": [
+              {
+                "name": "input",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "ListPhoneMessagesForPhoneNumberIdInput",
                     "ofType": null
                   }
                 },
@@ -2318,6 +2577,39 @@
                   "kind": "INPUT_OBJECT",
                   "name": "ListPhoneNumbersInput",
                   "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "PhoneNumberConnection",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "listPhoneNumbersForSudoId",
+            "description": "List the caller's PROVISIONING, ACTIVE, and SUSPENDED phone numbers that the\nSudo owns, oldest first. An empty sudoId, or a nextToken that the service\ncannot decode or that was issued to another user, Sudo, or list, is rejected\nwith InvalidArgumentError.",
+            "args": [
+              {
+                "name": "input",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "ListPhoneNumbersForSudoIdInput",
+                    "ofType": null
+                  }
                 },
                 "defaultValue": null,
                 "isDeprecated": false,
@@ -2810,6 +3102,146 @@
               "kind": "OBJECT",
               "name": "PhoneNumber",
               "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "TelephonyConfigurationData",
+        "description": "How the deployment is configured, so that clients can follow its rules\nwithout hard-coding them.",
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "deletePhoneMessagesLimit",
+            "description": "The most message ids one deletePhoneMessages request may name.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "listDefaultLimit",
+            "description": "The page size of the list queries when the request sets no limit.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "listMaxLimit",
+            "description": "The largest page the list queries return. A larger limit returns this many\nitems at most.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "phoneNumberSearchDefaultLimit",
+            "description": "The number of results searchAvailablePhoneNumbers returns when the request\nsets no limit.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "phoneNumberSearchLifetimeMs",
+            "description": "How long, in milliseconds, a phone number search can be passed to\nprovisionPhoneNumber after it is created.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "phoneNumberSearchMaxLimit",
+            "description": "The largest limit searchAvailablePhoneNumbers accepts. A larger limit is\nrejected with LimitExceededError.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "sudoOwnershipProofRequired",
+            "description": "Whether provisionPhoneNumber requires a Sudo ownership proof. When false, a\nnumber provisioned without a proof belongs to the user only.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "updatePhoneMessagesLimit",
+            "description": "The most message ids one updatePhoneMessages request may name.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null

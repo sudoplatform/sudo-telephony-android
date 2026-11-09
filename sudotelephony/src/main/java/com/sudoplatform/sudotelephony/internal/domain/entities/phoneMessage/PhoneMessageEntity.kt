@@ -81,19 +81,23 @@ internal data class PartialPhoneMessageEntity(
 )
 
 /** The kind of a phone message. */
-internal enum class PhoneMessageTypeEntity {
-    SMS,
+internal sealed class PhoneMessageTypeEntity {
+    data object Sms : PhoneMessageTypeEntity()
 
     /** The service reported a kind this version of the SDK does not recognise. */
-    UNKNOWN,
+    data class Unknown(
+        val value: String,
+    ) : PhoneMessageTypeEntity()
 }
 
 /** Whether a phone message was received or sent. */
-internal enum class PhoneMessageDirectionEntity {
-    INBOUND,
+internal sealed class PhoneMessageDirectionEntity {
+    data object Inbound : PhoneMessageDirectionEntity()
 
     /** The service reported a direction this version of the SDK does not recognise. */
-    UNKNOWN,
+    data class Unknown(
+        val value: String,
+    ) : PhoneMessageDirectionEntity()
 }
 
 /** The order in which a list is returned. */

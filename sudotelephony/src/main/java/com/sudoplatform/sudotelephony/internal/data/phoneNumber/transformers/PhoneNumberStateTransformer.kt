@@ -12,7 +12,7 @@ import com.sudoplatform.sudotelephony.graphql.type.PhoneNumberState as PhoneNumb
 
 /**
  * Transformer responsible for transforming between the [PhoneNumberStateGraphQL] GraphQL
- * enum, the [PhoneNumberStateEntity] entity enum, and the public [PhoneNumberState] type.
+ * type, the [PhoneNumberStateEntity] entity type, and the public [PhoneNumberState] type.
  */
 internal object PhoneNumberStateTransformer {
     /**
@@ -20,12 +20,12 @@ internal object PhoneNumberStateTransformer {
      */
     fun fromGraphQLToEntity(data: PhoneNumberStateGraphQL): PhoneNumberStateEntity =
         when (data) {
-            PhoneNumberStateGraphQL.PROVISIONING -> PhoneNumberStateEntity.PROVISIONING
-            PhoneNumberStateGraphQL.ACTIVE -> PhoneNumberStateEntity.ACTIVE
-            PhoneNumberStateGraphQL.SUSPENDED -> PhoneNumberStateEntity.SUSPENDED
-            PhoneNumberStateGraphQL.RELEASED -> PhoneNumberStateEntity.RELEASED
-            PhoneNumberStateGraphQL.FAILED -> PhoneNumberStateEntity.FAILED
-            else -> PhoneNumberStateEntity.UNKNOWN
+            PhoneNumberStateGraphQL.PROVISIONING -> PhoneNumberStateEntity.Provisioning
+            PhoneNumberStateGraphQL.ACTIVE -> PhoneNumberStateEntity.Active
+            PhoneNumberStateGraphQL.SUSPENDED -> PhoneNumberStateEntity.Suspended
+            PhoneNumberStateGraphQL.RELEASED -> PhoneNumberStateEntity.Released
+            PhoneNumberStateGraphQL.FAILED -> PhoneNumberStateEntity.Failed
+            is PhoneNumberStateGraphQL.UNKNOWN__ -> PhoneNumberStateEntity.Unknown(data.rawValue)
         }
 
     /**
@@ -33,11 +33,11 @@ internal object PhoneNumberStateTransformer {
      */
     fun fromEntityToApi(entity: PhoneNumberStateEntity): PhoneNumberState =
         when (entity) {
-            PhoneNumberStateEntity.PROVISIONING -> PhoneNumberState.PROVISIONING
-            PhoneNumberStateEntity.ACTIVE -> PhoneNumberState.ACTIVE
-            PhoneNumberStateEntity.SUSPENDED -> PhoneNumberState.SUSPENDED
-            PhoneNumberStateEntity.RELEASED -> PhoneNumberState.RELEASED
-            PhoneNumberStateEntity.FAILED -> PhoneNumberState.FAILED
-            PhoneNumberStateEntity.UNKNOWN -> PhoneNumberState.UNKNOWN
+            PhoneNumberStateEntity.Provisioning -> PhoneNumberState.Provisioning
+            PhoneNumberStateEntity.Active -> PhoneNumberState.Active
+            PhoneNumberStateEntity.Suspended -> PhoneNumberState.Suspended
+            PhoneNumberStateEntity.Released -> PhoneNumberState.Released
+            PhoneNumberStateEntity.Failed -> PhoneNumberState.Failed
+            is PhoneNumberStateEntity.Unknown -> PhoneNumberState.Unknown(entity.value)
         }
 }

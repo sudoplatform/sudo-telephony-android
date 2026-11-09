@@ -43,26 +43,37 @@ internal data class OwnerEntity(
 /**
  * Lifecycle state of a phone number.
  */
-internal enum class PhoneNumberStateEntity {
-    PROVISIONING,
-    ACTIVE,
-    SUSPENDED,
-    RELEASED,
-    FAILED,
+internal sealed class PhoneNumberStateEntity {
+    data object Provisioning : PhoneNumberStateEntity()
+
+    data object Active : PhoneNumberStateEntity()
+
+    data object Suspended : PhoneNumberStateEntity()
+
+    data object Released : PhoneNumberStateEntity()
+
+    data object Failed : PhoneNumberStateEntity()
 
     /** The service reported a state this version of the SDK does not recognise. */
-    UNKNOWN,
+    data class Unknown(
+        val value: String,
+    ) : PhoneNumberStateEntity()
 }
 
 /**
  * The reason provisioning a phone number failed.
  */
-internal enum class PhoneNumberFailureReasonEntity {
-    NUMBER_UNAVAILABLE,
-    CARRIER_ERROR,
+internal sealed class PhoneNumberFailureReasonEntity {
+    data object NumberUnavailable : PhoneNumberFailureReasonEntity()
+
+    data object CarrierError : PhoneNumberFailureReasonEntity()
+
+    data object OwnerDeleted : PhoneNumberFailureReasonEntity()
 
     /** The service reported a reason this version of the SDK does not recognise. */
-    UNKNOWN,
+    data class Unknown(
+        val value: String,
+    ) : PhoneNumberFailureReasonEntity()
 }
 
 /**

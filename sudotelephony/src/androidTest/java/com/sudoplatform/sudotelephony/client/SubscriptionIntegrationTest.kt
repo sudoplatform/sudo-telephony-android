@@ -53,7 +53,7 @@ class SubscriptionIntegrationTest : BaseIntegrationTest() {
 
         override fun connectionStatusChanged(state: Subscriber.ConnectionState) {
             states.add(state)
-            if (state == Subscriber.ConnectionState.CONNECTED) {
+            if (state == Subscriber.ConnectionState.Connected) {
                 connected.countDown()
             }
         }
@@ -88,7 +88,7 @@ class SubscriptionIntegrationTest : BaseIntegrationTest() {
         }
 
         override fun connectionStatusChanged(state: Subscriber.ConnectionState) {
-            if (state == Subscriber.ConnectionState.CONNECTED) {
+            if (state == Subscriber.ConnectionState.Connected) {
                 connected.countDown()
             }
         }
@@ -129,7 +129,7 @@ class SubscriptionIntegrationTest : BaseIntegrationTest() {
     @Test
     fun subscribeToPhoneNumbersShouldReportTheConnectionOpening() {
         numberSubscriber.connected.await(UPDATE_TIMEOUT_SECONDS, TimeUnit.SECONDS) shouldBe true
-        numberSubscriber.states.contains(Subscriber.ConnectionState.CONNECTED) shouldBe true
+        numberSubscriber.states.contains(Subscriber.ConnectionState.Connected) shouldBe true
     }
 
     @Test
@@ -145,17 +145,17 @@ class SubscriptionIntegrationTest : BaseIntegrationTest() {
             // Provisioning completes asynchronously, which is exactly what the subscription
             // exists to report.
             val provisioned = provisionANumber().number
-            provisioned.state shouldBe PhoneNumberState.PROVISIONING
+            provisioned.state shouldBe PhoneNumberState.Provisioning
 
             // Wait for the update that reports the terminal state, not merely the first one.
             val update =
                 numberSubscriber.awaitUpdate(UPDATE_TIMEOUT_SECONDS) {
-                    it.id == provisioned.id && it.state == PhoneNumberState.ACTIVE
+                    it.id == provisioned.id && it.state == PhoneNumberState.Active
                 }
 
             update shouldNotBe null
             update!!.phoneNumber shouldBe provisioned.phoneNumber
-            update.state shouldBe PhoneNumberState.ACTIVE
+            update.state shouldBe PhoneNumberState.Active
             (update.version > provisioned.version) shouldBe true
         }
 

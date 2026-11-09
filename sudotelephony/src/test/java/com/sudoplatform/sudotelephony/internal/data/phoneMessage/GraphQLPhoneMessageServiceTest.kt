@@ -36,6 +36,8 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.robolectric.RobolectricTestRunner
+import com.sudoplatform.sudotelephony.graphql.type.PhoneMessageDirection as PhoneMessageDirectionGraphQL
+import com.sudoplatform.sudotelephony.graphql.type.PhoneMessageType as PhoneMessageTypeGraphQL
 import com.sudoplatform.sudotelephony.graphql.type.SortOrder as SortOrderGraphQL
 
 /**
@@ -69,8 +71,8 @@ class GraphQLPhoneMessageServiceTest : BaseTests() {
 
             result shouldNotBe null
             result!!.id shouldBe "mockMessageId"
-            result.type shouldBe PhoneMessageTypeEntity.SMS
-            result.direction shouldBe PhoneMessageDirectionEntity.INBOUND
+            result.type shouldBe PhoneMessageTypeEntity.Sms
+            result.direction shouldBe PhoneMessageDirectionEntity.Inbound
             result.localPhoneNumber shouldBe "+14155550123"
             // The data layer performs no decryption.
             result.body shouldBe EntityDataFactory.SEALED_BODY
@@ -146,6 +148,69 @@ class GraphQLPhoneMessageServiceTest : BaseTests() {
             result.nextToken shouldBe "mockNextToken"
 
             verify(mockApiClient).listPhoneMessagesForPhoneNumberIdQuery(any())
+        }
+
+    private fun unrecognisedMessage() =
+        DataFactory.sealedPhoneMessageFragment(
+            id = "unrecognised",
+            type = PhoneMessageTypeGraphQL.safeValueOf("MMS"),
+            direction = PhoneMessageDirectionGraphQL.safeValueOf("OUTBOUND"),
+        )
+
+    @Test
+    fun `get() should keep the values of an unrecognised type and direction`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { getPhoneMessageQuery(any()) } doReturn
+                    DataFactory.getPhoneMessageQueryResponse(unrecognisedMessage())
+            }
+
+            val result = instanceUnderTest.get("unrecognised")
+
+            result!!.type shouldBe PhoneMessageTypeEntity.Unknown("MMS")
+            result.direction shouldBe PhoneMessageDirectionEntity.Unknown("OUTBOUND")
+
+            verify(mockApiClient).getPhoneMessageQuery(eq("unrecognised"))
+        }
+
+    @Test
+    fun `listForPhoneNumberId() should return every message in a page that has unrecognised values`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { listPhoneMessagesForPhoneNumberIdQuery(any()) } doReturn
+                    DataFactory.listPhoneMessagesQueryResponse(
+                        messages = listOf(DataFactory.sealedPhoneMessageFragment(id = "known"), unrecognisedMessage()),
+                    )
+            }
+
+            val result = instanceUnderTest.listForPhoneNumberId(listInput)
+
+            result.items.map { it.id } shouldBe listOf("known", "unrecognised")
+            result.items[1].type shouldBe PhoneMessageTypeEntity.Unknown("MMS")
+            result.items[1].direction shouldBe PhoneMessageDirectionEntity.Unknown("OUTBOUND")
+
+            verify(mockApiClient).listPhoneMessagesForPhoneNumberIdQuery(any())
+        }
+
+    @Test
+    fun `listForConversationId() should return every message in a page that has unrecognised values`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { listPhoneMessagesForConversationIdQuery(any()) } doReturn
+                    DataFactory.listPhoneMessagesForConversationIdQueryResponse(
+                        messages = listOf(DataFactory.sealedPhoneMessageFragment(id = "known"), unrecognisedMessage()),
+                    )
+            }
+
+            val result =
+                instanceUnderTest.listForConversationId(
+                    ListPhoneMessagesForConversationIdInput(conversationId = "mockConversationId"),
+                )
+
+            result.items.map { it.id } shouldBe listOf("known", "unrecognised")
+            result.items[1].type shouldBe PhoneMessageTypeEntity.Unknown("MMS")
+
+            verify(mockApiClient).listPhoneMessagesForConversationIdQuery(any())
         }
 
     @Test

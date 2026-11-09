@@ -13,23 +13,33 @@ interface Subscriber {
     /**
      * Connection state of the subscription.
      */
-    enum class ConnectionState {
+    sealed class ConnectionState {
         /** Connected and receiving updates. */
-        CONNECTED,
+        data object Connected : ConnectionState()
 
         /**
          * Disconnected and will not receive any updates. When disconnected all subscribers
          * are unsubscribed, so the consumer must re-subscribe.
+         *
+         * @property cause [Throwable] Why the subscription ended, or `null` when it ended
+         *  normally. A phone number subscription reports a
+         *  [com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneNumberException] and a
+         *  phone message subscription a
+         *  [com.sudoplatform.sudotelephony.SudoTelephonyClient.PhoneMessageException]:
+         *  `AuthenticationException` when the caller is not authorized, otherwise
+         *  `FailedException`.
          */
-        DISCONNECTED,
+        data class Disconnected(
+            val cause: Throwable? = null,
+        ) : ConnectionState()
     }
 
     /**
      * Notifies the subscriber that the subscription connection state has changed.
      *
      * The subscriber is not notified of changes until the state becomes
-     * [ConnectionState.CONNECTED], and stops receiving them when it becomes
-     * [ConnectionState.DISCONNECTED].
+     * [ConnectionState.Connected], and stops receiving them when it becomes
+     * [ConnectionState.Disconnected]. Unsubscribing is not reported as a disconnection.
      *
      * @param state [ConnectionState] The connection state.
      */

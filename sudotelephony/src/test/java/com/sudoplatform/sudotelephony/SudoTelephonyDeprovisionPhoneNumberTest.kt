@@ -62,7 +62,7 @@ class SudoTelephonyDeprovisionPhoneNumberTest : BaseTests() {
         mock<DeprovisionPhoneNumberUseCase>().stub {
             onBlocking {
                 execute(any())
-            } doReturn EntityDataFactory.phoneNumberEntity(state = PhoneNumberStateEntity.RELEASED)
+            } doReturn EntityDataFactory.phoneNumberEntity(state = PhoneNumberStateEntity.Released)
         }
     }
 
@@ -110,7 +110,7 @@ class SudoTelephonyDeprovisionPhoneNumberTest : BaseTests() {
 
             result shouldNotBe null
             result.id shouldBe "mockPhoneNumberId"
-            result.state shouldBe PhoneNumberState.RELEASED
+            result.state shouldBe PhoneNumberState.Released
 
             verify(mockUseCaseFactory).createDeprovisionPhoneNumberUseCase()
             verify(mockUseCase).execute(any())
@@ -142,7 +142,7 @@ class SudoTelephonyDeprovisionPhoneNumberTest : BaseTests() {
                     execute(any())
                 } doThrow
                     PhoneNumberException.InvalidPhoneNumberStateException(
-                        state = PhoneNumberState.PROVISIONING,
+                        state = PhoneNumberState.Provisioning,
                     )
             }
 
@@ -153,7 +153,7 @@ class SudoTelephonyDeprovisionPhoneNumberTest : BaseTests() {
                     }
                 }
             deferredResult.start()
-            deferredResult.await().state shouldBe PhoneNumberState.PROVISIONING
+            deferredResult.await().state shouldBe PhoneNumberState.Provisioning
 
             verify(mockUseCaseFactory).createDeprovisionPhoneNumberUseCase()
             verify(mockUseCase).execute(any())

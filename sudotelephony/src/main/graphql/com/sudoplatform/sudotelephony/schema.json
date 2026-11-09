@@ -1724,6 +1724,12 @@
             "description": "The number is no longer available, for example because someone else took it\nafter the search.",
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "OWNER_DELETED",
+            "description": "The Sudo or user that owned the number was deleted before its order was placed.",
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "possibleTypes": null

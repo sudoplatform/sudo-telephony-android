@@ -33,7 +33,7 @@ import java.util.UUID
 @RunWith(AndroidJUnit4::class)
 class PhoneMessageIntegrationTest : BaseIntegrationTest() {
     /** Provisions a number and waits for it to become active, skipping when none is offered. */
-    private suspend fun activeNumber(): PhoneNumber = awaitState(provisionANumber().number.id) { it == PhoneNumberState.ACTIVE }
+    private suspend fun activeNumber(): PhoneNumber = awaitState(provisionANumber().number.id) { it == PhoneNumberState.Active }
 
     @Test
     fun listPhoneMessagesForPhoneNumberIdShouldReturnAnEmptyInboxForANewNumber() =

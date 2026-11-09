@@ -119,7 +119,7 @@ class SudoTelephonySearchAvailablePhoneNumbersTest : BaseTests() {
                 expiresAt shouldBe Date(EntityDataFactory.EXPIRES_AT_EPOCH_MS.toLong())
                 results.size shouldBe 1
                 results.first().phoneNumber shouldBe "+14155550123"
-                results.first().numberType shouldBe PhoneNumberType.LOCAL
+                results.first().numberType shouldBe PhoneNumberType.Local
             }
 
             verify(mockUseCaseFactory).createSearchAvailablePhoneNumbersUseCase()

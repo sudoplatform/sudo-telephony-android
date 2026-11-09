@@ -67,24 +67,24 @@ class SubscriptionManagerTest : BaseTests() {
         instanceUnderTest.replaceSubscriber("sub-1", subscriber)
         instanceUnderTest.watcher = watcher
 
-        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.CONNECTED)
+        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.Connected)
 
-        verify(subscriber).connectionStatusChanged(Subscriber.ConnectionState.CONNECTED)
+        verify(subscriber).connectionStatusChanged(Subscriber.ConnectionState.Connected)
         // A healthy connection leaves the watcher in place.
         instanceUnderTest.watcher shouldNotBe null
     }
 
     @Test
-    fun `connectionStatusChanged() should drop every subscriber on DISCONNECTED`() {
+    fun `connectionStatusChanged() should drop every subscriber on Disconnected`() {
         val subscriber = mock<PhoneNumberSubscriber>()
         val watcher = mock<GraphQLOperation<Any>>()
         instanceUnderTest.replaceSubscriber("sub-1", subscriber)
         instanceUnderTest.watcher = watcher
 
-        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.DISCONNECTED)
+        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.Disconnected())
 
         // The subscriber is told, then dropped, so the caller must subscribe again.
-        verify(subscriber).connectionStatusChanged(Subscriber.ConnectionState.DISCONNECTED)
+        verify(subscriber).connectionStatusChanged(Subscriber.ConnectionState.Disconnected())
         verify(watcher).cancel()
         instanceUnderTest.watcher shouldBe null
 
@@ -175,14 +175,14 @@ class SubscriptionManagerTest : BaseTests() {
         val first = mock<PhoneNumberSubscriber>()
         instanceUnderTest.replaceSubscriber("sub-1", first)
         instanceUnderTest.watcher = mock<GraphQLOperation<Any>>()
-        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.CONNECTED)
+        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.Connected)
 
         // The service reports the connection opening once per watcher, so a later subscriber
         // would otherwise never be told and would wait forever.
         val late = mock<PhoneNumberSubscriber>()
         instanceUnderTest.replaceSubscriber("sub-2", late)
 
-        verify(late).connectionStatusChanged(Subscriber.ConnectionState.CONNECTED)
+        verify(late).connectionStatusChanged(Subscriber.ConnectionState.Connected)
     }
 
     @Test
@@ -191,20 +191,20 @@ class SubscriptionManagerTest : BaseTests() {
 
         instanceUnderTest.replaceSubscriber("sub-1", subscriber)
 
-        verify(subscriber, never()).connectionStatusChanged(Subscriber.ConnectionState.CONNECTED)
+        verify(subscriber, never()).connectionStatusChanged(Subscriber.ConnectionState.Connected)
     }
 
     @Test
     fun `replaceSubscriber() should not claim connected after a disconnect`() {
         val first = mock<PhoneNumberSubscriber>()
         instanceUnderTest.replaceSubscriber("sub-1", first)
-        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.CONNECTED)
-        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.DISCONNECTED)
+        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.Connected)
+        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.Disconnected())
 
         val late = mock<PhoneNumberSubscriber>()
         instanceUnderTest.replaceSubscriber("sub-2", late)
 
-        verify(late, never()).connectionStatusChanged(Subscriber.ConnectionState.CONNECTED)
+        verify(late, never()).connectionStatusChanged(Subscriber.ConnectionState.Connected)
     }
 
     @Test
@@ -212,7 +212,7 @@ class SubscriptionManagerTest : BaseTests() {
         val first = mock<PhoneNumberSubscriber>()
         instanceUnderTest.replaceSubscriber("sub-1", first)
         instanceUnderTest.watcher = mock<GraphQLOperation<Any>>()
-        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.CONNECTED)
+        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.Connected)
 
         // Removing the last subscriber cancels the watcher, so the next subscriber has to
         // wait for a fresh one to open.
@@ -221,7 +221,7 @@ class SubscriptionManagerTest : BaseTests() {
         val late = mock<PhoneNumberSubscriber>()
         instanceUnderTest.replaceSubscriber("sub-2", late)
 
-        verify(late, never()).connectionStatusChanged(Subscriber.ConnectionState.CONNECTED)
+        verify(late, never()).connectionStatusChanged(Subscriber.ConnectionState.Connected)
     }
 
     @Test
@@ -229,12 +229,12 @@ class SubscriptionManagerTest : BaseTests() {
         val first = mock<PhoneNumberSubscriber>()
         instanceUnderTest.replaceSubscriber("sub-1", first)
         instanceUnderTest.watcher = mock<GraphQLOperation<Any>>()
-        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.CONNECTED)
+        instanceUnderTest.connectionStatusChanged(Subscriber.ConnectionState.Connected)
 
         instanceUnderTest.removeAllSubscribers()
 
         val late = mock<PhoneNumberSubscriber>()
         instanceUnderTest.replaceSubscriber("sub-2", late)
-        verify(late, never()).connectionStatusChanged(Subscriber.ConnectionState.CONNECTED)
+        verify(late, never()).connectionStatusChanged(Subscriber.ConnectionState.Connected)
     }
 }

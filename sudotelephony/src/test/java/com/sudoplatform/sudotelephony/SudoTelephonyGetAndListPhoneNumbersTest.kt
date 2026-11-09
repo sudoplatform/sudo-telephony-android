@@ -115,7 +115,7 @@ class SudoTelephonyGetAndListPhoneNumbersTest : BaseTests() {
 
             result shouldNotBe null
             result!!.id shouldBe "mockPhoneNumberId"
-            result.state shouldBe PhoneNumberState.PROVISIONING
+            result.state shouldBe PhoneNumberState.Provisioning
 
             verify(mockUseCaseFactory).createGetPhoneNumberUseCase()
             verify(mockGetUseCase).execute(check { it shouldBe "mockPhoneNumberId" })

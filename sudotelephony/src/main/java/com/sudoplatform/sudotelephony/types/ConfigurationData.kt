@@ -8,6 +8,7 @@ package com.sudoplatform.sudotelephony.types
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import java.time.Duration
 
 /**
  * How the telephony service deployment is configured, so that a client can follow its rules
@@ -19,8 +20,8 @@ import kotlinx.parcelize.Parcelize
  * @property phoneNumberSearchDefaultLimit [Int] The number of results a phone number search
  *  returns when no limit is set.
  * @property phoneNumberSearchMaxLimit [Int] The largest limit a phone number search accepts.
- * @property phoneNumberSearchLifetimeMs [Int] How long, in milliseconds, a phone number search
- *  can be used to provision a number after it is created.
+ * @property phoneNumberSearchLifetime [Duration] How long a phone number search can be used to
+ *  provision a number after it is created.
  * @property listDefaultLimit [Int] The page size of the list methods when no limit is set.
  * @property listMaxLimit [Int] The largest page the list methods return.
  * @property deletePhoneMessagesLimit [Int] The most messages one call to delete phone messages
@@ -33,7 +34,7 @@ data class ConfigurationData(
     val sudoOwnershipProofRequired: Boolean,
     val phoneNumberSearchDefaultLimit: Int,
     val phoneNumberSearchMaxLimit: Int,
-    val phoneNumberSearchLifetimeMs: Int,
+    val phoneNumberSearchLifetime: Duration,
     val listDefaultLimit: Int,
     val listMaxLimit: Int,
     val deletePhoneMessagesLimit: Int,

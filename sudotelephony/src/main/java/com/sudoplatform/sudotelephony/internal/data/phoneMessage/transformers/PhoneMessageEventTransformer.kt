@@ -21,10 +21,10 @@ internal object PhoneMessageChangeTypeTransformer {
     /** Transform the GraphQL [data] to its public type. */
     fun fromGraphQLToApi(data: PhoneMessageChangeTypeGraphQL): PhoneMessageChangeType =
         when (data) {
-            PhoneMessageChangeTypeGraphQL.RECEIVED -> PhoneMessageChangeType.RECEIVED
-            PhoneMessageChangeTypeGraphQL.UPDATED -> PhoneMessageChangeType.UPDATED
-            PhoneMessageChangeTypeGraphQL.DELETED -> PhoneMessageChangeType.DELETED
-            else -> PhoneMessageChangeType.UNKNOWN
+            PhoneMessageChangeTypeGraphQL.RECEIVED -> PhoneMessageChangeType.Received
+            PhoneMessageChangeTypeGraphQL.UPDATED -> PhoneMessageChangeType.Updated
+            PhoneMessageChangeTypeGraphQL.DELETED -> PhoneMessageChangeType.Deleted
+            is PhoneMessageChangeTypeGraphQL.UNKNOWN__ -> PhoneMessageChangeType.Unknown(data.rawValue)
         }
 }
 

@@ -12,8 +12,8 @@ import com.sudoplatform.sudotelephony.types.PhoneNumber
  * Subscriber for notifications about changes to the caller's [PhoneNumber]s.
  *
  * This is how a caller learns that a number being provisioned became
- * [com.sudoplatform.sudotelephony.types.PhoneNumberState.ACTIVE] or
- * [com.sudoplatform.sudotelephony.types.PhoneNumberState.FAILED].
+ * [com.sudoplatform.sudotelephony.types.PhoneNumberState.Active] or
+ * [com.sudoplatform.sudotelephony.types.PhoneNumberState.Failed].
  */
 interface PhoneNumberSubscriber : Subscriber {
     /**

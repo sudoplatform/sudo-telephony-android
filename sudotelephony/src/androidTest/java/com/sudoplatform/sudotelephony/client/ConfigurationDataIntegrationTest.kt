@@ -12,6 +12,7 @@ import io.kotlintest.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.time.Duration
 
 /**
  * Test the operation of
@@ -27,7 +28,7 @@ class ConfigurationDataIntegrationTest : BaseIntegrationTest() {
 
             (config.phoneNumberSearchDefaultLimit in 1..config.phoneNumberSearchMaxLimit) shouldBe true
             (config.listDefaultLimit in 1..config.listMaxLimit) shouldBe true
-            (config.phoneNumberSearchLifetimeMs > 0) shouldBe true
+            (config.phoneNumberSearchLifetime > Duration.ZERO) shouldBe true
             (config.deletePhoneMessagesLimit > 0) shouldBe true
             (config.updatePhoneMessagesLimit > 0) shouldBe true
         }

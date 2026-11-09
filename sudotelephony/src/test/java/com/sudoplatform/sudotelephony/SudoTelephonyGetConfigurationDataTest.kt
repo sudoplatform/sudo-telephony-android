@@ -31,6 +31,7 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.robolectric.RobolectricTestRunner
+import java.time.Duration
 
 /**
  * Test the correct operation of [SudoTelephonyClient.getConfigurationData] using mocks and
@@ -92,7 +93,7 @@ class SudoTelephonyGetConfigurationDataTest : BaseTests() {
                     sudoOwnershipProofRequired = true,
                     phoneNumberSearchDefaultLimit = 10,
                     phoneNumberSearchMaxLimit = 50,
-                    phoneNumberSearchLifetimeMs = 900_000,
+                    phoneNumberSearchLifetime = Duration.ofMinutes(15),
                     listDefaultLimit = 20,
                     listMaxLimit = 100,
                     deletePhoneMessagesLimit = 100,

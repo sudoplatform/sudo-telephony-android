@@ -120,8 +120,8 @@ class SudoTelephonyProvisionPhoneNumberTest : BaseTests() {
                 phoneNumber shouldBe "+14155550123"
                 countryCode shouldBe "US"
                 areaCode shouldBe "415"
-                numberType shouldBe PhoneNumberType.LOCAL
-                state shouldBe PhoneNumberState.PROVISIONING
+                numberType shouldBe PhoneNumberType.Local
+                state shouldBe PhoneNumberState.Provisioning
                 keyRingId shouldBe "sudo-telephony.mockOwner"
                 keyIds shouldBe listOf("mockKeyId")
                 owners.first().issuer shouldBe "sudoplatform.sudoservice"

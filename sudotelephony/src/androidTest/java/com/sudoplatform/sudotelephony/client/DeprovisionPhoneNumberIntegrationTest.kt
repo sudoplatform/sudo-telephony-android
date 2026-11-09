@@ -33,7 +33,7 @@ class DeprovisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
      * @return The released [PhoneNumber].
      */
     private suspend fun releaseWhenActive(id: String): PhoneNumber {
-        awaitState(id) { it == PhoneNumberState.ACTIVE }
+        awaitState(id) { it == PhoneNumberState.Active }
         return telephonyClient.deprovisionPhoneNumber(id)
     }
 
@@ -47,7 +47,7 @@ class DeprovisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
             released shouldNotBe null
             released.id shouldBe provisioned.id
             released.phoneNumber shouldBe provisioned.phoneNumber
-            released.state shouldBe PhoneNumberState.RELEASED
+            released.state shouldBe PhoneNumberState.Released
             // The allowance is returned at once, so the record is updated immediately.
             (released.version > provisioned.version) shouldBe true
         }
@@ -62,7 +62,7 @@ class DeprovisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
             val again = telephonyClient.deprovisionPhoneNumber(provisioned.id)
 
             again.id shouldBe released.id
-            again.state shouldBe PhoneNumberState.RELEASED
+            again.state shouldBe PhoneNumberState.Released
         }
 
     @Test
@@ -70,7 +70,7 @@ class DeprovisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
         runBlocking {
             val provisioned = provisionANumber().number
             // The number is reported as PROVISIONING the instant it is created.
-            provisioned.state shouldBe PhoneNumberState.PROVISIONING
+            provisioned.state shouldBe PhoneNumberState.Provisioning
 
             val exception =
                 shouldThrow<SudoTelephonyClient.PhoneNumberException.InvalidPhoneNumberStateException> {
@@ -78,7 +78,7 @@ class DeprovisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
                 }
 
             // The service reports the state that blocked the release.
-            exception.state shouldBe PhoneNumberState.PROVISIONING
+            exception.state shouldBe PhoneNumberState.Provisioning
         }
 
     @Test

@@ -13,51 +13,76 @@ import java.util.Date
 /**
  * Lifecycle state of a phone number.
  */
-enum class PhoneNumberState {
+sealed class PhoneNumberState : Parcelable {
     /** The order for the number is in progress with the telephony provider. */
-    PROVISIONING,
+    @Parcelize
+    data object Provisioning : PhoneNumberState()
 
     /** The number is active and can send and receive messages. */
-    ACTIVE,
+    @Parcelize
+    data object Active : PhoneNumberState()
 
     /**
      * The user's entitlements no longer cover the number. It keeps receiving messages until
      * the grace period ends, then it is released.
      */
-    SUSPENDED,
+    @Parcelize
+    data object Suspended : PhoneNumberState()
 
     /** The number has been returned to the telephony provider. */
-    RELEASED,
+    @Parcelize
+    data object Released : PhoneNumberState()
 
     /** Provisioning failed. See [PhoneNumber.failureReason]. */
-    FAILED,
+    @Parcelize
+    data object Failed : PhoneNumberState()
 
-    /** The service reported a state this version of the SDK does not recognise. */
-    UNKNOWN,
+    /**
+     * The service reported a state this version of the SDK does not recognise.
+     *
+     * @property value [String] The state the service reported.
+     */
+    @Parcelize
+    data class Unknown(
+        val value: String,
+    ) : PhoneNumberState()
 }
 
 /**
  * The reason provisioning a phone number failed.
  */
-enum class PhoneNumberFailureReason {
+sealed class PhoneNumberFailureReason : Parcelable {
     /**
      * The number is no longer available, for example because someone else took it after the
      * search.
      */
-    NUMBER_UNAVAILABLE,
+    @Parcelize
+    data object NumberUnavailable : PhoneNumberFailureReason()
 
     /** The telephony provider or carrier rejected the order. */
-    CARRIER_ERROR,
+    @Parcelize
+    data object CarrierError : PhoneNumberFailureReason()
 
-    /** The service reported a reason this version of the SDK does not recognise. */
-    UNKNOWN,
+    /** The Sudo or user that owned the number was deleted before its order was placed. */
+    @Parcelize
+    data object OwnerDeleted : PhoneNumberFailureReason()
+
+    /**
+     * The service reported a reason this version of the SDK does not recognise.
+     *
+     * @property value [String] The reason the service reported.
+     */
+    @Parcelize
+    data class Unknown(
+        val value: String,
+    ) : PhoneNumberFailureReason()
 }
 
 /**
  * A phone number provisioned for a user.
  *
- * Provisioning returns the number in [PhoneNumberState.PROVISIONING]; it becomes
- * [PhoneNumberState.ACTIVE] or [PhoneNumberState.FAILED] once the order completes with the
+ * Provisioning returns the number in [PhoneNumberState.Provisioning]; it becomes
+ * [PhoneNumberState.Active] or [PhoneNumberState.Failed] once the order completes with the
  * telephony provider.
  *
  * @property id [String] ID of the phone number.
@@ -74,9 +99,9 @@ enum class PhoneNumberFailureReason {
  *  codes.
  * @property state [PhoneNumberState] Lifecycle state of the number.
  * @property failureReason [PhoneNumberFailureReason] Why provisioning failed. Set only when
- *  [state] is [PhoneNumberState.FAILED].
+ *  [state] is [PhoneNumberState.Failed].
  * @property gracePeriodEndsAt [Date] When the number will be released. Set only when [state]
- *  is [PhoneNumberState.SUSPENDED].
+ *  is [PhoneNumberState.Suspended].
  * @property clientRefId [String] Client-supplied reference passed when provisioning, returned
  *  unchanged.
  * @property version [Int] Version of this object, incremented on each update.

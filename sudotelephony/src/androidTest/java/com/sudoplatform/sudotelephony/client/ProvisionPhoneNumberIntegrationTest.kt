@@ -46,12 +46,12 @@ class ProvisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
             provisioned.id.isNotBlank() shouldBe true
             provisioned.phoneNumber.startsWith("+1$areaCode") shouldBe true
             provisioned.countryCode shouldBe countryCode
-            provisioned.numberType shouldBe PhoneNumberType.LOCAL
+            provisioned.numberType shouldBe PhoneNumberType.Local
             provisioned.owner.isNotBlank() shouldBe true
             provisioned.identityId.isNotBlank() shouldBe true
             provisioned.version shouldBe 1
             // Provisioning is asynchronous, so the number starts out being ordered.
-            provisioned.state shouldBe PhoneNumberState.PROVISIONING
+            provisioned.state shouldBe PhoneNumberState.Provisioning
             provisioned.failureReason shouldBe null
         }
 

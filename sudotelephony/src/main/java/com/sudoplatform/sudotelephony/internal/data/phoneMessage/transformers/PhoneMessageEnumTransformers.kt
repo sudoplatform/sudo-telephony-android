@@ -18,42 +18,42 @@ import com.sudoplatform.sudotelephony.graphql.type.SortOrder as SortOrderGraphQL
 
 /**
  * Transformer responsible for transforming between the [PhoneMessageTypeGraphQL] GraphQL
- * enum, the [PhoneMessageTypeEntity] entity enum, and the public [PhoneMessageType] type.
+ * type, the [PhoneMessageTypeEntity] entity type, and the public [PhoneMessageType] type.
  */
 internal object PhoneMessageTypeTransformer {
     /** Transform the GraphQL [data] to its entity type. */
     fun fromGraphQLToEntity(data: PhoneMessageTypeGraphQL): PhoneMessageTypeEntity =
         when (data) {
-            PhoneMessageTypeGraphQL.SMS -> PhoneMessageTypeEntity.SMS
-            else -> PhoneMessageTypeEntity.UNKNOWN
+            PhoneMessageTypeGraphQL.SMS -> PhoneMessageTypeEntity.Sms
+            is PhoneMessageTypeGraphQL.UNKNOWN__ -> PhoneMessageTypeEntity.Unknown(data.rawValue)
         }
 
     /** Transform the [entity] to its public [PhoneMessageType] type. */
     fun fromEntityToApi(entity: PhoneMessageTypeEntity): PhoneMessageType =
         when (entity) {
-            PhoneMessageTypeEntity.SMS -> PhoneMessageType.SMS
-            PhoneMessageTypeEntity.UNKNOWN -> PhoneMessageType.UNKNOWN
+            PhoneMessageTypeEntity.Sms -> PhoneMessageType.Sms
+            is PhoneMessageTypeEntity.Unknown -> PhoneMessageType.Unknown(entity.value)
         }
 }
 
 /**
  * Transformer responsible for transforming between the [PhoneMessageDirectionGraphQL] GraphQL
- * enum, the [PhoneMessageDirectionEntity] entity enum, and the public
+ * type, the [PhoneMessageDirectionEntity] entity type, and the public
  * [PhoneMessageDirection] type.
  */
 internal object PhoneMessageDirectionTransformer {
     /** Transform the GraphQL [data] to its entity type. */
     fun fromGraphQLToEntity(data: PhoneMessageDirectionGraphQL): PhoneMessageDirectionEntity =
         when (data) {
-            PhoneMessageDirectionGraphQL.INBOUND -> PhoneMessageDirectionEntity.INBOUND
-            else -> PhoneMessageDirectionEntity.UNKNOWN
+            PhoneMessageDirectionGraphQL.INBOUND -> PhoneMessageDirectionEntity.Inbound
+            is PhoneMessageDirectionGraphQL.UNKNOWN__ -> PhoneMessageDirectionEntity.Unknown(data.rawValue)
         }
 
     /** Transform the [entity] to its public [PhoneMessageDirection] type. */
     fun fromEntityToApi(entity: PhoneMessageDirectionEntity): PhoneMessageDirection =
         when (entity) {
-            PhoneMessageDirectionEntity.INBOUND -> PhoneMessageDirection.INBOUND
-            PhoneMessageDirectionEntity.UNKNOWN -> PhoneMessageDirection.UNKNOWN
+            PhoneMessageDirectionEntity.Inbound -> PhoneMessageDirection.Inbound
+            is PhoneMessageDirectionEntity.Unknown -> PhoneMessageDirection.Unknown(entity.value)
         }
 }
 

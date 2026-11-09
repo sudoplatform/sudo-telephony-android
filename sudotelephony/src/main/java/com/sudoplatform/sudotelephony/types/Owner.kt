@@ -7,6 +7,7 @@
 package com.sudoplatform.sudotelephony.types
 
 import android.os.Parcelable
+import com.sudoplatform.sudotelephony.SudoTelephonyClient
 import kotlinx.parcelize.Parcelize
 
 /**
@@ -14,7 +15,7 @@ import kotlinx.parcelize.Parcelize
  *
  * @property id [String] ID of the owner, for example a Sudo ID.
  * @property issuer [String] Issuer of the ownership proof, for example
- *  `sudoplatform.sudoservice`.
+ *  [SudoTelephonyClient.SUDO_OWNER_ISSUER].
  */
 @Parcelize
 data class Owner(
@@ -22,7 +23,5 @@ data class Owner(
     val issuer: String,
 ) : Parcelable
 
-private const val SUDO_SERVICE_ISSUER = "sudoplatform.sudoservice"
-
 /** ID of the Sudo among these owners, or `null` when none of them is a Sudo. */
-internal fun List<Owner>.sudoId(): String? = firstOrNull { it.issuer == SUDO_SERVICE_ISSUER }?.id
+fun List<Owner>.sudoId(): String? = firstOrNull { it.issuer == SudoTelephonyClient.SUDO_OWNER_ISSUER }?.id

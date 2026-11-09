@@ -51,7 +51,7 @@ class DeprovisionPhoneNumberUseCaseTest : BaseTests() {
     fun `execute() should return the released number when successful`() =
         runTest {
             val entity =
-                EntityDataFactory.phoneNumberEntity(state = PhoneNumberStateEntity.RELEASED)
+                EntityDataFactory.phoneNumberEntity(state = PhoneNumberStateEntity.Released)
             mockPhoneNumberService.stub {
                 onBlocking { deprovision(any()) } doReturn entity
             }
@@ -67,7 +67,7 @@ class DeprovisionPhoneNumberUseCaseTest : BaseTests() {
             mockPhoneNumberService.stub {
                 onBlocking { deprovision(any()) } doThrow
                     PhoneNumberException.InvalidPhoneNumberStateException(
-                        state = PhoneNumberState.PROVISIONING,
+                        state = PhoneNumberState.Provisioning,
                     )
             }
 
@@ -75,7 +75,7 @@ class DeprovisionPhoneNumberUseCaseTest : BaseTests() {
                 shouldThrow<PhoneNumberException.InvalidPhoneNumberStateException> {
                     instanceUnderTest.execute("mockPhoneNumberId")
                 }
-            exception.state shouldBe PhoneNumberState.PROVISIONING
+            exception.state shouldBe PhoneNumberState.Provisioning
 
             verify(mockPhoneNumberService).deprovision(eq("mockPhoneNumberId"))
         }

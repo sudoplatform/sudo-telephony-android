@@ -166,8 +166,8 @@ class SudoTelephonyPhoneMessageTest : BaseTests() {
             with(result!!) {
                 id shouldBe "mockMessageId"
                 phoneNumberId shouldBe "mockPhoneNumberId"
-                type shouldBe PhoneMessageType.SMS
-                direction shouldBe PhoneMessageDirection.INBOUND
+                type shouldBe PhoneMessageType.Sms
+                direction shouldBe PhoneMessageDirection.Inbound
                 body shouldBe "Hello there"
                 remotePhoneNumber shouldBe "+14155559876"
                 localPhoneNumber shouldBe "+14155550123"

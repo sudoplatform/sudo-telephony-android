@@ -54,7 +54,7 @@ internal open class SubscriptionManager<T, S : Subscriber> {
         }
 
         if (alreadyConnected) {
-            subscriber.connectionStatusChanged(Subscriber.ConnectionState.CONNECTED)
+            subscriber.connectionStatusChanged(Subscriber.ConnectionState.Connected)
         }
     }
 
@@ -99,9 +99,9 @@ internal open class SubscriptionManager<T, S : Subscriber> {
             // re-enters the manager cannot deadlock.
             subscribersToNotify = ArrayList(subscribers.values)
 
-            connected = state == Subscriber.ConnectionState.CONNECTED
+            connected = state == Subscriber.ConnectionState.Connected
 
-            if (state == Subscriber.ConnectionState.DISCONNECTED) {
+            if (state is Subscriber.ConnectionState.Disconnected) {
                 subscribers.clear()
                 watcher?.cancel()
                 watcher = null

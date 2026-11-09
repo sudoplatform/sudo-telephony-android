@@ -14,6 +14,7 @@ import com.sudoplatform.sudotelephony.api.ApiClient
 import com.sudoplatform.sudotelephony.graphql.OnPhoneMessageEventSubscription
 import com.sudoplatform.sudotelephony.graphql.OnPhoneNumberUpdateSubscription
 import com.sudoplatform.sudotelephony.internal.data.common.StringConstants
+import com.sudoplatform.sudotelephony.internal.data.common.transformers.ErrorTransformer
 import com.sudoplatform.sudotelephony.internal.data.phoneMessage.transformers.PhoneMessageEventTransformer
 import com.sudoplatform.sudotelephony.internal.data.phoneNumber.transformers.PhoneNumberTransformer
 import com.sudoplatform.sudouser.SudoUserClient
@@ -147,7 +148,7 @@ internal class SubscriptionService(
         object {
             val onSubscriptionEstablished: (GraphQLResponse<OnPhoneNumberUpdateSubscription.Data>) -> Unit = {
                 phoneNumberSubscriptionManager.connectionStatusChanged(
-                    Subscriber.ConnectionState.CONNECTED,
+                    Subscriber.ConnectionState.Connected,
                 )
             }
             val onSubscription: (GraphQLResponse<OnPhoneNumberUpdateSubscription.Data>) -> Unit = {
@@ -161,7 +162,7 @@ internal class SubscriptionService(
             }
             val onSubscriptionCompleted = {
                 phoneNumberSubscriptionManager.connectionStatusChanged(
-                    Subscriber.ConnectionState.DISCONNECTED,
+                    Subscriber.ConnectionState.Disconnected(),
                 )
             }
             val onFailure: (ApiException) -> Unit = {
@@ -169,7 +170,7 @@ internal class SubscriptionService(
                 // A failure to establish or maintain the subscription must be reported, or a
                 // caller waiting to be told the subscription opened would wait forever.
                 phoneNumberSubscriptionManager.connectionStatusChanged(
-                    Subscriber.ConnectionState.DISCONNECTED,
+                    Subscriber.ConnectionState.Disconnected(ErrorTransformer.interpretPhoneNumberSubscriptionException(it)),
                 )
             }
         }
@@ -178,7 +179,7 @@ internal class SubscriptionService(
         object {
             val onSubscriptionEstablished: (GraphQLResponse<OnPhoneMessageEventSubscription.Data>) -> Unit = {
                 phoneMessageSubscriptionManager.connectionStatusChanged(
-                    Subscriber.ConnectionState.CONNECTED,
+                    Subscriber.ConnectionState.Connected,
                 )
             }
             val onSubscription: (GraphQLResponse<OnPhoneMessageEventSubscription.Data>) -> Unit = {
@@ -191,7 +192,7 @@ internal class SubscriptionService(
             }
             val onSubscriptionCompleted = {
                 phoneMessageSubscriptionManager.connectionStatusChanged(
-                    Subscriber.ConnectionState.DISCONNECTED,
+                    Subscriber.ConnectionState.Disconnected(),
                 )
             }
             val onFailure: (ApiException) -> Unit = {
@@ -199,7 +200,7 @@ internal class SubscriptionService(
                 // A failure to establish or maintain the subscription must be reported, or a
                 // caller waiting to be told the subscription opened would wait forever.
                 phoneMessageSubscriptionManager.connectionStatusChanged(
-                    Subscriber.ConnectionState.DISCONNECTED,
+                    Subscriber.ConnectionState.Disconnected(ErrorTransformer.interpretPhoneMessageSubscriptionException(it)),
                 )
             }
         }

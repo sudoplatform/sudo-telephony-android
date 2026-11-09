@@ -16,8 +16,10 @@ import com.sudoplatform.sudotelephony.data.EntityDataFactory
 import com.sudoplatform.sudotelephony.internal.data.common.StringConstants
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ListPhoneNumbersForSudoIdInput
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ListPhoneNumbersInput
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.PhoneNumberFailureReasonEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.PhoneNumberStateEntity
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.ProvisionPhoneNumberRequest
+import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumberSearch.PhoneNumberTypeEntity
 import com.sudoplatform.sudotelephony.types.PhoneNumberState
 import com.sudoplatform.sudouser.exceptions.HTTP_STATUS_CODE_KEY
 import io.kotlintest.shouldBe
@@ -40,6 +42,7 @@ import org.robolectric.RobolectricTestRunner
 import com.sudoplatform.sudotelephony.graphql.type.KeyFormat as KeyFormatGraphQL
 import com.sudoplatform.sudotelephony.graphql.type.PhoneNumberFailureReason as PhoneNumberFailureReasonGraphQL
 import com.sudoplatform.sudotelephony.graphql.type.PhoneNumberState as PhoneNumberStateGraphQL
+import com.sudoplatform.sudotelephony.graphql.type.PhoneNumberType as PhoneNumberTypeGraphQL
 
 /**
  * Test the correct operation of [GraphQLPhoneNumberService]: the mutation carries the
@@ -209,7 +212,7 @@ class GraphQLPhoneNumberServiceTest : BaseTests() {
 
             val result = instanceUnderTest.provision(request)
 
-            result.state shouldBe PhoneNumberStateEntity.FAILED
+            result.state shouldBe PhoneNumberStateEntity.Failed
 
             verify(mockApiClient).provisionPhoneNumberMutation(any())
         }
@@ -410,7 +413,7 @@ class GraphQLPhoneNumberServiceTest : BaseTests() {
 
             result shouldNotBe null
             result.id shouldBe "mockPhoneNumberId"
-            result.state shouldBe PhoneNumberStateEntity.RELEASED
+            result.state shouldBe PhoneNumberStateEntity.Released
 
             verify(mockApiClient).deprovisionPhoneNumberMutation(eq("mockPhoneNumberId"))
         }
@@ -458,7 +461,7 @@ class GraphQLPhoneNumberServiceTest : BaseTests() {
                 shouldThrow<PhoneNumberException.InvalidPhoneNumberStateException> {
                     instanceUnderTest.deprovision("mockPhoneNumberId")
                 }
-            exception.state shouldBe PhoneNumberState.PROVISIONING
+            exception.state shouldBe PhoneNumberState.Provisioning
 
             verify(mockApiClient).deprovisionPhoneNumberMutation(any())
         }
@@ -480,7 +483,7 @@ class GraphQLPhoneNumberServiceTest : BaseTests() {
         }
 
     @Test
-    fun `deprovision() should map an unrecognised reported state to UNKNOWN`() =
+    fun `deprovision() should map an unrecognised reported state to Unknown with its value`() =
         runTest {
             stubDeprovisionError(
                 mapOf(
@@ -493,7 +496,7 @@ class GraphQLPhoneNumberServiceTest : BaseTests() {
                 shouldThrow<PhoneNumberException.InvalidPhoneNumberStateException> {
                     instanceUnderTest.deprovision("mockPhoneNumberId")
                 }
-            exception.state shouldBe PhoneNumberState.UNKNOWN
+            exception.state shouldBe PhoneNumberState.Unknown("SOMETHING_NEW")
 
             verify(mockApiClient).deprovisionPhoneNumberMutation(any())
         }
@@ -538,6 +541,52 @@ class GraphQLPhoneNumberServiceTest : BaseTests() {
 
             verify(mockApiClient).getPhoneNumberQuery(eq("mockPhoneNumberId"))
         }
+
+    @Test
+    fun `get() should return a number that failed because its owner was deleted`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { getPhoneNumberQuery(any()) } doReturn
+                    DataFactory.getPhoneNumberQueryResponse(
+                        DataFactory.phoneNumberFragment(
+                            state = PhoneNumberStateGraphQL.FAILED,
+                            failureReason = PhoneNumberFailureReasonGraphQL.OWNER_DELETED,
+                        ),
+                    )
+            }
+
+            val result = instanceUnderTest.get("mockPhoneNumberId")
+
+            result!!.state shouldBe PhoneNumberStateEntity.Failed
+            result.failureReason shouldBe PhoneNumberFailureReasonEntity.OwnerDeleted
+
+            verify(mockApiClient).getPhoneNumberQuery(eq("mockPhoneNumberId"))
+        }
+
+    @Test
+    fun `get() should keep the values of unrecognised enum values`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { getPhoneNumberQuery(any()) } doReturn
+                    DataFactory.getPhoneNumberQueryResponse(unrecognisedFragment())
+            }
+
+            val result = instanceUnderTest.get("mockPhoneNumberId")
+
+            result!!.state shouldBe PhoneNumberStateEntity.Unknown("NEW_STATE")
+            result.failureReason shouldBe PhoneNumberFailureReasonEntity.Unknown("NEW_REASON")
+            result.numberType shouldBe PhoneNumberTypeEntity.Unknown("NEW_TYPE")
+
+            verify(mockApiClient).getPhoneNumberQuery(eq("mockPhoneNumberId"))
+        }
+
+    private fun unrecognisedFragment() =
+        DataFactory.phoneNumberFragment(
+            id = "unrecognised",
+            state = PhoneNumberStateGraphQL.safeValueOf("NEW_STATE"),
+            failureReason = PhoneNumberFailureReasonGraphQL.safeValueOf("NEW_REASON"),
+            numberType = PhoneNumberTypeGraphQL.safeValueOf("NEW_TYPE"),
+        )
 
     @Test
     fun `get() should return null when no number with the id belongs to the caller`() =
@@ -605,6 +654,25 @@ class GraphQLPhoneNumberServiceTest : BaseTests() {
             result.items.size shouldBe 2
             result.items.map { it.id } shouldBe listOf("first", "second")
             result.nextToken shouldBe "mockNextToken"
+
+            verify(mockApiClient).listPhoneNumbersQuery(any())
+        }
+
+    @Test
+    fun `list() should return every number in a page that has unrecognised enum values`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { listPhoneNumbersQuery(any()) } doReturn
+                    DataFactory.listPhoneNumbersQueryResponse(
+                        numbers = listOf(DataFactory.phoneNumberFragment(id = "known"), unrecognisedFragment()),
+                    )
+            }
+
+            val result = instanceUnderTest.list(ListPhoneNumbersInput())
+
+            result.items.map { it.id } shouldBe listOf("known", "unrecognised")
+            result.items[1].state shouldBe PhoneNumberStateEntity.Unknown("NEW_STATE")
+            result.items[1].failureReason shouldBe PhoneNumberFailureReasonEntity.Unknown("NEW_REASON")
 
             verify(mockApiClient).listPhoneNumbersQuery(any())
         }
@@ -728,6 +796,32 @@ class GraphQLPhoneNumberServiceTest : BaseTests() {
 
             result.items.map { it.id } shouldBe listOf("first", "second")
             result.nextToken shouldBe "mockNextToken"
+
+            verify(mockApiClient).listPhoneNumbersForSudoIdQuery(any())
+        }
+
+    @Test
+    fun `listForSudoId() should return OWNER_DELETED and unrecognised enum values`() =
+        runTest {
+            mockApiClient.stub {
+                onBlocking { listPhoneNumbersForSudoIdQuery(any()) } doReturn
+                    DataFactory.listPhoneNumbersForSudoIdQueryResponse(
+                        numbers =
+                            listOf(
+                                DataFactory.phoneNumberFragment(
+                                    id = "ownerDeleted",
+                                    state = PhoneNumberStateGraphQL.FAILED,
+                                    failureReason = PhoneNumberFailureReasonGraphQL.OWNER_DELETED,
+                                ),
+                                unrecognisedFragment(),
+                            ),
+                    )
+            }
+
+            val result = instanceUnderTest.listForSudoId(ListPhoneNumbersForSudoIdInput(sudoId = "mockSudoId"))
+
+            result.items[0].failureReason shouldBe PhoneNumberFailureReasonEntity.OwnerDeleted
+            result.items[1].state shouldBe PhoneNumberStateEntity.Unknown("NEW_STATE")
 
             verify(mockApiClient).listPhoneNumbersForSudoIdQuery(any())
         }

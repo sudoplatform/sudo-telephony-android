@@ -50,9 +50,9 @@ class PhoneMessageEventTransformerTest {
         event.id shouldBe "mockMessageId"
         event.phoneNumberId shouldBe "mockPhoneNumberId"
         event.conversationId shouldBe "mockConversationId"
-        event.type shouldBe PhoneMessageType.SMS
-        event.direction shouldBe PhoneMessageDirection.INBOUND
-        event.changeType shouldBe PhoneMessageChangeType.RECEIVED
+        event.type shouldBe PhoneMessageType.Sms
+        event.direction shouldBe PhoneMessageDirection.Inbound
+        event.changeType shouldBe PhoneMessageChangeType.Received
         event.seen shouldBe false
         event.owner shouldBe "mockOwner"
         event.owners shouldBe listOf(Owner(id = "mockSudoId", issuer = "sudoplatform.sudoservice"))
@@ -68,7 +68,7 @@ class PhoneMessageEventTransformerTest {
                 graphQLEvent(changeType = PhoneMessageChangeTypeGraphQL.UPDATED, seen = true),
             )
 
-        event.changeType shouldBe PhoneMessageChangeType.UPDATED
+        event.changeType shouldBe PhoneMessageChangeType.Updated
         event.seen shouldBe true
     }
 
@@ -83,16 +83,16 @@ class PhoneMessageEventTransformerTest {
     @Test
     fun `PhoneMessageChangeTypeTransformer should map every change in the schema`() {
         PhoneMessageChangeTypeTransformer.fromGraphQLToApi(PhoneMessageChangeTypeGraphQL.RECEIVED) shouldBe
-            PhoneMessageChangeType.RECEIVED
+            PhoneMessageChangeType.Received
         PhoneMessageChangeTypeTransformer.fromGraphQLToApi(PhoneMessageChangeTypeGraphQL.UPDATED) shouldBe
-            PhoneMessageChangeType.UPDATED
+            PhoneMessageChangeType.Updated
         PhoneMessageChangeTypeTransformer.fromGraphQLToApi(PhoneMessageChangeTypeGraphQL.DELETED) shouldBe
-            PhoneMessageChangeType.DELETED
+            PhoneMessageChangeType.Deleted
     }
 
     @Test
-    fun `PhoneMessageChangeTypeTransformer should map an unrecognised change to UNKNOWN`() {
-        PhoneMessageChangeTypeTransformer.fromGraphQLToApi(PhoneMessageChangeTypeGraphQL.UNKNOWN__) shouldBe
-            PhoneMessageChangeType.UNKNOWN
+    fun `PhoneMessageChangeTypeTransformer should map an unrecognised change to Unknown with its value`() {
+        PhoneMessageChangeTypeTransformer.fromGraphQLToApi(PhoneMessageChangeTypeGraphQL.safeValueOf("SOMETHING_NEW")) shouldBe
+            PhoneMessageChangeType.Unknown("SOMETHING_NEW")
     }
 }

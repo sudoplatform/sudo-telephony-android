@@ -12,12 +12,20 @@ import kotlinx.parcelize.Parcelize
 /**
  * The kind of a phone number.
  */
-enum class PhoneNumberType {
+sealed class PhoneNumberType : Parcelable {
     /** A geographic number tied to an area code. */
-    LOCAL,
+    @Parcelize
+    data object Local : PhoneNumberType()
 
-    /** The service reported a kind this version of the SDK does not recognise. */
-    UNKNOWN,
+    /**
+     * The service reported a kind this version of the SDK does not recognise.
+     *
+     * @property value [String] The kind the service reported.
+     */
+    @Parcelize
+    data class Unknown(
+        val value: String,
+    ) : PhoneNumberType()
 }
 
 /**

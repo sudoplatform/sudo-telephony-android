@@ -36,9 +36,9 @@ class PhoneNumberTransformerTest {
         entity.keyIds shouldBe listOf("mockKeyId")
         entity.phoneNumber shouldBe "+14155550123"
         entity.countryCode shouldBe "US"
-        entity.numberType shouldBe PhoneNumberTypeEntity.LOCAL
+        entity.numberType shouldBe PhoneNumberTypeEntity.Local
         entity.areaCode shouldBe "415"
-        entity.state shouldBe PhoneNumberStateEntity.PROVISIONING
+        entity.state shouldBe PhoneNumberStateEntity.Provisioning
         entity.failureReason shouldBe null
         entity.gracePeriodEndsAt shouldBe null
         entity.clientRefId shouldBe null
@@ -74,8 +74,8 @@ class PhoneNumberTransformerTest {
                 ),
             )
 
-        entity.state shouldBe PhoneNumberStateEntity.FAILED
-        entity.failureReason shouldBe PhoneNumberFailureReasonEntity.NUMBER_UNAVAILABLE
+        entity.state shouldBe PhoneNumberStateEntity.Failed
+        entity.failureReason shouldBe PhoneNumberFailureReasonEntity.NumberUnavailable
     }
 
     @Test
@@ -100,9 +100,9 @@ class PhoneNumberTransformerTest {
         api.keyIds shouldBe listOf("mockKeyId")
         api.phoneNumber shouldBe "+14155550123"
         api.countryCode shouldBe "US"
-        api.numberType shouldBe PhoneNumberType.LOCAL
+        api.numberType shouldBe PhoneNumberType.Local
         api.areaCode shouldBe "415"
-        api.state shouldBe PhoneNumberState.PROVISIONING
+        api.state shouldBe PhoneNumberState.Provisioning
         api.failureReason shouldBe null
         api.version shouldBe 1
         api.createdAt shouldBe Date(EntityDataFactory.CREATED_AT_EPOCH_MS.toLong())
@@ -117,11 +117,11 @@ class PhoneNumberTransformerTest {
     fun `PhoneNumberStateTransformer should map every state in both directions`() {
         val pairs =
             listOf(
-                Triple(PhoneNumberStateGraphQL.PROVISIONING, PhoneNumberStateEntity.PROVISIONING, PhoneNumberState.PROVISIONING),
-                Triple(PhoneNumberStateGraphQL.ACTIVE, PhoneNumberStateEntity.ACTIVE, PhoneNumberState.ACTIVE),
-                Triple(PhoneNumberStateGraphQL.SUSPENDED, PhoneNumberStateEntity.SUSPENDED, PhoneNumberState.SUSPENDED),
-                Triple(PhoneNumberStateGraphQL.RELEASED, PhoneNumberStateEntity.RELEASED, PhoneNumberState.RELEASED),
-                Triple(PhoneNumberStateGraphQL.FAILED, PhoneNumberStateEntity.FAILED, PhoneNumberState.FAILED),
+                Triple(PhoneNumberStateGraphQL.PROVISIONING, PhoneNumberStateEntity.Provisioning, PhoneNumberState.Provisioning),
+                Triple(PhoneNumberStateGraphQL.ACTIVE, PhoneNumberStateEntity.Active, PhoneNumberState.Active),
+                Triple(PhoneNumberStateGraphQL.SUSPENDED, PhoneNumberStateEntity.Suspended, PhoneNumberState.Suspended),
+                Triple(PhoneNumberStateGraphQL.RELEASED, PhoneNumberStateEntity.Released, PhoneNumberState.Released),
+                Triple(PhoneNumberStateGraphQL.FAILED, PhoneNumberStateEntity.Failed, PhoneNumberState.Failed),
             )
 
         pairs.forEach { (graphQL, entity, api) ->
@@ -131,32 +131,36 @@ class PhoneNumberTransformerTest {
     }
 
     @Test
-    fun `PhoneNumberStateTransformer should map an unrecognised state to UNKNOWN`() {
-        PhoneNumberStateTransformer.fromGraphQLToEntity(PhoneNumberStateGraphQL.UNKNOWN__) shouldBe
-            PhoneNumberStateEntity.UNKNOWN
-        PhoneNumberStateTransformer.fromEntityToApi(PhoneNumberStateEntity.UNKNOWN) shouldBe
-            PhoneNumberState.UNKNOWN
+    fun `PhoneNumberStateTransformer should map an unrecognised state to Unknown with its value`() {
+        PhoneNumberStateTransformer.fromGraphQLToEntity(PhoneNumberStateGraphQL.safeValueOf("SOMETHING_NEW")) shouldBe
+            PhoneNumberStateEntity.Unknown("SOMETHING_NEW")
+        PhoneNumberStateTransformer.fromEntityToApi(PhoneNumberStateEntity.Unknown("SOMETHING_NEW")) shouldBe
+            PhoneNumberState.Unknown("SOMETHING_NEW")
     }
 
     @Test
     fun `PhoneNumberFailureReasonTransformer should map every reason in both directions`() {
         PhoneNumberFailureReasonTransformer.fromGraphQLToEntity(PhoneNumberFailureReasonGraphQL.NUMBER_UNAVAILABLE) shouldBe
-            PhoneNumberFailureReasonEntity.NUMBER_UNAVAILABLE
+            PhoneNumberFailureReasonEntity.NumberUnavailable
         PhoneNumberFailureReasonTransformer.fromGraphQLToEntity(PhoneNumberFailureReasonGraphQL.CARRIER_ERROR) shouldBe
-            PhoneNumberFailureReasonEntity.CARRIER_ERROR
-        PhoneNumberFailureReasonTransformer.fromEntityToApi(PhoneNumberFailureReasonEntity.NUMBER_UNAVAILABLE) shouldBe
-            PhoneNumberFailureReason.NUMBER_UNAVAILABLE
-        PhoneNumberFailureReasonTransformer.fromEntityToApi(PhoneNumberFailureReasonEntity.CARRIER_ERROR) shouldBe
-            PhoneNumberFailureReason.CARRIER_ERROR
+            PhoneNumberFailureReasonEntity.CarrierError
+        PhoneNumberFailureReasonTransformer.fromGraphQLToEntity(PhoneNumberFailureReasonGraphQL.OWNER_DELETED) shouldBe
+            PhoneNumberFailureReasonEntity.OwnerDeleted
+        PhoneNumberFailureReasonTransformer.fromEntityToApi(PhoneNumberFailureReasonEntity.NumberUnavailable) shouldBe
+            PhoneNumberFailureReason.NumberUnavailable
+        PhoneNumberFailureReasonTransformer.fromEntityToApi(PhoneNumberFailureReasonEntity.CarrierError) shouldBe
+            PhoneNumberFailureReason.CarrierError
+        PhoneNumberFailureReasonTransformer.fromEntityToApi(PhoneNumberFailureReasonEntity.OwnerDeleted) shouldBe
+            PhoneNumberFailureReason.OwnerDeleted
     }
 
     @Test
     fun `PhoneNumberFailureReasonTransformer should map null and unrecognised values`() {
         PhoneNumberFailureReasonTransformer.fromGraphQLToEntity(null) shouldBe null
         PhoneNumberFailureReasonTransformer.fromEntityToApi(null) shouldBe null
-        PhoneNumberFailureReasonTransformer.fromGraphQLToEntity(PhoneNumberFailureReasonGraphQL.UNKNOWN__) shouldBe
-            PhoneNumberFailureReasonEntity.UNKNOWN
-        PhoneNumberFailureReasonTransformer.fromEntityToApi(PhoneNumberFailureReasonEntity.UNKNOWN) shouldBe
-            PhoneNumberFailureReason.UNKNOWN
+        PhoneNumberFailureReasonTransformer.fromGraphQLToEntity(PhoneNumberFailureReasonGraphQL.safeValueOf("SOMETHING_NEW")) shouldBe
+            PhoneNumberFailureReasonEntity.Unknown("SOMETHING_NEW")
+        PhoneNumberFailureReasonTransformer.fromEntityToApi(PhoneNumberFailureReasonEntity.Unknown("SOMETHING_NEW")) shouldBe
+            PhoneNumberFailureReason.Unknown("SOMETHING_NEW")
     }
 }

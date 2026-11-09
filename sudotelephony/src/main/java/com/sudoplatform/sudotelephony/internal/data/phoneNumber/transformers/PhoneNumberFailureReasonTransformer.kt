@@ -12,7 +12,7 @@ import com.sudoplatform.sudotelephony.graphql.type.PhoneNumberFailureReason as P
 
 /**
  * Transformer responsible for transforming between the [PhoneNumberFailureReasonGraphQL]
- * GraphQL enum, the [PhoneNumberFailureReasonEntity] entity enum, and the public
+ * GraphQL type, the [PhoneNumberFailureReasonEntity] entity type, and the public
  * [PhoneNumberFailureReason] type.
  */
 internal object PhoneNumberFailureReasonTransformer {
@@ -23,9 +23,10 @@ internal object PhoneNumberFailureReasonTransformer {
     fun fromGraphQLToEntity(data: PhoneNumberFailureReasonGraphQL?): PhoneNumberFailureReasonEntity? =
         when (data) {
             null -> null
-            PhoneNumberFailureReasonGraphQL.NUMBER_UNAVAILABLE -> PhoneNumberFailureReasonEntity.NUMBER_UNAVAILABLE
-            PhoneNumberFailureReasonGraphQL.CARRIER_ERROR -> PhoneNumberFailureReasonEntity.CARRIER_ERROR
-            else -> PhoneNumberFailureReasonEntity.UNKNOWN
+            PhoneNumberFailureReasonGraphQL.NUMBER_UNAVAILABLE -> PhoneNumberFailureReasonEntity.NumberUnavailable
+            PhoneNumberFailureReasonGraphQL.CARRIER_ERROR -> PhoneNumberFailureReasonEntity.CarrierError
+            PhoneNumberFailureReasonGraphQL.OWNER_DELETED -> PhoneNumberFailureReasonEntity.OwnerDeleted
+            is PhoneNumberFailureReasonGraphQL.UNKNOWN__ -> PhoneNumberFailureReasonEntity.Unknown(data.rawValue)
         }
 
     /**
@@ -35,8 +36,9 @@ internal object PhoneNumberFailureReasonTransformer {
     fun fromEntityToApi(entity: PhoneNumberFailureReasonEntity?): PhoneNumberFailureReason? =
         when (entity) {
             null -> null
-            PhoneNumberFailureReasonEntity.NUMBER_UNAVAILABLE -> PhoneNumberFailureReason.NUMBER_UNAVAILABLE
-            PhoneNumberFailureReasonEntity.CARRIER_ERROR -> PhoneNumberFailureReason.CARRIER_ERROR
-            PhoneNumberFailureReasonEntity.UNKNOWN -> PhoneNumberFailureReason.UNKNOWN
+            PhoneNumberFailureReasonEntity.NumberUnavailable -> PhoneNumberFailureReason.NumberUnavailable
+            PhoneNumberFailureReasonEntity.CarrierError -> PhoneNumberFailureReason.CarrierError
+            PhoneNumberFailureReasonEntity.OwnerDeleted -> PhoneNumberFailureReason.OwnerDeleted
+            is PhoneNumberFailureReasonEntity.Unknown -> PhoneNumberFailureReason.Unknown(entity.value)
         }
 }

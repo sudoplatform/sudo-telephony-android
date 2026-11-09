@@ -46,12 +46,12 @@ class GetAndListPhoneNumbersIntegrationTest : BaseIntegrationTest() {
     fun getPhoneNumberShouldReportTheNumberLeavingProvisioning() =
         runBlocking {
             val provisioned = provisionANumber().number
-            provisioned.state shouldBe PhoneNumberState.PROVISIONING
+            provisioned.state shouldBe PhoneNumberState.Provisioning
 
             // The order completes asynchronously, so the state is read until it settles.
-            val settled = awaitState(provisioned.id) { it != PhoneNumberState.PROVISIONING }
+            val settled = awaitState(provisioned.id) { it != PhoneNumberState.Provisioning }
 
-            settled.state shouldBe PhoneNumberState.ACTIVE
+            settled.state shouldBe PhoneNumberState.Active
             settled.failureReason shouldBe null
             (settled.version > provisioned.version) shouldBe true
         }
@@ -66,14 +66,14 @@ class GetAndListPhoneNumbersIntegrationTest : BaseIntegrationTest() {
     fun getPhoneNumberShouldStillReturnAReleasedNumber() =
         runBlocking {
             val provisioned = provisionANumber().number
-            awaitState(provisioned.id) { it != PhoneNumberState.PROVISIONING }
+            awaitState(provisioned.id) { it != PhoneNumberState.Provisioning }
             telephonyClient.deprovisionPhoneNumber(provisioned.id)
 
             // Unlike listPhoneNumbers, a released number is still readable by id.
             val fetched = telephonyClient.getPhoneNumber(provisioned.id)
 
             fetched shouldNotBe null
-            fetched!!.state shouldBe PhoneNumberState.RELEASED
+            fetched!!.state shouldBe PhoneNumberState.Released
         }
 
     @Test
@@ -112,7 +112,7 @@ class GetAndListPhoneNumbersIntegrationTest : BaseIntegrationTest() {
     fun listPhoneNumbersShouldNotIncludeAReleasedNumber() =
         runBlocking {
             val provisioned = provisionANumber().number
-            awaitState(provisioned.id) { it != PhoneNumberState.PROVISIONING }
+            awaitState(provisioned.id) { it != PhoneNumberState.Provisioning }
             telephonyClient.deprovisionPhoneNumber(provisioned.id)
 
             val page = telephonyClient.listPhoneNumbers()

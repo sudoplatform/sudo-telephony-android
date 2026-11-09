@@ -265,8 +265,10 @@ class Samples : BaseTests() {
                     }
 
                     override fun connectionStatusChanged(state: Subscriber.ConnectionState) {
-                        // On DISCONNECTED every subscriber is dropped, so subscribe again.
-                        println("phone number subscription $state")
+                        // On Disconnected every subscriber is dropped, so subscribe again.
+                        if (state is Subscriber.ConnectionState.Disconnected) {
+                            println("phone number subscription ended: ${state.cause}")
+                        }
                     }
                 },
         )

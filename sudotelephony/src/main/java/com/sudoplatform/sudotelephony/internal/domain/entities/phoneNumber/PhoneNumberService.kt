@@ -74,7 +74,7 @@ internal interface PhoneNumberService {
      * @param request [ProvisionPhoneNumberRequest] The number to provision and the key to
      *  seal its messages with.
      * @return The [PhoneNumberEntity], which starts in
-     *  [PhoneNumberStateEntity.PROVISIONING].
+     *  [PhoneNumberStateEntity.Provisioning].
      */
     suspend fun provision(request: ProvisionPhoneNumberRequest): PhoneNumberEntity
 
@@ -82,7 +82,7 @@ internal interface PhoneNumberService {
      * Release one of the caller's phone numbers.
      *
      * @param id [String] ID of the phone number to release.
-     * @return The [PhoneNumberEntity] in [PhoneNumberStateEntity.RELEASED].
+     * @return The [PhoneNumberEntity] in [PhoneNumberStateEntity.Released].
      */
     suspend fun deprovision(id: String): PhoneNumberEntity
 

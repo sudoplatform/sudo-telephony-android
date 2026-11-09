@@ -13,18 +13,28 @@ import java.util.Date
 /**
  * The change a [PhoneMessageEvent] is reporting.
  */
-enum class PhoneMessageChangeType {
+sealed class PhoneMessageChangeType : Parcelable {
     /** A new message arrived. */
-    RECEIVED,
+    @Parcelize
+    data object Received : PhoneMessageChangeType()
 
     /** A message changed, for example its seen state. */
-    UPDATED,
+    @Parcelize
+    data object Updated : PhoneMessageChangeType()
 
     /** A message was deleted. */
-    DELETED,
+    @Parcelize
+    data object Deleted : PhoneMessageChangeType()
 
-    /** The service reported a change this version of the SDK does not recognise. */
-    UNKNOWN,
+    /**
+     * The service reported a change this version of the SDK does not recognise.
+     *
+     * @property value [String] The change the service reported.
+     */
+    @Parcelize
+    data class Unknown(
+        val value: String,
+    ) : PhoneMessageChangeType()
 }
 
 /**

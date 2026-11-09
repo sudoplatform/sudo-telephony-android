@@ -37,10 +37,11 @@ internal data class AvailablePhoneNumberEntity(
 /**
  * The kind of phone number.
  */
-internal enum class PhoneNumberTypeEntity {
-    /** A geographic number tied to an area code. */
-    LOCAL,
+internal sealed class PhoneNumberTypeEntity {
+    data object Local : PhoneNumberTypeEntity()
 
     /** The service reported a kind this version of the SDK does not recognise. */
-    UNKNOWN,
+    data class Unknown(
+        val value: String,
+    ) : PhoneNumberTypeEntity()
 }

@@ -69,6 +69,12 @@ interface SudoTelephonyClient : AutoCloseable {
          * The service rejects a proof issued for any other audience.
          */
         const val OWNERSHIP_PROOF_AUDIENCE = "sudoplatform.telephony.phone-number"
+
+        /**
+         * Issuer of the ownership proofs that make a Sudo the owner of a resource. An [Owner]
+         * with this issuer is a Sudo, and its ID is the Sudo ID.
+         */
+        const val SUDO_OWNER_ISSUER = "sudoplatform.sudoservice"
     }
 
     /**
@@ -140,7 +146,7 @@ interface SudoTelephonyClient : AutoCloseable {
      * key with the service, and keeps the private key in the device key store. Losing that
      * private key makes the number's messages unreadable.
      *
-     * The returned number is in [com.sudoplatform.sudotelephony.types.PhoneNumberState.PROVISIONING];
+     * The returned number is in [com.sudoplatform.sudotelephony.types.PhoneNumberState.Provisioning];
      * the order completes asynchronously with the telephony provider.
      *
      * To make the number belong to a Sudo, pass a Sudo ownership proof issued for
@@ -162,13 +168,13 @@ interface SudoTelephonyClient : AutoCloseable {
      * handed back to the telephony provider in the background. Releasing a number that is
      * already released returns it unchanged, so the call is safe to repeat.
      *
-     * Only an [com.sudoplatform.sudotelephony.types.PhoneNumberState.ACTIVE] or
-     * [com.sudoplatform.sudotelephony.types.PhoneNumberState.SUSPENDED] number can be
+     * Only an [com.sudoplatform.sudotelephony.types.PhoneNumberState.Active] or
+     * [com.sudoplatform.sudotelephony.types.PhoneNumberState.Suspended] number can be
      * released; releasing one that is still being provisioned fails with
      * [PhoneNumberException.InvalidPhoneNumberStateException].
      *
      * @param id [String] ID of the phone number to release.
-     * @return The [PhoneNumber] in [com.sudoplatform.sudotelephony.types.PhoneNumberState.RELEASED].
+     * @return The [PhoneNumber] in [com.sudoplatform.sudotelephony.types.PhoneNumberState.Released].
      * @throws PhoneNumberException if the number could not be released.
      * @sample com.sudoplatform.sudotelephony.samples.Samples.deprovisionPhoneNumber
      */
@@ -177,11 +183,11 @@ interface SudoTelephonyClient : AutoCloseable {
 
     /**
      * Retrieve one of the caller's phone numbers, in any state including
-     * [com.sudoplatform.sudotelephony.types.PhoneNumberState.RELEASED] and
-     * [com.sudoplatform.sudotelephony.types.PhoneNumberState.FAILED].
+     * [com.sudoplatform.sudotelephony.types.PhoneNumberState.Released] and
+     * [com.sudoplatform.sudotelephony.types.PhoneNumberState.Failed].
      *
      * Use this to follow a number through provisioning: it is reported as
-     * [com.sudoplatform.sudotelephony.types.PhoneNumberState.PROVISIONING] until the order
+     * [com.sudoplatform.sudotelephony.types.PhoneNumberState.Provisioning] until the order
      * completes with the telephony provider.
      *
      * @param id [String] ID of the phone number to retrieve.
@@ -320,14 +326,15 @@ interface SudoTelephonyClient : AutoCloseable {
      * Subscribe to changes to the caller's phone numbers.
      *
      * This is how a caller learns that a number being provisioned became
-     * [com.sudoplatform.sudotelephony.types.PhoneNumberState.ACTIVE] or
-     * [com.sudoplatform.sudotelephony.types.PhoneNumberState.FAILED], rather than polling
+     * [com.sudoplatform.sudotelephony.types.PhoneNumberState.Active] or
+     * [com.sudoplatform.sudotelephony.types.PhoneNumberState.Failed], rather than polling
      * [getPhoneNumber].
      *
      * Subscribing again with the same [subscriptionId] replaces the previous subscriber. The
      * subscriber is told when the connection opens and closes; on
-     * [Subscriber.ConnectionState.DISCONNECTED] every subscriber is dropped and the caller
-     * must subscribe again.
+     * [Subscriber.ConnectionState.Disconnected] every subscriber is dropped and the caller
+     * must subscribe again. Unsubscribe with [unsubscribeFromPhoneNumbers] and the same
+     * [subscriptionId], or with [unsubscribeAllFromPhoneNumbers].
      *
      * @param subscriptionId [String] A unique identifier for this subscription.
      * @param subscriber [PhoneNumberSubscriber] Notified when one of the caller's numbers
@@ -357,7 +364,11 @@ interface SudoTelephonyClient : AutoCloseable {
      * An event carries no message content; fetch the message with [getPhoneMessage] to read
      * its text.
      *
-     * Subscribing again with the same [subscriptionId] replaces the previous subscriber.
+     * Subscribing again with the same [subscriptionId] replaces the previous subscriber. The
+     * subscriber is told when the connection opens and closes; on
+     * [Subscriber.ConnectionState.Disconnected] every subscriber is dropped and the caller
+     * must subscribe again. Unsubscribe with [unsubscribeFromPhoneMessages] and the same
+     * [subscriptionId], or with [unsubscribeAllFromPhoneMessages].
      *
      * @param subscriptionId [String] A unique identifier for this subscription.
      * @param subscriber [PhoneMessageSubscriber] Notified when one of the caller's messages
@@ -782,8 +793,8 @@ interface SudoTelephonyClient : AutoCloseable {
 
         /**
          * The phone number is in a state that does not allow the operation. Only an
-         * [com.sudoplatform.sudotelephony.types.PhoneNumberState.ACTIVE] or
-         * [com.sudoplatform.sudotelephony.types.PhoneNumberState.SUSPENDED] number can be
+         * [com.sudoplatform.sudotelephony.types.PhoneNumberState.Active] or
+         * [com.sudoplatform.sudotelephony.types.PhoneNumberState.Suspended] number can be
          * released.
          *
          * @property state [PhoneNumberState] The number's current state, when the service

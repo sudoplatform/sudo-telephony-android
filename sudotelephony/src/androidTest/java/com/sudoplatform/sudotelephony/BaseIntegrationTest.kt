@@ -173,7 +173,7 @@ abstract class BaseIntegrationTest {
      * Releases every number the test provisioned, then deletes every Sudo it created.
      *
      * A number cannot be released until its provisioning order completes, so this waits for
-     * it to leave [PhoneNumberState.PROVISIONING] first. Failures are logged rather than
+     * it to leave [PhoneNumberState.Provisioning] first. Failures are logged rather than
      * thrown: cleanup must not turn a passing test red, and a FAILED number can never be
      * released.
      */
@@ -220,11 +220,11 @@ abstract class BaseIntegrationTest {
         try {
             // Only an ACTIVE or SUSPENDED number can be released, and a released one needs
             // no further work.
-            val phoneNumber = awaitState(id) { it != PhoneNumberState.PROVISIONING }
-            if (phoneNumber.state == PhoneNumberState.RELEASED) {
+            val phoneNumber = awaitState(id) { it != PhoneNumberState.Provisioning }
+            if (phoneNumber.state == PhoneNumberState.Released) {
                 return
             }
-            if (phoneNumber.state == PhoneNumberState.FAILED) {
+            if (phoneNumber.state == PhoneNumberState.Failed) {
                 logger.error("cannot release $id, it failed to provision")
                 return
             }

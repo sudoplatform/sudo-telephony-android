@@ -36,7 +36,7 @@ class PhoneNumberSearchTransformerTest {
         with(entity.results.first()) {
             phoneNumber shouldBe "+14155550123"
             countryCode shouldBe "US"
-            numberType shouldBe PhoneNumberTypeEntity.LOCAL
+            numberType shouldBe PhoneNumberTypeEntity.Local
             locality shouldBe "San Francisco"
             region shouldBe "CA"
         }
@@ -114,7 +114,7 @@ class PhoneNumberSearchTransformerTest {
         with(api.results.first()) {
             phoneNumber shouldBe "+14155550123"
             countryCode shouldBe "US"
-            numberType shouldBe PhoneNumberType.LOCAL
+            numberType shouldBe PhoneNumberType.Local
             locality shouldBe "San Francisco"
             region shouldBe "CA"
         }
@@ -123,16 +123,16 @@ class PhoneNumberSearchTransformerTest {
     @Test
     fun `PhoneNumberTypeTransformer should map LOCAL in both directions`() {
         PhoneNumberTypeTransformer.fromGraphQLToEntity(PhoneNumberTypeGraphQL.LOCAL) shouldBe
-            PhoneNumberTypeEntity.LOCAL
-        PhoneNumberTypeTransformer.fromEntityToApi(PhoneNumberTypeEntity.LOCAL) shouldBe
-            PhoneNumberType.LOCAL
+            PhoneNumberTypeEntity.Local
+        PhoneNumberTypeTransformer.fromEntityToApi(PhoneNumberTypeEntity.Local) shouldBe
+            PhoneNumberType.Local
     }
 
     @Test
-    fun `PhoneNumberTypeTransformer should map an unrecognised GraphQL value to UNKNOWN`() {
-        PhoneNumberTypeTransformer.fromGraphQLToEntity(PhoneNumberTypeGraphQL.UNKNOWN__) shouldBe
-            PhoneNumberTypeEntity.UNKNOWN
-        PhoneNumberTypeTransformer.fromEntityToApi(PhoneNumberTypeEntity.UNKNOWN) shouldBe
-            PhoneNumberType.UNKNOWN
+    fun `PhoneNumberTypeTransformer should map an unrecognised GraphQL value to Unknown with its value`() {
+        PhoneNumberTypeTransformer.fromGraphQLToEntity(PhoneNumberTypeGraphQL.safeValueOf("SOMETHING_NEW")) shouldBe
+            PhoneNumberTypeEntity.Unknown("SOMETHING_NEW")
+        PhoneNumberTypeTransformer.fromEntityToApi(PhoneNumberTypeEntity.Unknown("SOMETHING_NEW")) shouldBe
+            PhoneNumberType.Unknown("SOMETHING_NEW")
     }
 }

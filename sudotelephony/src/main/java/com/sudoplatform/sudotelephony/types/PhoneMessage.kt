@@ -13,23 +13,39 @@ import java.util.Date
 /**
  * The kind of a phone message.
  */
-enum class PhoneMessageType {
+sealed class PhoneMessageType : Parcelable {
     /** A text message. */
-    SMS,
+    @Parcelize
+    data object Sms : PhoneMessageType()
 
-    /** The service reported a kind this version of the SDK does not recognise. */
-    UNKNOWN,
+    /**
+     * The service reported a kind this version of the SDK does not recognise.
+     *
+     * @property value [String] The kind the service reported.
+     */
+    @Parcelize
+    data class Unknown(
+        val value: String,
+    ) : PhoneMessageType()
 }
 
 /**
  * Whether a phone message was received or sent.
  */
-enum class PhoneMessageDirection {
+sealed class PhoneMessageDirection : Parcelable {
     /** Received on the user's number from the other party. */
-    INBOUND,
+    @Parcelize
+    data object Inbound : PhoneMessageDirection()
 
-    /** The service reported a direction this version of the SDK does not recognise. */
-    UNKNOWN,
+    /**
+     * The service reported a direction this version of the SDK does not recognise.
+     *
+     * @property value [String] The direction the service reported.
+     */
+    @Parcelize
+    data class Unknown(
+        val value: String,
+    ) : PhoneMessageDirection()
 }
 
 /**

@@ -12,7 +12,7 @@ import com.sudoplatform.sudotelephony.graphql.type.PhoneNumberType as PhoneNumbe
 
 /**
  * Transformer responsible for transforming between the [PhoneNumberTypeGraphQL] GraphQL enum,
- * the [PhoneNumberTypeEntity] entity enum, and the public [PhoneNumberType] type.
+ * the [PhoneNumberTypeEntity] entity type, and the public [PhoneNumberType] type.
  */
 internal object PhoneNumberTypeTransformer {
     /**
@@ -20,8 +20,8 @@ internal object PhoneNumberTypeTransformer {
      */
     fun fromGraphQLToEntity(data: PhoneNumberTypeGraphQL): PhoneNumberTypeEntity =
         when (data) {
-            PhoneNumberTypeGraphQL.LOCAL -> PhoneNumberTypeEntity.LOCAL
-            else -> PhoneNumberTypeEntity.UNKNOWN
+            PhoneNumberTypeGraphQL.LOCAL -> PhoneNumberTypeEntity.Local
+            is PhoneNumberTypeGraphQL.UNKNOWN__ -> PhoneNumberTypeEntity.Unknown(data.rawValue)
         }
 
     /**
@@ -29,7 +29,7 @@ internal object PhoneNumberTypeTransformer {
      */
     fun fromEntityToApi(entity: PhoneNumberTypeEntity): PhoneNumberType =
         when (entity) {
-            PhoneNumberTypeEntity.LOCAL -> PhoneNumberType.LOCAL
-            PhoneNumberTypeEntity.UNKNOWN -> PhoneNumberType.UNKNOWN
+            PhoneNumberTypeEntity.Local -> PhoneNumberType.Local
+            is PhoneNumberTypeEntity.Unknown -> PhoneNumberType.Unknown(entity.value)
         }
 }

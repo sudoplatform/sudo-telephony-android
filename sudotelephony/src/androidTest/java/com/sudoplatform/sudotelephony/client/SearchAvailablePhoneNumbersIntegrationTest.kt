@@ -75,7 +75,7 @@ class SearchAvailablePhoneNumbersIntegrationTest : BaseIntegrationTest() {
             // were returned.
             search.results.forEach { available ->
                 available.countryCode shouldBe countryCode
-                available.numberType shouldBe PhoneNumberType.LOCAL
+                available.numberType shouldBe PhoneNumberType.Local
                 localNumberInAreaCode.matches(available.phoneNumber) shouldBe true
             }
         }

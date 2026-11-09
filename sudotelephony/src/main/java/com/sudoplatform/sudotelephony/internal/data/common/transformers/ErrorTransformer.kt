@@ -6,6 +6,7 @@
 
 package com.sudoplatform.sudotelephony.internal.data.common.transformers
 
+import com.amplifyframework.api.ApiException
 import com.amplifyframework.api.graphql.GraphQLResponse
 import com.sudoplatform.sudotelephony.SudoTelephonyClient
 import com.sudoplatform.sudotelephony.SudoTelephonyClient.ConfigurationDataException
@@ -346,6 +347,34 @@ internal object ErrorTransformer {
         }
 
     /**
+     * Interprets the failure of a phone number subscription as the cause reported with its
+     * disconnection.
+     *
+     * @param e [ApiException] The failure reported by the subscription.
+     * @return [PhoneNumberException.AuthenticationException] when the caller is not
+     *  authorized, otherwise [PhoneNumberException.FailedException].
+     */
+    fun interpretPhoneNumberSubscriptionException(e: ApiException): PhoneNumberException =
+        when (e) {
+            is ApiException.ApiAuthException -> PhoneNumberException.AuthenticationException(e.message, e)
+            else -> PhoneNumberException.FailedException(e.message, e)
+        }
+
+    /**
+     * Interprets the failure of a phone message subscription as the cause reported with its
+     * disconnection.
+     *
+     * @param e [ApiException] The failure reported by the subscription.
+     * @return [PhoneMessageException.AuthenticationException] when the caller is not
+     *  authorized, otherwise [PhoneMessageException.FailedException].
+     */
+    fun interpretPhoneMessageSubscriptionException(e: ApiException): PhoneMessageException =
+        when (e) {
+            is ApiException.ApiAuthException -> PhoneMessageException.AuthenticationException(e.message, e)
+            else -> PhoneMessageException.FailedException(e.message, e)
+        }
+
+    /**
      * Interprets a throwable raised by a key store operation and converts it to an
      * appropriate [CryptographicKeysException].
      *
@@ -368,7 +397,7 @@ internal object ErrorTransformer {
      * `InvalidPhoneNumberState` error, or `null` when it reported none.
      *
      * The state arrives as a raw string in the error's structured `errorInfo`, so an
-     * unrecognised value maps to [PhoneNumberState.UNKNOWN] rather than failing.
+     * unrecognised value maps to [PhoneNumberState.Unknown] rather than failing.
      */
     private fun currentStateFrom(e: GraphQLResponse.Error): PhoneNumberState? {
         val errorInfo = e.extensions?.get(StringConstants.ERROR_INFO) as? Map<*, *> ?: return null

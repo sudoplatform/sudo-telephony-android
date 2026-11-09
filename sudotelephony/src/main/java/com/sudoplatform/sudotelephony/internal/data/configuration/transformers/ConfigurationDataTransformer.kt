@@ -8,6 +8,7 @@ package com.sudoplatform.sudotelephony.internal.data.configuration.transformers
 
 import com.sudoplatform.sudotelephony.internal.domain.entities.configuration.ConfigurationDataEntity
 import com.sudoplatform.sudotelephony.types.ConfigurationData
+import java.time.Duration
 import com.sudoplatform.sudotelephony.graphql.fragment.TelephonyConfigurationData as TelephonyConfigurationDataFragment
 
 /**
@@ -38,7 +39,7 @@ internal object ConfigurationDataTransformer {
             sudoOwnershipProofRequired = entity.sudoOwnershipProofRequired,
             phoneNumberSearchDefaultLimit = entity.phoneNumberSearchDefaultLimit,
             phoneNumberSearchMaxLimit = entity.phoneNumberSearchMaxLimit,
-            phoneNumberSearchLifetimeMs = entity.phoneNumberSearchLifetimeMs,
+            phoneNumberSearchLifetime = Duration.ofMillis(entity.phoneNumberSearchLifetimeMs.toLong()),
             listDefaultLimit = entity.listDefaultLimit,
             listMaxLimit = entity.listMaxLimit,
             deletePhoneMessagesLimit = entity.deletePhoneMessagesLimit,

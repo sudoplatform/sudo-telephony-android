@@ -15,6 +15,7 @@ import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.Phone
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumberSearch.PhoneNumberSearchService
 import com.sudoplatform.sudotelephony.internal.domain.useCases.configuration.GetConfigurationDataUseCase
 import com.sudoplatform.sudotelephony.internal.domain.useCases.country.GetSupportedCountriesUseCase
+import com.sudoplatform.sudotelephony.internal.domain.useCases.keys.CreateSingletonKeysIfAbsentUseCase
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage.DeletePhoneMessagesUseCase
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage.GetPhoneMessageUseCase
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage.ListPhoneMessagesUseCase
@@ -66,6 +67,9 @@ internal interface UseCaseFactory {
 
     /** Create an [UpdatePhoneMessagesUseCase]. */
     fun createUpdatePhoneMessagesUseCase(): UpdatePhoneMessagesUseCase
+
+    /** Create a [CreateSingletonKeysIfAbsentUseCase]. */
+    fun createCreateSingletonKeysIfAbsentUseCase(): CreateSingletonKeysIfAbsentUseCase
 }
 
 /**
@@ -84,6 +88,7 @@ internal interface UseCaseFactory {
  * @property serviceKeyManager [ServiceKeyManager] Generates and stores the key pairs that
  *  seal phone number messages.
  * @property logger [Logger] The SDK logger.
+ * @property enforceSingletonKeyPair [Boolean] Whether every phone number shares one key pair.
  */
 internal class DefaultUseCaseFactory(
     private val countryService: CountryService,
@@ -94,6 +99,7 @@ internal class DefaultUseCaseFactory(
     private val phoneMessageUnsealer: PhoneMessageUnsealer,
     private val serviceKeyManager: ServiceKeyManager,
     private val logger: Logger,
+    private val enforceSingletonKeyPair: Boolean = false,
 ) : UseCaseFactory {
     override fun createGetSupportedCountriesUseCase(): GetSupportedCountriesUseCase = GetSupportedCountriesUseCase(countryService, logger)
 
@@ -104,10 +110,10 @@ internal class DefaultUseCaseFactory(
         SearchAvailablePhoneNumbersUseCase(phoneNumberSearchService, logger)
 
     override fun createProvisionPhoneNumberUseCase(): ProvisionPhoneNumberUseCase =
-        ProvisionPhoneNumberUseCase(phoneNumberService, serviceKeyManager, logger)
+        ProvisionPhoneNumberUseCase(phoneNumberService, serviceKeyManager, logger, enforceSingletonKeyPair)
 
     override fun createDeprovisionPhoneNumberUseCase(): DeprovisionPhoneNumberUseCase =
-        DeprovisionPhoneNumberUseCase(phoneNumberService, logger)
+        DeprovisionPhoneNumberUseCase(phoneNumberService, serviceKeyManager, logger, enforceSingletonKeyPair)
 
     override fun createGetPhoneNumberUseCase(): GetPhoneNumberUseCase = GetPhoneNumberUseCase(phoneNumberService, logger)
 
@@ -122,4 +128,7 @@ internal class DefaultUseCaseFactory(
     override fun createDeletePhoneMessagesUseCase(): DeletePhoneMessagesUseCase = DeletePhoneMessagesUseCase(phoneMessageService, logger)
 
     override fun createUpdatePhoneMessagesUseCase(): UpdatePhoneMessagesUseCase = UpdatePhoneMessagesUseCase(phoneMessageService, logger)
+
+    override fun createCreateSingletonKeysIfAbsentUseCase(): CreateSingletonKeysIfAbsentUseCase =
+        CreateSingletonKeysIfAbsentUseCase(serviceKeyManager, enforceSingletonKeyPair, logger)
 }

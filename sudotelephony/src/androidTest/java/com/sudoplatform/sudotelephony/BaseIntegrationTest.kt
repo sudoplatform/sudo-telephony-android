@@ -101,11 +101,12 @@ abstract class BaseIntegrationTest {
      * How many numbers the provider offers is not guaranteed, so the test is skipped rather
      * than failed when the search comes back empty.
      *
+     * @param client [SudoTelephonyClient] The client to search with.
      * @return The search, which has at least one result.
      */
-    protected suspend fun searchAvailableNumbersOrSkip(): PhoneNumberSearch {
+    protected suspend fun searchAvailableNumbersOrSkip(client: SudoTelephonyClient = telephonyClient): PhoneNumberSearch {
         val search =
-            telephonyClient.searchAvailablePhoneNumbers(
+            client.searchAvailablePhoneNumbers(
                 SearchAvailablePhoneNumbersInput(countryCode = countryCode, areaCode = areaCode),
             )
         assumeTrue(
@@ -124,6 +125,7 @@ abstract class BaseIntegrationTest {
      * nothing, and fails only if every offered number has already been taken.
      *
      * @param clientRefId [String] Optional client reference to provision with.
+     * @param client [SudoTelephonyClient] The client to provision with.
      * @param ownershipProof Gets the ownership proof to provision with, or null for none. It
      *   is called only once the search has found numbers. Defaults to a proof for a new Sudo,
      *   which every deployment accepts.
@@ -132,15 +134,16 @@ abstract class BaseIntegrationTest {
      */
     protected suspend fun provisionANumber(
         clientRefId: String? = null,
+        client: SudoTelephonyClient = telephonyClient,
         ownershipProof: suspend () -> String? = { newOwnershipProof() },
     ): ProvisionedNumber {
-        val search = searchAvailableNumbersOrSkip()
+        val search = searchAvailableNumbersOrSkip(client)
         val ownershipProofToken = ownershipProof()
         // Shuffled so concurrent runs are unlikely to contend for the same number.
         for (available in search.results.shuffled()) {
             try {
                 val number =
-                    telephonyClient.provisionPhoneNumber(
+                    client.provisionPhoneNumber(
                         ProvisionPhoneNumberInput(
                             searchId = search.id,
                             phoneNumber = available.phoneNumber,

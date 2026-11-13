@@ -14,6 +14,8 @@ import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.Phone
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumberSearch.PhoneNumberSearchService
 import com.sudoplatform.sudotelephony.internal.domain.useCases.UseCaseFactory
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneNumber.DeprovisionPhoneNumberUseCase
+import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneNumber.DeprovisionedKeyPairRemovalException
+import com.sudoplatform.sudotelephony.keys.DeviceKeyManager
 import com.sudoplatform.sudotelephony.keys.ServiceKeyManager
 import com.sudoplatform.sudotelephony.types.PhoneNumberState
 import com.sudoplatform.sudotelephony.types.PhoneNumberType
@@ -132,6 +134,30 @@ class SudoTelephonyDeprovisionPhoneNumberTest : BaseTests() {
                     it shouldBe "anotherPhoneNumberId"
                 },
             )
+        }
+
+    @Test
+    fun `deprovisionPhoneNumber() should report a key pair removal failure with the released number`() =
+        runTest {
+            val failure = DeviceKeyManager.DeviceKeyManagerException.KeyOperationFailedException("locked")
+            mockUseCase.stub {
+                onBlocking { execute(any()) } doThrow
+                    DeprovisionedKeyPairRemovalException(
+                        EntityDataFactory.phoneNumberEntity(state = PhoneNumberStateEntity.Released),
+                        failure,
+                    )
+            }
+
+            val thrown =
+                shouldThrow<PhoneNumberException.KeyPairRemovalFailedException> {
+                    client.deprovisionPhoneNumber("mockPhoneNumberId")
+                }
+
+            thrown.deprovisioned.id shouldBe "mockPhoneNumberId"
+            thrown.deprovisioned.state shouldBe PhoneNumberState.Released
+            thrown.cause shouldBe failure
+            verify(mockUseCaseFactory).createDeprovisionPhoneNumberUseCase()
+            verify(mockUseCase).execute(any())
         }
 
     @Test

@@ -21,6 +21,7 @@ import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
 import com.sudoplatform.sudotelephony.types.ConfigurationData
+import com.sudoplatform.sudotelephony.types.CreateSingletonKeysIfAbsentResult
 import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.ListOutput
 import com.sudoplatform.sudotelephony.types.PartialPhoneMessage
@@ -174,8 +175,14 @@ interface SudoTelephonyClient : AutoCloseable {
      * [PhoneNumberException.InvalidPhoneNumberStateException].
      *
      * @param id [String] ID of the phone number to release.
+     * Unless the client enforces a singleton key pair, the number's key pair is then removed
+     * from the device. If that fails, this throws
+     * [PhoneNumberException.KeyPairRemovalFailedException], which carries the released number.
+     *
      * @return The [PhoneNumber] in [com.sudoplatform.sudotelephony.types.PhoneNumberState.Released].
-     * @throws PhoneNumberException if the number could not be released.
+     * @throws PhoneNumberException if the number could not be released, or
+     *  [PhoneNumberException.KeyPairRemovalFailedException] if it was released but its key pair
+     *  could not be removed.
      * @sample com.sudoplatform.sudotelephony.samples.Samples.deprovisionPhoneNumber
      */
     @Throws(PhoneNumberException::class)
@@ -423,7 +430,32 @@ interface SudoTelephonyClient : AutoCloseable {
     suspend fun exportKeys(): ByteArray
 
     /**
-     * Reset any internal state, dropping every subscription.
+     * Create the singleton key pair every phone number is sealed to, if this device does not
+     * have it.
+     *
+     * Requires a client built with [Builder.setEnforceSingletonKeyPair]. Call it once the user
+     * is signed in, before provisioning: provisioning never creates the key, and fails with
+     * [PhoneNumberException.SingletonKeyPairNotFoundException] without it.
+     *
+     * The result says whether the key had to be created. If it was, the device's key material
+     * has changed, so back the keys up again with [exportKeys]. If the user already has phone
+     * numbers, a new key also means this device does not have the one they are sealed to (for
+     * example a second device, or one whose keys were removed), so import the user's key
+     * backup with [importKeys].
+     *
+     * @return Whether the singleton key pair was created, and its identifier.
+     * @throws CryptographicKeysException.InvalidConfigurationException if the client does not
+     *  enforce a singleton key pair; otherwise [CryptographicKeysException] if the key cannot
+     *  be created.
+     * @sample com.sudoplatform.sudotelephony.samples.Samples.createSingletonKeysIfAbsent
+     */
+    @Throws(CryptographicKeysException::class)
+    suspend fun createSingletonKeysIfAbsent(): CreateSingletonKeysIfAbsentResult
+
+    /**
+     * Reset any internal state, dropping every subscription, and remove every key from the
+     * device. This includes the singleton key pair, so call [createSingletonKeysIfAbsent]
+     * again before provisioning.
      */
     fun reset()
 
@@ -437,6 +469,7 @@ interface SudoTelephonyClient : AutoCloseable {
         private var keyManager: KeyManagerInterface? = null
         private var namespace: String = DEFAULT_KEY_NAMESPACE
         private var databaseName: String = AndroidSQLiteStore.DEFAULT_DATABASE_NAME
+        private var enforceSingletonKeyPair: Boolean = false
         private var logger: Logger =
             Logger(LogConstants.SUDOLOG_TAG, AndroidUtilsLogDriver(LogLevel.INFO))
 
@@ -503,6 +536,29 @@ interface SudoTelephonyClient : AutoCloseable {
                 this.databaseName = databaseName
             }
 
+        /**
+         * Provide whether every phone number is provisioned with one shared key pair instead of
+         * a key pair of its own (optional input). Defaults to `false`.
+         *
+         * When `true`, every number is registered with one shared key pair, which the app
+         * creates with [createSingletonKeysIfAbsent] before provisioning. The client never
+         * creates it itself: provisioning without it throws
+         * [PhoneNumberException.SingletonKeyPairNotFoundException]. The shared key pair is never
+         * removed when a number is deprovisioned or fails to provision; only [reset] removes it.
+         *
+         * Messages are still sealed, but every number's messages are sealed to the same key, so
+         * all numbers can be read with that one key. Apps that don't need numbers kept
+         * cryptographically separate from one another can use this to keep key management and
+         * key export and import simple.
+         *
+         * When `false`, each number gets its own key pair, which is removed from the device
+         * when the number is deprovisioned or when the service rejects its provisioning.
+         */
+        fun setEnforceSingletonKeyPair(enforceSingletonKeyPair: Boolean) =
+            also {
+                this.enforceSingletonKeyPair = enforceSingletonKeyPair
+            }
+
         /** A configuration item that is needed is missing. */
         class ConfigurationException(
             message: String,
@@ -551,6 +607,7 @@ interface SudoTelephonyClient : AutoCloseable {
                 sudoUserClient = sudoUserClient!!,
                 serviceKeyManager = serviceKeyManager,
                 logger = logger,
+                enforceSingletonKeyPair = enforceSingletonKeyPair,
             )
         }
     }
@@ -818,6 +875,32 @@ interface SudoTelephonyClient : AutoCloseable {
             cause: Throwable? = null,
         ) : PhoneNumberException(message = message, cause = cause)
 
+        /**
+         * The client enforces a singleton key pair, but this device does not have it. Call
+         * [createSingletonKeysIfAbsent] to create it, or import a key archive that contains it
+         * with [importKeys] (for example on a second device, before provisioning).
+         */
+        class SingletonKeyPairNotFoundException(
+            message: String? = null,
+            cause: Throwable? = null,
+        ) : PhoneNumberException(message = message, cause = cause)
+
+        /**
+         * The phone number was released, but this device could not remove its key pair. Treat
+         * the number as gone: [deprovisioned] is the released number, as a successful
+         * [deprovisionPhoneNumber] would have returned it. The key pair stays on the device.
+         * Removing a key pair that is already absent succeeds, so this means the device key
+         * store itself failed, and other key operations are likely to fail too. The [cause]
+         * carries the underlying error.
+         *
+         * @property deprovisioned [PhoneNumber] The released number.
+         */
+        class KeyPairRemovalFailedException(
+            val deprovisioned: PhoneNumber,
+            message: String? = null,
+            cause: Throwable? = null,
+        ) : PhoneNumberException(message = message, cause = cause)
+
         /** The service reported an error. */
         class ServiceException(
             message: String? = null,
@@ -924,6 +1007,16 @@ interface SudoTelephonyClient : AutoCloseable {
 
         /** The key archive could not be read or written. */
         class SecureKeyArchiveException(
+            message: String? = null,
+            cause: Throwable? = null,
+        ) : CryptographicKeysException(message = message, cause = cause)
+
+        /**
+         * The client's configuration does not support the operation, for example
+         * [createSingletonKeysIfAbsent] on a client built without
+         * [Builder.setEnforceSingletonKeyPair].
+         */
+        class InvalidConfigurationException(
             message: String? = null,
             cause: Throwable? = null,
         ) : CryptographicKeysException(message = message, cause = cause)

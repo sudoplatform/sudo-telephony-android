@@ -304,4 +304,13 @@ class Samples : BaseTests() {
         // Replaces every key on this device, making the numbers' messages readable here.
         telephonyClient.importKeys(archive)
     }
+
+    suspend fun createSingletonKeysIfAbsent(telephonyClient: SudoTelephonyClient) {
+        // The client must be built with setEnforceSingletonKeyPair(true). Call this after
+        // signing in, and again after importing keys, before provisioning a number.
+        val result = telephonyClient.createSingletonKeysIfAbsent()
+        if (result.keyPair.created) {
+            // The device's key material changed: back the keys up again with exportKeys().
+        }
+    }
 }

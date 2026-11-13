@@ -8,6 +8,7 @@ package com.sudoplatform.sudotelephony.keys
 
 import com.sudoplatform.sudokeymanager.KeyManagerException
 import com.sudoplatform.sudokeymanager.KeyManagerInterface
+import com.sudoplatform.sudologging.Logger
 import com.sudoplatform.sudotelephony.BaseTests
 import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumber.PublicKeyFormatEntity
 import io.kotlintest.shouldBe
@@ -16,11 +17,16 @@ import io.kotlintest.shouldThrow
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 import java.security.KeyPairGenerator
@@ -50,6 +56,39 @@ class DefaultServiceKeyManagerTest : BaseTests() {
             keyManager = mockKeyManager,
             logger = mockLogger,
         )
+    }
+
+    private val mockKeyManagerLogger by before { mock<Logger>() }
+
+    /** An instance whose logger is a mock, so what it logs can be verified. */
+    private val loggingInstanceUnderTest by before {
+        DefaultServiceKeyManager(
+            keyRingServiceName = "sudo-telephony",
+            userClient = mockUserClient,
+            keyManager = mockKeyManager,
+            logger = mockKeyManagerLogger,
+        )
+    }
+
+    /** Makes the key store record and return the singleton key pair identifier. */
+    private fun givenSingletonRecordIsStored(initialKeyId: String? = null) {
+        var recorded: String? = initialKeyId
+        mockKeyManager.stub {
+            on { getPassword(eq(DefaultServiceKeyManager.SINGLETON_KEY_ID_NAME)) } doAnswer {
+                recorded?.toByteArray(Charsets.UTF_8)
+            }
+            on { addPassword(any(), eq(DefaultServiceKeyManager.SINGLETON_KEY_ID_NAME)) } doAnswer {
+                recorded = String(it.getArgument<ByteArray>(0), Charsets.UTF_8)
+                Unit
+            }
+        }
+    }
+
+    private fun givenSingletonKeyId(keyId: String) {
+        mockKeyManager.stub {
+            on { getPassword(eq(DefaultServiceKeyManager.SINGLETON_KEY_ID_NAME)) } doReturn
+                keyId.toByteArray(Charsets.UTF_8)
+        }
     }
 
     @Test
@@ -146,5 +185,165 @@ class DefaultServiceKeyManagerTest : BaseTests() {
 
         rendered.contains("privateKey.size=") shouldBe true
         rendered.contains(String(generatedKeyPair.private.encoded, Charsets.ISO_8859_1)) shouldBe false
+    }
+
+    @Test
+    fun `getSingletonKeyPair() should return null and create nothing when none is recorded`() {
+        instanceUnderTest.getSingletonKeyPair() shouldBe null
+
+        verify(mockKeyManager, never()).generateKeyPair(any(), any())
+        verify(mockKeyManager, never()).addPassword(any(), any())
+    }
+
+    @Test
+    fun `getSingletonKeyPair() should return the recorded key pair`() {
+        mockUserClient.stub { on { getSubject() } doReturn "mockUserId" }
+        givenSingletonKeyId("singletonKeyId")
+
+        val keyPair = instanceUnderTest.getSingletonKeyPair()
+
+        keyPair?.keyId shouldBe "singletonKeyId"
+        keyPair?.publicKey shouldBe generatedKeyPair.public.encoded
+        verify(mockKeyManager, never()).generateKeyPair(any(), any())
+        verify(mockKeyManager, never()).addPassword(any(), any())
+    }
+
+    @Test
+    fun `getSingletonKeyPair() should return null and create nothing when its private key is missing`() {
+        givenSingletonKeyId("missingKeyId")
+        mockKeyManager.stub { on { getPrivateKeyData(eq("missingKeyId")) } doReturn null }
+
+        instanceUnderTest.getSingletonKeyPair() shouldBe null
+
+        verify(mockKeyManager, never()).generateKeyPair(any(), any())
+        verify(mockKeyManager, never()).addPassword(any(), any())
+    }
+
+    @Test
+    fun `getSingletonKeyPair() should throw for a key pair missing its public key`() {
+        mockUserClient.stub { on { getSubject() } doReturn "mockUserId" }
+        givenSingletonKeyId("singletonKeyId")
+        mockKeyManager.stub { on { getPublicKeyData(eq("singletonKeyId")) } doReturn null }
+
+        shouldThrow<DeviceKeyManager.DeviceKeyManagerException.KeyOperationFailedException> {
+            instanceUnderTest.getSingletonKeyPair()
+        }
+    }
+
+    @Test
+    fun `createSingletonKeyPairIfAbsent() should create the key pair once and then reuse it`() {
+        mockUserClient.stub { on { getSubject() } doReturn "mockUserId" }
+        givenSingletonRecordIsStored()
+
+        val first = loggingInstanceUnderTest.createSingletonKeyPairIfAbsent()
+        val second = loggingInstanceUnderTest.createSingletonKeyPairIfAbsent()
+
+        first.created shouldBe true
+        second.created shouldBe false
+        second.keyPair.keyId shouldBe first.keyPair.keyId
+        loggingInstanceUnderTest.getSingletonKeyPair()?.keyId shouldBe first.keyPair.keyId
+        verify(mockKeyManager, times(1)).generateKeyPair(eq(first.keyPair.keyId), eq(true))
+        verify(mockKeyManager).addPassword(
+            argThat { contentEquals(first.keyPair.keyId.toByteArray(Charsets.UTF_8)) },
+            eq(DefaultServiceKeyManager.SINGLETON_KEY_ID_NAME),
+        )
+        verify(mockKeyManagerLogger).info(eq("Created singleton key pair ${first.keyPair.keyId}"))
+        verify(mockKeyManagerLogger, never()).outputError(any(), any())
+    }
+
+    @Test
+    fun `createSingletonKeyPairIfAbsent() should return the recorded key pair without creating one`() {
+        mockUserClient.stub { on { getSubject() } doReturn "mockUserId" }
+        givenSingletonKeyId("singletonKeyId")
+
+        val result = instanceUnderTest.createSingletonKeyPairIfAbsent()
+
+        result.created shouldBe false
+        result.keyPair.keyId shouldBe "singletonKeyId"
+        verify(mockKeyManager, never()).generateKeyPair(any(), any())
+        verify(mockKeyManager, never()).addPassword(any(), any())
+    }
+
+    @Test
+    fun `createSingletonKeyPairIfAbsent() should throw rather than replace a key pair missing its public key`() {
+        mockUserClient.stub { on { getSubject() } doReturn "mockUserId" }
+        givenSingletonKeyId("singletonKeyId")
+        mockKeyManager.stub { on { getPublicKeyData(eq("singletonKeyId")) } doReturn null }
+
+        shouldThrow<DeviceKeyManager.DeviceKeyManagerException.KeyOperationFailedException> {
+            instanceUnderTest.createSingletonKeyPairIfAbsent()
+        }
+
+        verify(mockKeyManager, never()).generateKeyPair(any(), any())
+        verify(mockKeyManager, never()).addPassword(any(), any())
+    }
+
+    @Test
+    fun `createSingletonKeyPairIfAbsent() should replace a key pair missing its private key and report it`() {
+        mockUserClient.stub { on { getSubject() } doReturn "mockUserId" }
+        givenSingletonRecordIsStored(initialKeyId = "missingKeyId")
+        mockKeyManager.stub { on { getPrivateKeyData(eq("missingKeyId")) } doReturn null }
+
+        val replacement = loggingInstanceUnderTest.createSingletonKeyPairIfAbsent()
+
+        replacement.created shouldBe true
+        replacement.keyPair.keyId shouldNotBe "missingKeyId"
+        loggingInstanceUnderTest.getSingletonKeyPair()?.keyId shouldBe replacement.keyPair.keyId
+        verify(mockKeyManager, times(1)).generateKeyPair(any(), eq(true))
+        verify(mockKeyManager).deletePassword(eq(DefaultServiceKeyManager.SINGLETON_KEY_ID_NAME))
+        verify(mockKeyManagerLogger).error(
+            argThat<String> { contains("missingKeyId") && contains(replacement.keyPair.keyId) },
+        )
+        verify(mockKeyManagerLogger).outputError(
+            any(),
+            eq(mapOf("missingKeyId" to "missingKeyId", "replacementKeyId" to replacement.keyPair.keyId)),
+        )
+    }
+
+    @Test
+    fun `createSingletonKeyPairIfAbsent() should delete the new key pair when its identifier cannot be recorded`() {
+        mockUserClient.stub { on { getSubject() } doReturn "mockUserId" }
+        mockKeyManager.stub {
+            on { addPassword(any(), eq(DefaultServiceKeyManager.SINGLETON_KEY_ID_NAME)) } doAnswer {
+                throw KeyManagerException("store full")
+            }
+        }
+
+        shouldThrow<DeviceKeyManager.DeviceKeyManagerException.KeyOperationFailedException> {
+            instanceUnderTest.createSingletonKeyPairIfAbsent()
+        }
+
+        val keyId = argumentCaptor<String>()
+        verify(mockKeyManager).generateKeyPair(keyId.capture(), eq(true))
+        verify(mockKeyManager).deleteKeyPair(eq(keyId.firstValue))
+    }
+
+    @Test
+    fun `removeKeyPair() should keep the singleton key pair`() {
+        givenSingletonKeyId("singletonKeyId")
+
+        instanceUnderTest.removeKeyPair("singletonKeyId")
+
+        verify(mockKeyManager, never()).deleteKeyPair(any())
+    }
+
+    @Test
+    fun `removeKeyPair() should delete any other key pair`() {
+        givenSingletonKeyId("singletonKeyId")
+
+        instanceUnderTest.removeKeyPair("otherKeyId")
+
+        verify(mockKeyManager).deleteKeyPair(eq("otherKeyId"))
+    }
+
+    @Test
+    fun `removeKeyPair() should throw KeyOperationFailedException when the key store fails`() {
+        mockKeyManager.stub {
+            on { deleteKeyPair(any()) } doAnswer { throw KeyManagerException("locked") }
+        }
+
+        shouldThrow<DeviceKeyManager.DeviceKeyManagerException.KeyOperationFailedException> {
+            instanceUnderTest.removeKeyPair("otherKeyId")
+        }
     }
 }

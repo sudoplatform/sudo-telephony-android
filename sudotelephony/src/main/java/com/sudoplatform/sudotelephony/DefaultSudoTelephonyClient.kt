@@ -35,6 +35,7 @@ import com.sudoplatform.sudotelephony.internal.domain.entities.phoneNumberSearch
 import com.sudoplatform.sudotelephony.internal.domain.useCases.DefaultUseCaseFactory
 import com.sudoplatform.sudotelephony.internal.domain.useCases.UseCaseFactory
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneMessage.UpdatePhoneMessagesUseCaseInput
+import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneNumber.DeprovisionedKeyPairRemovalException
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneNumber.ListPhoneNumbersForSudoIdUseCaseInput
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneNumber.ListPhoneNumbersUseCaseInput
 import com.sudoplatform.sudotelephony.internal.domain.useCases.phoneNumber.ProvisionPhoneNumberUseCaseInput
@@ -45,6 +46,8 @@ import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.SubscriptionService
 import com.sudoplatform.sudotelephony.types.ConfigurationData
+import com.sudoplatform.sudotelephony.types.CreateSingletonKeysIfAbsentResult
+import com.sudoplatform.sudotelephony.types.KeyResult
 import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.ListOutput
 import com.sudoplatform.sudotelephony.types.PartialPhoneMessage
@@ -80,6 +83,8 @@ import com.sudoplatform.sudotelephony.internal.domain.entities.phoneMessage.List
  * @property serviceKeyManager [ServiceKeyManager] Generates and stores the key pairs that
  *  seal phone number messages.
  * @property logger [Logger] Errors and diagnostic information are logged here.
+ * @property enforceSingletonKeyPair [Boolean] Whether every phone number is provisioned with
+ *  one shared key pair rather than a key pair of its own.
  * @property countryService [CountryService] The country domain service.
  * @property configurationDataService [ConfigurationDataService] The service configuration
  *  domain service.
@@ -99,6 +104,7 @@ internal class DefaultSudoTelephonyClient(
     private val serviceKeyManager: ServiceKeyManager,
     private val logger: Logger =
         Logger(LogConstants.SUDOLOG_TAG, AndroidUtilsLogDriver(LogLevel.INFO)),
+    private val enforceSingletonKeyPair: Boolean = false,
     private val countryService: CountryService =
         GraphQLCountryService(apiClient, logger),
     private val configurationDataService: ConfigurationDataService =
@@ -128,6 +134,7 @@ internal class DefaultSudoTelephonyClient(
             phoneMessageUnsealer = phoneMessageUnsealer,
             serviceKeyManager = serviceKeyManager,
             logger = logger,
+            enforceSingletonKeyPair = enforceSingletonKeyPair,
         ),
 ) : SudoTelephonyClient {
     /**
@@ -197,7 +204,15 @@ internal class DefaultSudoTelephonyClient(
         logger.debug("deprovisionPhoneNumber")
         signInGuard.ensureSignedIn()
         val useCase = useCaseFactory.createDeprovisionPhoneNumberUseCase()
-        return PhoneNumberTransformer.fromEntityToApi(useCase.execute(id))
+        try {
+            return PhoneNumberTransformer.fromEntityToApi(useCase.execute(id))
+        } catch (e: DeprovisionedKeyPairRemovalException) {
+            throw SudoTelephonyClient.PhoneNumberException.KeyPairRemovalFailedException(
+                deprovisioned = PhoneNumberTransformer.fromEntityToApi(e.deprovisioned),
+                message = StringConstants.KEY_PAIR_REMOVAL_FAILED_MSG,
+                cause = e.cause,
+            )
+        }
     }
 
     override suspend fun getPhoneNumber(id: String): PhoneNumber? {
@@ -358,6 +373,20 @@ internal class DefaultSudoTelephonyClient(
         logger.debug("exportKeys")
         try {
             return serviceKeyManager.exportKeys()
+        } catch (e: Throwable) {
+            logger.error("unexpected error $e")
+            throw ErrorTransformer.interpretCryptographicKeysException(e)
+        }
+    }
+
+    override suspend fun createSingletonKeysIfAbsent(): CreateSingletonKeysIfAbsentResult {
+        logger.debug("createSingletonKeysIfAbsent")
+        signInGuard.ensureSignedIn()
+        try {
+            val result = useCaseFactory.createCreateSingletonKeysIfAbsentUseCase().execute()
+            return CreateSingletonKeysIfAbsentResult(
+                keyPair = KeyResult(created = result.created, keyId = result.keyPair.keyId),
+            )
         } catch (e: Throwable) {
             logger.error("unexpected error $e")
             throw ErrorTransformer.interpretCryptographicKeysException(e)

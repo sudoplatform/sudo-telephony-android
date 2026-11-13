@@ -62,6 +62,12 @@ internal object StringConstants {
     const val NO_BATCH_RESULT_ERROR_MSG = "No batch result returned."
     const val MESSAGE_BATCH_LIMIT_EXCEEDED_MSG = "A batch may name at most 100 messages"
     const val EMPTY_KEY_ARCHIVE_MSG = "The key archive is empty"
+    const val SINGLETON_KEY_PAIR_NOT_FOUND_MSG =
+        "This device doesn't have the shared key pair. Create it, or import a key backup that contains it."
+    const val KEY_PAIR_REMOVAL_FAILED_MSG =
+        "The phone number was released, but its key couldn't be removed from this device."
+    const val SINGLETON_KEY_PAIR_NOT_ENFORCED_MSG =
+        "createSingletonKeysIfAbsent() requires a client built with setEnforceSingletonKeyPair(true)"
     const val SUBSCRIPTION_UNAUTHENTICATED_MSG =
         "User client does not have subject. Is the user authenticated?"
     const val PHONE_MESSAGE_KEY_NOT_FOUND_MSG =

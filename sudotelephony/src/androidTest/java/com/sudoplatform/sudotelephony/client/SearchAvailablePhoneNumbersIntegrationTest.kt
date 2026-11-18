@@ -11,6 +11,10 @@ import com.sudoplatform.sudotelephony.BaseIntegrationTest
 import com.sudoplatform.sudotelephony.SudoTelephonyClient
 import com.sudoplatform.sudotelephony.types.PhoneNumberType
 import com.sudoplatform.sudotelephony.types.inputs.SearchAvailablePhoneNumbersInput
+import io.kotlintest.matchers.collections.shouldNotContain
+import io.kotlintest.matchers.collections.shouldNotContainDuplicates
+import io.kotlintest.matchers.string.shouldMatch
+import io.kotlintest.matchers.string.shouldStartWith
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.kotlintest.shouldThrow
@@ -34,9 +38,6 @@ class SearchAvailablePhoneNumbersIntegrationTest : BaseIntegrationTest() {
     /** How long the service keeps a search for provisioning. */
     private val searchLifetimeMs = 15 * 60 * 1000L
 
-    /** Local US numbers in the requested area code, in E.164 form. */
-    private val localNumberInAreaCode = Regex("""^\+1$areaCode[2-9]\d{6}$""")
-
     @Test
     fun searchAvailablePhoneNumbersShouldReturnASearchForTheRequestedCriteria() =
         runBlocking {
@@ -49,7 +50,7 @@ class SearchAvailablePhoneNumbersIntegrationTest : BaseIntegrationTest() {
                 )
 
             search shouldNotBe null
-            search.id.startsWith("tel-pns-") shouldBe true
+            search.id shouldStartWith "tel-pns-"
             search.countryCode shouldBe countryCode
             search.areaCode shouldBe areaCode
             search.owner.isNotBlank() shouldBe true
@@ -60,7 +61,7 @@ class SearchAvailablePhoneNumbersIntegrationTest : BaseIntegrationTest() {
         }
 
     @Test
-    fun searchAvailablePhoneNumbersShouldOnlyReturnLocalNumbersInTheRequestedAreaCode() =
+    fun searchAvailablePhoneNumbersShouldReturnLocalNumbersOfTheRequestedAreaCodeFirst() =
         runBlocking {
             val search =
                 telephonyClient.searchAvailablePhoneNumbers(
@@ -72,12 +73,21 @@ class SearchAvailablePhoneNumbersIntegrationTest : BaseIntegrationTest() {
 
             // How many numbers the provider has available is not guaranteed, so this
             // asserts what every returned number must look like rather than that any
-            // were returned.
-            search.results.forEach { available ->
-                available.countryCode shouldBe countryCode
-                available.numberType shouldBe PhoneNumberType.Local
-                localNumberInAreaCode.matches(available.phoneNumber) shouldBe true
+            // were returned. When the requested area code has too few numbers, the service
+            // adds numbers of other area codes of the same state after them.
+            val areaCodes =
+                search.results.map { available ->
+                    available.countryCode shouldBe countryCode
+                    available.numberType shouldBe PhoneNumberType.Local
+                    available.phoneNumber shouldMatch localUsNumber
+                    localUsNumber.find(available.phoneNumber)!!.groupValues[1]
+                }
+
+            val firstOther = areaCodes.indexOfFirst { it != areaCode }
+            if (firstOther >= 0) {
+                areaCodes.drop(firstOther) shouldNotContain areaCode
             }
+            search.results.map { it.phoneNumber }.shouldNotContainDuplicates()
         }
 
     @Test

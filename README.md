@@ -69,6 +69,68 @@ replaces it with a new shared key pair, and the SDK logs an error and outputs it
 (so an app's driver can record it as a non-fatal): numbers sealed to the missing key can't be read
 on that device until a key archive containing it is imported.
 
+## Push Notifications
+
+The SDK decodes telephony push notifications delivered through the Sudo Platform notification
+client (`com.sudoplatform:sudonotification`) and Firebase Cloud Messaging. A push is sent when a
+message is received on one of the user's phone numbers. It carries the message's IDs, the
+sender's number and a preview of the body, sealed to the phone number's key, so only a device
+holding that key can read it. The environment's `sudoplatformconfig.json` must have
+`"notifiable": true` in its `telephonyService` section.
+
+Build a `SudoTelephonyNotifiableClient` with the same key manager settings as the
+`SudoTelephonyClient`, and pass it to the notification client:
+
+```kotlin
+val telephonyNotifiableClient = SudoTelephonyNotifiableClient.builder()
+    .setContext(context)
+    .setNotificationHandler(object : SudoTelephonyNotificationHandler {
+        override fun onPhoneMessageReceived(notification: PhoneMessageReceivedNotification) {
+            // Post a notification for the user.
+        }
+    })
+    .build()
+
+val notificationClient = SudoNotificationClient.builder()
+    .setContext(context)
+    .setSudoUserClient(sudoUserClient)
+    .setNotifiableClients(listOf(telephonyNotifiableClient))
+    .build()
+```
+
+After signing in, register the device and enable telephony notifications.
+`initTelephonyNotifications()` adds the default rules; without them no telephony pushes are sent.
+Include the telephony schema in `services`, or the rules are rejected:
+
+```kotlin
+notificationClient.registerNotification(device)
+
+val config = notificationClient.getNotificationConfiguration(device)
+    .initTelephonyNotifications()
+notificationClient.setNotificationConfiguration(
+    NotificationSettingsInput(
+        bundleId = device.bundleIdentifier,
+        deviceId = device.deviceIdentifier,
+        filter = config.configs,
+        services = listOf(telephonyNotifiableClient.getSchema()),
+    ),
+)
+```
+
+Use `setTelephonyNotificationsForPhoneNumberId`, `setTelephonyNotificationsForSudoId` and
+`setTelephonyNotificationsForConversationId` on the configuration to turn notifications off, or
+back on, for a phone number, a Sudo or a conversation.
+
+From `FirebaseMessagingService.onMessageReceived`, call `notificationClient.process(message)`.
+It throws for a message that isn't from the Sudo Platform, so guard the call. Telephony pushes are
+data-only: nothing is displayed unless the app posts a notification from
+`onPhoneMessageReceived`. Fetch the full message with `getPhoneMessage(notification.messageId)` if the
+preview isn't enough.
+
+A push that can't be decoded, whose type this SDK version doesn't know, or that is sealed to a key
+this device doesn't hold is dropped without calling the handler. Call
+`notificationClient.deRegisterNotification(device)` before signing the user out.
+
 ## Questions and Support
 
 File any issues you find on the project's GitHub repository. Be careful not to share any Personally Identifiable Information (PII) or sensitive account information (API keys, credentials, etc.) when reporting an issue.

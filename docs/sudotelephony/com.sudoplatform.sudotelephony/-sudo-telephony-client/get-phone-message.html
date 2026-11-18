@@ -110,13 +110,22 @@
     <h1 class="cover"><span>get</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Message</span></span></h1>
   </div>
   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-phone-message.html"><span class="token function">getPhoneMessage</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-phone-message/index.html">PhoneMessage</a><span class="token operator">?</span></div><p class="paragraph">Retrieve one of the caller's phone messages, with its sealed fields made readable.</p><p class="paragraph">The other party's number and the message text are sealed with the key registered for the message's phone number, so reading a message requires the device that provisioned that number.</p><span class="kdoc-tag"><h4 class="">Return</h4><p class="paragraph">The <a href="../../com.sudoplatform.sudotelephony.types/-phone-message/index.html">PhoneMessage</a>, or <code class="lang-kotlin">null</code> when no message with <a href="get-phone-message.html">id</a> belongs to the caller.</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>id</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a> ID of the message to retrieve.</p></div></div></div></div></div><h4 class="">Throws</h4><div class="table"><div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-phone-message-exception/index.html"><span>Sudo</span><wbr></wbr><span>Telephony</span><wbr></wbr><span>Client.</span><wbr></wbr><span>Phone</span><wbr></wbr><span>Message</span><wbr></wbr><span><span>Exception</span></span></a></div></span></div><div><div class="title"><p class="paragraph">if the message could not be retrieved or unsealed.</p></div></div></div></div></div><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import android.content.Context
+import com.google.firebase.messaging.RemoteMessage
+import com.sudoplatform.sudonotification.NotificationDeviceInputProvider
+import com.sudoplatform.sudonotification.SudoNotificationClient
+import com.sudoplatform.sudonotification.types.NotificationSettingsInput
 import com.sudoplatform.sudotelephony.BaseTests
 import com.sudoplatform.sudotelephony.SudoTelephonyClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotifiableClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotificationHandler
+import com.sudoplatform.sudotelephony.initTelephonyNotifications
+import com.sudoplatform.sudotelephony.setTelephonyNotificationsForConversationId
 import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
 import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
+import com.sudoplatform.sudotelephony.types.PhoneMessageReceivedNotification
 import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForConversationIdInput

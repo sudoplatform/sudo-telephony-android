@@ -128,6 +128,10 @@ interface SudoTelephonyClient : AutoCloseable {
     /**
      * Search for phone numbers available to provision in an area code.
      *
+     * Numbers in the requested area code come first. When there are fewer of them than the
+     * limit, numbers from other area codes of the same state or province follow, so not every
+     * result is necessarily in the requested area code.
+     *
      * The service keeps the returned search for a short time so that provisioning can check
      * the requested number came from it. The carrier does not reserve the numbers, so one can
      * be taken by someone else before it is provisioned.

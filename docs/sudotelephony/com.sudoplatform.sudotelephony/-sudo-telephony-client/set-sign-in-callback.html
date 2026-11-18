@@ -110,13 +110,22 @@
     <h1 class="cover"><span>set</span><wbr></wbr><span>Sign</span><wbr></wbr><span>In</span><wbr></wbr><span><span>Callback</span></span></h1>
   </div>
   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="set-sign-in-callback.html"><span class="token function">setSignInCallback</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">callback<span class="token operator">: </span><a href="https://sudoplatform.github.io/sudo-user-android/sudouser/sudouser/com.sudoplatform.sudouser/-sudo-platform-sign-in-callback/index.html">SudoPlatformSignInCallback</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div><p class="paragraph">Set a callback that signs the user in when an operation is attempted while they are signed out.</p><p class="paragraph">When a callback is set, every operation that calls the service first checks whether the user is signed in and, if not, invokes the callback before continuing. If the callback throws, the exception is propagated to the caller and the operation is not executed. Subscriptions, key import and export, <a href="reset.html">reset</a> and <span data-unresolved-link="com.sudoplatform.sudotelephony/SudoTelephonyClient/close/#/PointingToDeclaration/">close</span> are not checked.</p><p class="paragraph">The client holds the callback through a weak reference, so the caller must keep its own reference for as long as the callback should stay in effect.</p><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>callback</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><a href="https://sudoplatform.github.io/sudo-user-android/sudouser/sudouser/com.sudoplatform.sudouser/-sudo-platform-sign-in-callback/index.html">SudoPlatformSignInCallback</a> The callback to invoke, or <code class="lang-kotlin">null</code> to stop checking, which is the default.</p></div></div></div></div></div><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import android.content.Context
+import com.google.firebase.messaging.RemoteMessage
+import com.sudoplatform.sudonotification.NotificationDeviceInputProvider
+import com.sudoplatform.sudonotification.SudoNotificationClient
+import com.sudoplatform.sudonotification.types.NotificationSettingsInput
 import com.sudoplatform.sudotelephony.BaseTests
 import com.sudoplatform.sudotelephony.SudoTelephonyClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotifiableClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotificationHandler
+import com.sudoplatform.sudotelephony.initTelephonyNotifications
+import com.sudoplatform.sudotelephony.setTelephonyNotificationsForConversationId
 import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
 import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
+import com.sudoplatform.sudotelephony.types.PhoneMessageReceivedNotification
 import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForConversationIdInput

@@ -110,13 +110,22 @@
     <h1 class="cover"><span>get</span><wbr></wbr><span>Supported</span><wbr></wbr><span><span>Countries</span></span></h1>
   </div>
   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-supported-countries.html"><span class="token function">getSupportedCountries</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><p class="paragraph">Retrieve the ISO 3166-1 alpha-2 country codes in which the telephony service can search for and provision phone numbers.</p><p class="paragraph">A code returned here is the value to pass as the country code of a phone number search.</p><span class="kdoc-tag"><h4 class="">Return</h4><p class="paragraph"><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a> of the supported ISO 3166-1 alpha-2 country codes, for example <code class="lang-kotlin">&quot;US&quot;</code>, <code class="lang-kotlin">&quot;CA&quot;</code>, <code class="lang-kotlin">&quot;GB&quot;</code>.</p></span><h4 class="">Throws</h4><div class="table"><div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-supported-countries-exception/index.html"><span>Sudo</span><wbr></wbr><span>Telephony</span><wbr></wbr><span>Client.</span><wbr></wbr><span>Supported</span><wbr></wbr><span>Countries</span><wbr></wbr><span><span>Exception</span></span></a></div></span></div><div><div class="title"><p class="paragraph">if the supported countries could not be retrieved.</p></div></div></div></div></div><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import android.content.Context
+import com.google.firebase.messaging.RemoteMessage
+import com.sudoplatform.sudonotification.NotificationDeviceInputProvider
+import com.sudoplatform.sudonotification.SudoNotificationClient
+import com.sudoplatform.sudonotification.types.NotificationSettingsInput
 import com.sudoplatform.sudotelephony.BaseTests
 import com.sudoplatform.sudotelephony.SudoTelephonyClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotifiableClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotificationHandler
+import com.sudoplatform.sudotelephony.initTelephonyNotifications
+import com.sudoplatform.sudotelephony.setTelephonyNotificationsForConversationId
 import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
 import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
+import com.sudoplatform.sudotelephony.types.PhoneMessageReceivedNotification
 import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForConversationIdInput

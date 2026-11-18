@@ -102,4 +102,14 @@
         <packageUrl regex="true">^pkg:maven/androidx\.browser/browser@.*$</packageUrl>
         <cve>CVE-2008-7298</cve>
     </suppress>
+    <suppress until="2027-01-01">
+        <notes><![CDATA[
+   kotlinx-coroutines-play-services is a transitive dependency of firebase-messaging. These CVEs
+   are for the unrelated "Tasks" app and are matched through the cpe:2.3:a:tasks:tasks CPE.
+   Suppressed the same way in sudo-email-android.
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlinx/kotlinx\-coroutines\-play\-services@.*$</packageUrl>
+        <cve>CVE-2020-22475</cve>
+        <cve>CVE-2022-39349</cve>
+    </suppress>
 </suppressions>

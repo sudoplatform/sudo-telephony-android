@@ -7,13 +7,22 @@
 package com.sudoplatform.sudotelephony.samples
 
 import android.content.Context
+import com.google.firebase.messaging.RemoteMessage
+import com.sudoplatform.sudonotification.NotificationDeviceInputProvider
+import com.sudoplatform.sudonotification.SudoNotificationClient
+import com.sudoplatform.sudonotification.types.NotificationSettingsInput
 import com.sudoplatform.sudotelephony.BaseTests
 import com.sudoplatform.sudotelephony.SudoTelephonyClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotifiableClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotificationHandler
+import com.sudoplatform.sudotelephony.initTelephonyNotifications
+import com.sudoplatform.sudotelephony.setTelephonyNotificationsForConversationId
 import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
 import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
+import com.sudoplatform.sudotelephony.types.PhoneMessageReceivedNotification
 import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForConversationIdInput
@@ -311,6 +320,76 @@ class Samples : BaseTests() {
         val result = telephonyClient.createSingletonKeysIfAbsent()
         if (result.keyPair.created) {
             // The device's key material changed: back the keys up again with exportKeys().
+        }
+    }
+
+    fun sudoTelephonyNotificationHandler() {
+        val handler =
+            object : SudoTelephonyNotificationHandler {
+                override fun onPhoneMessageReceived(notification: PhoneMessageReceivedNotification) {
+                    // Pushes are data-only, so post a notification for the user here. Fetch the
+                    // full message with getPhoneMessage(notification.id) if the preview isn't
+                    // enough.
+                }
+            }
+    }
+
+    fun sudoTelephonyNotifiableClient(
+        sudoUserClient: SudoUserClient,
+        handler: SudoTelephonyNotificationHandler,
+    ) {
+        // Use the same key manager settings as the SudoTelephonyClient, so the phone number
+        // keys are found.
+        val telephonyNotifiableClient =
+            SudoTelephonyNotifiableClient
+                .builder()
+                .setContext(context)
+                .setNotificationHandler(handler)
+                .build()
+
+        val notificationClient =
+            SudoNotificationClient
+                .builder()
+                .setContext(context)
+                .setSudoUserClient(sudoUserClient)
+                .setNotifiableClients(listOf(telephonyNotifiableClient))
+                .build()
+    }
+
+    suspend fun enableTelephonyNotifications(
+        notificationClient: SudoNotificationClient,
+        telephonyNotifiableClient: SudoTelephonyNotifiableClient,
+        device: NotificationDeviceInputProvider,
+    ) {
+        notificationClient.registerNotification(device)
+
+        // Without the default rules from initTelephonyNotifications(), no telephony pushes
+        // are sent. The schema must be included for the service to accept the rules.
+        val config =
+            notificationClient
+                .getNotificationConfiguration(device)
+                .initTelephonyNotifications()
+                .setTelephonyNotificationsForConversationId("mutedConversationId", enabled = false)
+        notificationClient.setNotificationConfiguration(
+            NotificationSettingsInput(
+                bundleId = device.bundleIdentifier,
+                deviceId = device.deviceIdentifier,
+                filter = config.configs,
+                services = listOf(telephonyNotifiableClient.getSchema()),
+            ),
+        )
+    }
+
+    fun processNotification(
+        notificationClient: SudoNotificationClient,
+        message: RemoteMessage,
+    ) {
+        // Call from FirebaseMessagingService.onMessageReceived. The notification client throws
+        // for a message that isn't from the Sudo Platform, so guard the call.
+        try {
+            notificationClient.process(message)
+        } catch (e: Exception) {
+            // Not a Sudo Platform push.
         }
     }
 }

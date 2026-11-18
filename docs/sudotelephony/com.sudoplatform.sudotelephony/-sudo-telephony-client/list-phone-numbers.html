@@ -110,13 +110,22 @@
     <h1 class="cover"><span>list</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Numbers</span></span></h1>
   </div>
   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="list-phone-numbers.html"><span class="token function">listPhoneNumbers</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-list-phone-numbers-input/index.html">ListPhoneNumbersInput</a><span class="token operator"> = </span>ListPhoneNumbersInput()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-list-output/index.html">ListOutput</a><span class="token operator">&lt;</span><a href="../../com.sudoplatform.sudotelephony.types/-phone-number/index.html">PhoneNumber</a><span class="token operator">&gt;</span></div><p class="paragraph">Retrieve a page of the caller's phone numbers, oldest first.</p><p class="paragraph">Lists numbers that are being provisioned, active or suspended. Released and failed numbers are not included; fetch those by id with <a href="get-phone-number.html">getPhoneNumber</a>.</p><span class="kdoc-tag"><h4 class="">Return</h4><p class="paragraph">A <a href="../../com.sudoplatform.sudotelephony.types/-list-output/index.html">ListOutput</a> holding this page of numbers and the token for the next one.</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>input</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><a href="../../com.sudoplatform.sudotelephony.types.inputs/-list-phone-numbers-input/index.html">ListPhoneNumbersInput</a> Paging parameters.</p></div></div></div></div></div><h4 class="">Throws</h4><div class="table"><div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-phone-number-exception/index.html"><span>Sudo</span><wbr></wbr><span>Telephony</span><wbr></wbr><span>Client.</span><wbr></wbr><span>Phone</span><wbr></wbr><span>Number</span><wbr></wbr><span><span>Exception</span></span></a></div></span></div><div><div class="title"><p class="paragraph">if the numbers could not be retrieved.</p></div></div></div></div></div><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import android.content.Context
+import com.google.firebase.messaging.RemoteMessage
+import com.sudoplatform.sudonotification.NotificationDeviceInputProvider
+import com.sudoplatform.sudonotification.SudoNotificationClient
+import com.sudoplatform.sudonotification.types.NotificationSettingsInput
 import com.sudoplatform.sudotelephony.BaseTests
 import com.sudoplatform.sudotelephony.SudoTelephonyClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotifiableClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotificationHandler
+import com.sudoplatform.sudotelephony.initTelephonyNotifications
+import com.sudoplatform.sudotelephony.setTelephonyNotificationsForConversationId
 import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
 import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
+import com.sudoplatform.sudotelephony.types.PhoneMessageReceivedNotification
 import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForConversationIdInput

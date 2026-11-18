@@ -110,13 +110,22 @@
     <h1 class="cover"><span>delete</span><wbr></wbr><span>Phone</span><wbr></wbr><span><span>Messages</span></span></h1>
   </div>
   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="delete-phone-messages.html"><span class="token function">deletePhoneMessages</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types.inputs/-delete-phone-messages-input/index.html">DeletePhoneMessagesInput</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-phone-message-batch-result/index.html">PhoneMessageBatchResult</a></div><p class="paragraph">Delete a batch of the caller's phone messages.</p><p class="paragraph">The batch can partially succeed: a message that was not found, or does not belong to the caller, is reported in <a href="../../com.sudoplatform.sudotelephony.types/-phone-message-batch-result/failed-ids.html">PhoneMessageBatchResult.failedIds</a> rather than failing the whole call, so check the result rather than relying on the absence of an exception.</p><span class="kdoc-tag"><h4 class="">Return</h4><p class="paragraph">A <a href="../../com.sudoplatform.sudotelephony.types/-phone-message-batch-result/index.html">PhoneMessageBatchResult</a> splitting the batch into deleted and not deleted.</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>input</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><a href="../../com.sudoplatform.sudotelephony.types.inputs/-delete-phone-messages-input/index.html">DeletePhoneMessagesInput</a> The messages to delete, at most 100.</p></div></div></div></div></div><h4 class="">Throws</h4><div class="table"><div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-phone-message-exception/index.html"><span>Sudo</span><wbr></wbr><span>Telephony</span><wbr></wbr><span>Client.</span><wbr></wbr><span>Phone</span><wbr></wbr><span>Message</span><wbr></wbr><span><span>Exception</span></span></a></div></span></div><div><div class="title"><p class="paragraph">if the batch could not be submitted.</p></div></div></div></div></div><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import android.content.Context
+import com.google.firebase.messaging.RemoteMessage
+import com.sudoplatform.sudonotification.NotificationDeviceInputProvider
+import com.sudoplatform.sudonotification.SudoNotificationClient
+import com.sudoplatform.sudonotification.types.NotificationSettingsInput
 import com.sudoplatform.sudotelephony.BaseTests
 import com.sudoplatform.sudotelephony.SudoTelephonyClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotifiableClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotificationHandler
+import com.sudoplatform.sudotelephony.initTelephonyNotifications
+import com.sudoplatform.sudotelephony.setTelephonyNotificationsForConversationId
 import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
 import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
+import com.sudoplatform.sudotelephony.types.PhoneMessageReceivedNotification
 import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForConversationIdInput

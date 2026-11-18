@@ -13,6 +13,7 @@ import com.sudoplatform.sudotelephony.types.PhoneNumberState
 import com.sudoplatform.sudotelephony.types.PhoneNumberType
 import com.sudoplatform.sudotelephony.types.inputs.ProvisionPhoneNumberInput
 import com.sudoplatform.sudotelephony.types.inputs.SearchAvailablePhoneNumbersInput
+import io.kotlintest.matchers.string.shouldMatch
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.kotlintest.shouldThrow
@@ -40,11 +41,13 @@ class ProvisionPhoneNumberIntegrationTest : BaseIntegrationTest() {
     @Test
     fun provisionPhoneNumberShouldReturnANumberBeingProvisioned() =
         runBlocking {
-            val provisioned = provisionANumber().number
+            val outcome = provisionANumber()
+            val provisioned = outcome.number
 
             provisioned shouldNotBe null
             provisioned.id.isNotBlank() shouldBe true
-            provisioned.phoneNumber.startsWith("+1$areaCode") shouldBe true
+            provisioned.phoneNumber shouldBe outcome.requestedPhoneNumber
+            provisioned.phoneNumber shouldMatch localUsNumber
             provisioned.countryCode shouldBe countryCode
             provisioned.numberType shouldBe PhoneNumberType.Local
             provisioned.owner.isNotBlank() shouldBe true

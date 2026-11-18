@@ -7,7 +7,10 @@ coroutine-friendly API over the telephony AppSync GraphQL endpoint.
 
 The public surface of the SDK: the [SudoTelephonyClient] interface, its `Builder`,
 and the per-domain `SupportedCountriesException` and `PhoneNumberSearchException`
-hierarchies.
+hierarchies. Push notification support: [SudoTelephonyNotifiableClient], the
+[SudoTelephonyNotificationHandler] it calls, and the `NotificationConfiguration` extensions
+that enable telephony notifications and turn them on or off per phone number, Sudo or
+conversation.
 
 # Package com.sudoplatform.sudotelephony.types
 

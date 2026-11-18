@@ -57,11 +57,15 @@ abstract class BaseIntegrationTest {
     /** Area code to search for numbers in, overridable with the `AREA_CODE` argument. */
     protected val areaCode = optionalArgument("AREA_CODE", "415")
 
+    /** A local US number in E.164 form, capturing its area code. */
+    protected val localUsNumber = Regex("""^\+1([2-9]\d{2})[2-9]\d{6}$""")
+
     /** The outcome of provisioning one of a search's results. */
     protected data class ProvisionedNumber(
         val searchId: String,
         val ownershipProofToken: String?,
         val number: PhoneNumber,
+        val requestedPhoneNumber: String,
     )
 
     /**
@@ -152,7 +156,7 @@ abstract class BaseIntegrationTest {
                         ),
                     )
                 trackForRelease(number.id)
-                return ProvisionedNumber(search.id, ownershipProofToken, number)
+                return ProvisionedNumber(search.id, ownershipProofToken, number, available.phoneNumber)
             } catch (e: SudoTelephonyClient.PhoneNumberException.PhoneNumberUnavailableException) {
                 logger.info("${available.phoneNumber} was taken after the search, trying the next")
             }

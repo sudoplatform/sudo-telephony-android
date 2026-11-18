@@ -110,13 +110,22 @@
     <h1 class="cover"><span>get</span><wbr></wbr><span>Configuration</span><wbr></wbr><span><span>Data</span></span></h1>
   </div>
   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":sudotelephony:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-configuration-data.html"><span class="token function">getConfigurationData</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.sudoplatform.sudotelephony.types/-configuration-data/index.html">ConfigurationData</a></div><p class="paragraph">Retrieve how the telephony service deployment is configured.</p><p class="paragraph">Check <a href="../../com.sudoplatform.sudotelephony.types/-configuration-data/sudo-ownership-proof-required.html">ConfigurationData.sudoOwnershipProofRequired</a> before provisioning to find out whether a number must belong to a Sudo, and use the limits to size searches, pages and message batches rather than hard-coding them.</p><span class="kdoc-tag"><h4 class="">Return</h4><p class="paragraph">The <a href="../../com.sudoplatform.sudotelephony.types/-configuration-data/index.html">ConfigurationData</a> of the deployment.</p></span><h4 class="">Throws</h4><div class="table"><div class="table-row" data-filterable-current=":sudotelephony:dokkaHtml/release" data-filterable-set=":sudotelephony:dokkaHtml/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-configuration-data-exception/index.html"><span>Sudo</span><wbr></wbr><span>Telephony</span><wbr></wbr><span>Client.</span><wbr></wbr><span>Configuration</span><wbr></wbr><span>Data</span><wbr></wbr><span><span>Exception</span></span></a></div></span></div><div><div class="title"><p class="paragraph">if the configuration could not be retrieved.</p></div></div></div></div></div><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import android.content.Context
+import com.google.firebase.messaging.RemoteMessage
+import com.sudoplatform.sudonotification.NotificationDeviceInputProvider
+import com.sudoplatform.sudonotification.SudoNotificationClient
+import com.sudoplatform.sudonotification.types.NotificationSettingsInput
 import com.sudoplatform.sudotelephony.BaseTests
 import com.sudoplatform.sudotelephony.SudoTelephonyClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotifiableClient
+import com.sudoplatform.sudotelephony.SudoTelephonyNotificationHandler
+import com.sudoplatform.sudotelephony.initTelephonyNotifications
+import com.sudoplatform.sudotelephony.setTelephonyNotificationsForConversationId
 import com.sudoplatform.sudotelephony.subscription.PhoneMessageSubscriber
 import com.sudoplatform.sudotelephony.subscription.PhoneNumberSubscriber
 import com.sudoplatform.sudotelephony.subscription.Subscriber
 import com.sudoplatform.sudotelephony.types.ListAPIResult
 import com.sudoplatform.sudotelephony.types.PhoneMessageEvent
+import com.sudoplatform.sudotelephony.types.PhoneMessageReceivedNotification
 import com.sudoplatform.sudotelephony.types.PhoneNumber
 import com.sudoplatform.sudotelephony.types.inputs.DeletePhoneMessagesInput
 import com.sudoplatform.sudotelephony.types.inputs.ListPhoneMessagesForConversationIdInput

@@ -1,0 +1,22 @@
+{
+  "source": "telephony-service MR !38 (TEL-978), test/unit/data/mechanisms/defaultTelephonyServiceNotifier.test.ts, commit 81dff8d",
+  "payload": {
+    "version": 1,
+    "type": "messageReceived",
+    "keyId": "key-1",
+    "algorithm": "RSAEncryptionOAEPAESGCM"
+  },
+  "plaintext": {
+    "type": "messageReceived",
+    "owner": "owner-1",
+    "phoneNumberId": "tel-pnm-1",
+    "sudoId": "sudo-1",
+    "messageId": "tel-pmg-1",
+    "conversationId": "tel-cnv-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "remotePhoneNumber": "+12025550111",
+    "bodyPreview": "Hello",
+    "bodyTruncated": false,
+    "mediaOmitted": false,
+    "receivedAtEpochMs": 1780000000000
+  }
+}

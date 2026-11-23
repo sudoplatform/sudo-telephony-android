@@ -84,7 +84,8 @@ internal open class DefaultDeviceKeyManager(
 
     override fun importKeys(archiveData: ByteArray) {
         try {
-            keyManager.removeAllKeys()
+            // saveKeys removes the existing keys itself, once the archive is known to hold keys for
+            // this namespace.
             val archive = SecureKeyArchive.getInstanceV3(archiveData, keyManager)
             archive.unarchive()
             archive.saveKeys()

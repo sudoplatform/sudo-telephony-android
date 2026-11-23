@@ -117,14 +117,15 @@ internal interface DeviceKeyManager {
     ): ByteArray
 
     /**
-     * Replace the keys in the store with those held in [archiveData].
+     * Replace the keys in the store with those held in [archiveData] for the store's namespace.
      *
      * Every existing key is removed first, so importing an archive makes the store match the
-     * archive rather than merging into it.
+     * archive rather than merging into it. Keys are removed only once the archive has been read
+     * and found to hold keys for the namespace.
      *
      * @param archiveData [ByteArray] The key archive to import.
      * @throws [DeviceKeyManagerException.SecureKeyArchiveException] if the archive cannot be
-     *  read.
+     *  read, or holds no keys for the store's namespace. The existing keys are kept.
      */
     @Throws(DeviceKeyManagerException::class)
     fun importKeys(archiveData: ByteArray)

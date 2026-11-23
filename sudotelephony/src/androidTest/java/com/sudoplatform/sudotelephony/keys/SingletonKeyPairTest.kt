@@ -92,8 +92,11 @@ class SingletonKeyPairTest {
     @Before
     fun setUp() {
         logDriver = CapturingLogDriver()
-        sourceKeyManager = KeyManagerFactory(context).createAndroidKeyManager("tels-singleton-source-${UUID.randomUUID()}")
-        targetKeyManager = KeyManagerFactory(context).createAndroidKeyManager("tels-singleton-target-${UUID.randomUUID()}")
+        // Archives import only into the namespace they were exported from, so the target is another
+        // key manager in the source's namespace, used once the source's keys are exported and removed.
+        val namespace = "tels-singleton-${UUID.randomUUID()}"
+        sourceKeyManager = KeyManagerFactory(context).createAndroidKeyManager(namespace)
+        targetKeyManager = KeyManagerFactory(context).createAndroidKeyManager(namespace)
         source = serviceKeyManager(sourceKeyManager)
         target = serviceKeyManager(targetKeyManager)
     }
@@ -190,8 +193,10 @@ class SingletonKeyPairTest {
     fun importKeysShouldRestoreTheSingletonPublicKey() {
         val singleton = source.createSingleton()
         val sealed = seal(sourceKeyManager, singleton.keyId, "sealed to the shared key")
+        val archive = source.exportKeys()
+        source.removeAllKeys()
 
-        target.importKeys(source.exportKeys())
+        target.importKeys(archive)
 
         // The archive leaves public keys out, so the key store regenerates the public key from
         // the private key, and it must match the one that was registered with the service.
@@ -207,8 +212,10 @@ class SingletonKeyPairTest {
     @Test
     fun importKeysShouldRestoreNothingWhenTheArchiveHasNoSingleton() {
         val generated = source.generateKeyPair()
+        val archive = source.exportKeys()
+        source.removeAllKeys()
 
-        target.importKeys(source.exportKeys())
+        target.importKeys(archive)
 
         recordedSingletonKeyId(targetKeyManager) shouldBe null
         target.privateKeyExists(generated.keyId) shouldBe true

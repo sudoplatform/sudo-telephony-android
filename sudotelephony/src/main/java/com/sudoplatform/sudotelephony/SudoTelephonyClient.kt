@@ -63,7 +63,7 @@ interface SudoTelephonyClient : AutoCloseable {
         const val DEFAULT_KEYRING_SERVICE_NAME = "sudo-telephony"
 
         /** Namespace the telephony keys are stored under in the device key store. */
-        const val DEFAULT_KEY_NAMESPACE = "tels"
+        const val DEFAULT_KEY_NAMESPACE = "sudo-telephony"
 
         /**
          * Audience to request a Sudo ownership proof for when provisioning a phone number.
@@ -413,8 +413,14 @@ interface SudoTelephonyClient : AutoCloseable {
      * Every key already on this device is removed first, so the store ends up matching the
      * archive rather than merging with it.
      *
+     * Only keys exported from the same key namespace ([Builder.setNamespace]) are imported, so a
+     * client on another device or platform must use the same namespace. If the archive has no keys
+     * for this client's namespace, including archives exported with Sudo Key Manager before
+     * 10.0.0, which don't record a namespace, the import fails and the existing keys are kept.
+     *
      * @param archiveData [ByteArray] The key archive to import, as returned by [exportKeys].
-     * @throws CryptographicKeysException if the archive is empty or cannot be read.
+     * @throws CryptographicKeysException if the archive is empty or cannot be read, or holds no
+     *  keys for this client's namespace. The existing keys are kept.
      * @sample com.sudoplatform.sudotelephony.samples.Samples.importKeys
      */
     @Throws(CryptographicKeysException::class)
@@ -424,7 +430,8 @@ interface SudoTelephonyClient : AutoCloseable {
      * Export the cryptographic keys held on this device as an archive.
      *
      * The archive carries the private keys that unseal phone message content, so it is secret
-     * and must be stored and transferred accordingly.
+     * and must be stored and transferred accordingly. It records this client's key namespace, and
+     * imports only into a client with the same namespace.
      *
      * @return The key archive, to be imported with [importKeys].
      * @throws CryptographicKeysException if the archive cannot be written.
@@ -525,7 +532,9 @@ interface SudoTelephonyClient : AutoCloseable {
         /**
          * Provide the namespace the telephony keys are stored under in the device key store
          * (optional input). Defaults to [DEFAULT_KEY_NAMESPACE]. Supply a distinct value when
-         * several instances must not share keys.
+         * several instances must not share keys. Key archives record it and import only into a
+         * client with the same namespace, so use the same value on every device and platform
+         * that keys move between.
          */
         fun setNamespace(namespace: String) =
             also {

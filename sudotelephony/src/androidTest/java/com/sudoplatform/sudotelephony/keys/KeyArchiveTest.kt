@@ -11,6 +11,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.sudoplatform.sudokeymanager.KeyManagerFactory
 import com.sudoplatform.sudokeymanager.KeyManagerInterface
+import com.sudoplatform.sudokeymanager.SecureKeyArchiveException
 import com.sudoplatform.sudologging.AndroidUtilsLogDriver
 import com.sudoplatform.sudologging.LogLevel
 import com.sudoplatform.sudologging.Logger
@@ -20,6 +21,7 @@ import com.sudoplatform.sudouser.SudoUserClient
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.kotlintest.shouldThrow
+import org.json.JSONObject
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -27,11 +29,19 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
+import java.io.ByteArrayOutputStream
 import java.util.UUID
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 
 /**
  * Test that a key archive exported from one device key store can be imported into another and
  * still unseal content sealed for the original key.
+ *
+ * Archives import only into the namespace they were exported from. Another device is stood in for
+ * by a second key manager in the same namespace, used once the source's keys have been exported and
+ * removed (both share the emulator's key store). A key manager in another namespace checks that an
+ * archive it can't use leaves its keys in place.
  *
  * This needs a real Android key store, so it runs on a device rather than as a JVM test. It is
  * the operation that makes a phone number's messages readable on a second device, so the
@@ -49,12 +59,12 @@ class KeyArchiveTest {
             on { getSubject() } doReturn "mockUserId"
         }
 
-    private lateinit var sourceNamespace: String
-    private lateinit var targetNamespace: String
     private lateinit var sourceKeyManager: KeyManagerInterface
     private lateinit var targetKeyManager: KeyManagerInterface
+    private lateinit var otherKeyManager: KeyManagerInterface
     private lateinit var source: DefaultServiceKeyManager
     private lateinit var target: DefaultServiceKeyManager
+    private lateinit var other: DefaultServiceKeyManager
 
     private fun serviceKeyManager(keyManager: KeyManagerInterface) =
         DefaultServiceKeyManager(
@@ -66,20 +76,26 @@ class KeyArchiveTest {
 
     @Before
     fun setUp() {
-        // Distinct namespaces so the two stores are genuinely separate, standing in for two
-        // devices.
-        sourceNamespace = "tels-archive-source-${UUID.randomUUID()}"
-        targetNamespace = "tels-archive-target-${UUID.randomUUID()}"
-        sourceKeyManager = KeyManagerFactory(context).createAndroidKeyManager(sourceNamespace)
-        targetKeyManager = KeyManagerFactory(context).createAndroidKeyManager(targetNamespace)
+        val namespace = "tels-archive-${UUID.randomUUID()}"
+        sourceKeyManager = KeyManagerFactory(context).createAndroidKeyManager(namespace)
+        targetKeyManager = KeyManagerFactory(context).createAndroidKeyManager(namespace)
+        otherKeyManager = KeyManagerFactory(context).createAndroidKeyManager("tels-archive-other-${UUID.randomUUID()}")
         source = serviceKeyManager(sourceKeyManager)
         target = serviceKeyManager(targetKeyManager)
+        other = serviceKeyManager(otherKeyManager)
     }
 
     @After
     fun tearDown() {
         runCatching { sourceKeyManager.removeAllKeys() }
-        runCatching { targetKeyManager.removeAllKeys() }
+        runCatching { otherKeyManager.removeAllKeys() }
+    }
+
+    /** Exports the source's keys and removes them, so [target] starts as a device without them. */
+    private fun exportAndRemoveSourceKeys(): ByteArray {
+        val archive = source.exportKeys()
+        source.removeAllKeys()
+        return archive
     }
 
     /**
@@ -134,10 +150,11 @@ class KeyArchiveTest {
         val body = "Hello from the telephony service"
         val sealed = seal(sourceKeyManager, keyPair.keyId, body)
 
-        // The target store has never seen the key, so it cannot read the content.
+        val archive = exportAndRemoveSourceKeys()
+        // The target store doesn't have the key, so it cannot read the content.
         target.privateKeyExists(keyPair.keyId) shouldBe false
 
-        target.importKeys(source.exportKeys())
+        target.importKeys(archive)
 
         target.privateKeyExists(keyPair.keyId) shouldBe true
         Unsealer(target).unseal(keyPair.keyId, sealed) shouldBe body
@@ -146,9 +163,10 @@ class KeyArchiveTest {
     @Test
     fun importKeysShouldReplaceRatherThanMergeTheExistingKeys() {
         val sourceKeyPair = source.generateKeyPair()
+        val archive = exportAndRemoveSourceKeys()
         val targetOwnKeyPair = target.generateKeyPair()
 
-        target.importKeys(source.exportKeys())
+        target.importKeys(archive)
 
         // The archive's key arrives and the key the target held beforehand is gone, so the
         // store matches the archive.
@@ -160,8 +178,9 @@ class KeyArchiveTest {
     fun importKeysShouldCarryEveryKeyInTheArchive() {
         val first = source.generateKeyPair()
         val second = source.generateKeyPair()
+        val archive = exportAndRemoveSourceKeys()
 
-        target.importKeys(source.exportKeys())
+        target.importKeys(archive)
 
         target.privateKeyExists(first.keyId) shouldBe true
         target.privateKeyExists(second.keyId) shouldBe true
@@ -178,10 +197,49 @@ class KeyArchiveTest {
     }
 
     @Test
-    fun importKeysShouldRejectDataThatIsNotAnArchive() {
+    fun importKeysShouldRejectDataThatIsNotAnArchiveAndKeepTheKeys() {
+        val own = target.generateKeyPair()
+
         shouldThrow<DeviceKeyManager.DeviceKeyManagerException.SecureKeyArchiveException> {
             target.importKeys("this is not a key archive".toByteArray())
         }
+
+        target.privateKeyExists(own.keyId) shouldBe true
+    }
+
+    @Test
+    fun importKeysFromAnotherNamespaceShouldFailAndKeepTheKeys() {
+        source.generateKeyPair()
+        val own = other.generateKeyPair()
+
+        val error =
+            shouldThrow<DeviceKeyManager.DeviceKeyManagerException.SecureKeyArchiveException> {
+                other.importKeys(source.exportKeys())
+            }
+
+        (error.cause as SecureKeyArchiveException).reason shouldBe SecureKeyArchiveException.NO_KEYS_FOR_NAMESPACE
+        other.privateKeyExists(own.keyId) shouldBe true
+    }
+
+    @Test
+    fun importKeysOfAnArchiveWithNoNameSpaceShouldFailAndKeepTheKeys() {
+        // Archives exported before key manager 10.0.0 don't record a namespace.
+        val exported = source.generateKeyPair()
+        val json = JSONObject(String(GZIPInputStream(source.exportKeys().inputStream()).use { it.readBytes() }))
+        val keys = json.getJSONArray("Keys")
+        for (i in 0 until keys.length()) keys.getJSONObject(i).remove("NameSpace")
+        val archive = ByteArrayOutputStream().also { out -> GZIPOutputStream(out).use { it.write(json.toString().toByteArray()) } }
+        source.removeAllKeys()
+        val own = target.generateKeyPair()
+
+        val error =
+            shouldThrow<DeviceKeyManager.DeviceKeyManagerException.SecureKeyArchiveException> {
+                target.importKeys(archive.toByteArray())
+            }
+
+        (error.cause as SecureKeyArchiveException).reason shouldBe SecureKeyArchiveException.NO_KEYS_FOR_NAMESPACE
+        target.privateKeyExists(own.keyId) shouldBe true
+        target.privateKeyExists(exported.keyId) shouldBe false
     }
 
     @Test
